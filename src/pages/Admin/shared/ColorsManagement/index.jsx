@@ -12,6 +12,7 @@ import {
   Snackbar,
   Alert,
 } from "@mui/material";
+import RefreshIcon from "@mui/icons-material/Refresh";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import {
   useListColorsQuery,
@@ -21,7 +22,7 @@ import {
 } from "@/services/api/color";
 
 const ColorsManagement = () => {
-  const { data, isLoading, error } = useListColorsQuery();
+  const { data, isLoading, error, refetch } = useListColorsQuery(); // Thêm refetch
   const [addColor] = useAddColorMutation();
   const [updateColor] = useUpdateColorMutation();
   const [deleteColor] = useDeleteColorMutation();
@@ -39,6 +40,17 @@ const ColorsManagement = () => {
 
   const handleCloseSnackbar = () => {
     setSnackbar({ ...snackbar, open: false });
+  };
+
+  const handleRefresh = () => {
+    console.log("Refetching data...", data);
+    
+    refetch(); // Gọi lại query để làm mới dữ liệu
+    setSnackbar({
+      open: true,
+      severity: "info",
+      message: "Dữ liệu đã được làm mới!",
+    });
   };
 
   const columns = [
@@ -76,7 +88,8 @@ const ColorsManagement = () => {
       setSnackbar({
         open: true,
         severity: "error",
-        message: "Lỗi khi thêm màu sắc: " + (error.data?.message || error.message),
+        message:
+          "Lỗi khi thêm màu sắc: " + (error.data?.message || error.message),
       });
     }
   };
@@ -102,7 +115,8 @@ const ColorsManagement = () => {
       setSnackbar({
         open: true,
         severity: "error",
-        message: "Lỗi khi cập nhật màu sắc: " + (error.data?.message || error.message),
+        message:
+          "Lỗi khi cập nhật màu sắc: " + (error.data?.message || error.message),
       });
     }
   };
@@ -126,7 +140,8 @@ const ColorsManagement = () => {
       setSnackbar({
         open: true,
         severity: "error",
-        message: "Lỗi khi xóa màu sắc: " + (error.data?.message || error.message),
+        message:
+          "Lỗi khi xóa màu sắc: " + (error.data?.message || error.message),
       });
     }
   };
@@ -139,8 +154,13 @@ const ColorsManagement = () => {
         Quản lý màu sắc
       </Typography>
       <Grid container spacing={2} sx={{ mb: 2 }}>
-        <Grid item xs={12} sm={9}></Grid>
-        <Grid item xs={12} sm={3}>
+        <Grid item xs={6} sm={6}>
+          <Button variant="outlined" color="primary" onClick={handleRefresh}>
+            <RefreshIcon sx={{ mr: 1 }} />
+            Làm mới
+          </Button>
+        </Grid>
+        <Grid item xs={6} sm={6}>
           <Button
             variant="contained"
             onClick={() => setOpenDialog(true)}
@@ -152,7 +172,8 @@ const ColorsManagement = () => {
       </Grid>
       {error && (
         <Typography color="error" gutterBottom>
-          Lỗi khi tải dữ liệu: {error.data?.message || "Không thể kết nối đến server"}
+          Lỗi khi tải dữ liệu:{" "}
+          {error.data?.message || "Không thể kết nối đến server"}
         </Typography>
       )}
       <div style={{ height: 400, width: "100%" }}>
@@ -193,7 +214,10 @@ const ColorsManagement = () => {
       </Dialog>
 
       {/* Dialog xác nhận xóa */}
-      <Dialog open={openDeleteDialog} onClose={() => setOpenDeleteDialog(false)}>
+      <Dialog
+        open={openDeleteDialog}
+        onClose={() => setOpenDeleteDialog(false)}
+      >
         <DialogTitle>Xác nhận xóa</DialogTitle>
         <DialogContent>
           <Typography>Bạn có chắc chắn muốn xóa màu sắc không?</Typography>

@@ -4,21 +4,22 @@ import axios from "axios";
 export const axiosBaseQuery =
   () =>
   async ({ url, method, data, params, headers }) => {
+    console.log("Base query function called with params:", {
+      url,
+      method,
+      data,
+      params,
+      headers,
+    });
+
     try {
-      // Danh sách các endpoint không yêu cầu token
       const publicEndpoints = [
         "/v1/auth/login",
-        "/v1/auth/register",
-        "/v1/auth/register/verify",
-        "/v1/auth/forgot-password",
-        "/v1/auth/forgot-password/verify-code",
-        "/v1/auth/forgot-password/reset-password",
       ];
 
       const token = localStorage.getItem("accessToken");
       console.log(`Token trước khi gửi request (${url}):`, token);
 
-      // Chỉ kiểm tra token nếu endpoint không nằm trong danh sách public
       if (!publicEndpoints.includes(url) && !token) {
         return {
           error: {
@@ -35,7 +36,6 @@ export const axiosBaseQuery =
         params,
         headers: {
           ...headers,
-          // Chỉ thêm Authorization header nếu có token
           ...(token && { Authorization: `Bearer ${token}` }),
         },
         baseURL: import.meta.env.VITE_API_URL,
@@ -43,12 +43,14 @@ export const axiosBaseQuery =
 
       if (data instanceof FormData) {
         delete config.headers["Content-Type"];
+        console.log("FormData detected, Content-Type will be set by axios");
       }
 
-      console.log("Axios request config:", config);
+      console.log("Final axios config before request:", config);
       console.log("Full request URL:", `${config.baseURL}${config.url}`);
 
       const result = await axios(config);
+      console.log("Axios response received:", result);
 
       if (result.status >= 400) {
         console.log("Axios response error:", result);
@@ -71,11 +73,12 @@ export const axiosBaseQuery =
 
       console.error("Axios error:", error);
 
-      // Chỉ xóa token và chuyển hướng nếu lỗi là do token không hợp lệ
       if (
         error.status === 401 &&
-        (error.data?.message === "Không tìm thấy token, vui lòng đăng nhập lại" ||
-          error.data?.message?.includes("Invalid token"))
+        (error.data?.message ===
+          "Không tìm thấy token, vui lòng đăng nhập lại" ||
+          error.data?.message?.includes("Invalid token") ||
+          error.data?.message?.includes("Expired token"))
       ) {
         console.log("Xóa token do lỗi 401:", error.data?.message);
         localStorage.removeItem("accessToken");
@@ -85,8 +88,6 @@ export const axiosBaseQuery =
       return { error };
     }
   };
-
-  
 
 export const baseApi = createApi({
   reducerPath: "api",
