@@ -13,7 +13,7 @@ import {
   Alert,
   Snackbar,
 } from "@mui/material";
-import { useDispatch, useSelector } from "react-redux";
+import RefreshIcon from "@mui/icons-material/Refresh";
 import { useNavigate } from "react-router-dom";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import {
@@ -21,23 +21,12 @@ import {
   useAddCategoryMutation,
   useUpdateCategoryMutation,
   useDeleteCategoryMutation,
+  useRestoreCategoryMutation,
 } from "@/services/api/categories";
 import { useGetMyInfoQuery } from "@/services/api/auth";
-import {
-  setCategories,
-  setLoading,
-  setError,
-  selectCategories,
-  selectLoading,
-  selectError,
-} from "@/store/redux/categories/reducer";
 
 const CategoriesManagement = () => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const categories = useSelector(selectCategories);
-  const loading = useSelector(selectLoading);
-  const error = useSelector(selectError);
 
   const [newCategory, setNewCategory] = useState({
     name: "",
@@ -91,50 +80,15 @@ const CategoriesManagement = () => {
   // Lấy danh sách danh mục bằng RTK Query
   const {
     data: categoriesData,
-    isLoading: isFetching,
-    error: fetchError,
-    isError,
+    isLoading,
+    error,
     refetch,
   } = useListCategoriesQuery();
 
   const [addCategory] = useAddCategoryMutation();
   const [updateCategory] = useUpdateCategoryMutation();
   const [deleteCategory] = useDeleteCategoryMutation();
-
-  // Đồng bộ dữ liệu từ RTK Query vào reducer
-  useEffect(() => {
-    dispatch(setLoading(isFetching));
-    if (fetchError || isError) {
-      const errorMessage =
-        fetchError?.data?.message ||
-        fetchError?.error ||
-        "Lỗi khi tải danh mục";
-      dispatch(setError(errorMessage));
-      setSnackbar({
-        open: true,
-        message: errorMessage,
-        severity: "error",
-      });
-      if (fetchError?.status === 401) {
-        setSnackbar({
-          open: true,
-          message: "Phiên đăng nhập hết hạn, vui lòng đăng nhập lại",
-          severity: "error",
-        });
-        setTimeout(() => navigate("/login"), 2000);
-      }
-    } else if (categoriesData) {
-      dispatch(setCategories(categoriesData));
-      dispatch(setError(null));
-      if (categoriesData.length === 0) {
-        setSnackbar({
-          open: true,
-          message: "Hiện tại không có danh mục nào.",
-          severity: "info",
-        });
-      }
-    }
-  }, [categoriesData, isFetching, fetchError, isError, dispatch, navigate]);
+  const [restoreCategory] = useRestoreCategoryMutation();
 
   const columns = [
     { field: "id", headerName: "ID", width: 90 },
@@ -142,10 +96,11 @@ const CategoriesManagement = () => {
     { field: "description", headerName: "Mô tả", width: 200 },
     { field: "createdBy", headerName: "Người tạo", width: 200 },
     { field: "createdAt", headerName: "Ngày tạo", width: 120 },
+    { field: "status", headerName: "Trạng thái", width: 120 },
     {
       field: "actions",
       headerName: "Hành động",
-      width: 150,
+      width: 200,
       renderCell: (params) => (
         <>
           <Button
@@ -155,13 +110,23 @@ const CategoriesManagement = () => {
           >
             Sửa
           </Button>
-          <Button
-            variant="text"
-            color="error"
-            onClick={() => handleOpenDeleteDialog(params.row.id)}
-          >
-            Xóa
-          </Button>
+          {params.row.status === "ACTIVE" ? (
+            <Button
+              variant="text"
+              color="error"
+              onClick={() => handleOpenDeleteDialog(params.row.id)}
+            >
+              Xóa
+            </Button>
+          ) : (
+            <Button
+              variant="text"
+              color="success"
+              onClick={() => handleRestoreCategory(params.row.id)}
+            >
+              Khôi phục
+            </Button>
+          )}
         </>
       ),
     },
@@ -225,25 +190,7 @@ const CategoriesManagement = () => {
 
   const handleDeleteCategory = async () => {
     try {
-      const response = await deleteCategory(categoryToDelete).unwrap();
-      console.log("Delete response:", response);
-
-      // Kiểm tra response để đảm bảo xóa thành công
-      if (response?.code !== 204) {
-        throw new Error(response?.message || "Xóa danh mục thất bại");
-      }
-
-      // Refetch để kiểm tra xem dữ liệu có thực sự được xóa không
-      const updatedCategories = await refetch();
-      const isDeleted = !updatedCategories.data.some(
-        (cat) => cat.id === categoryToDelete
-      );
-      if (!isDeleted) {
-        throw new Error(
-          "Danh mục chưa được xóa trong cơ sở dữ liệu. Vui lòng kiểm tra backend."
-        );
-      }
-
+      await deleteCategory(categoryToDelete).unwrap();
       setOpenDeleteDialog(false);
       setCategoryToDelete(null);
       setSnackbar({
@@ -252,22 +199,55 @@ const CategoriesManagement = () => {
         severity: "success",
       });
     } catch (error) {
-      console.error("Delete error:", error);
       setSnackbar({
         open: true,
-        message: error.message || "Lỗi khi xóa danh mục",
+        message: error.data?.message || "Lỗi khi xóa danh mục",
         severity: "error",
       });
     }
+  };
+
+  const handleRestoreCategory = async (id) => {
+    try {
+      await restoreCategory(id).unwrap();
+      setSnackbar({
+        open: true,
+        message: "Khôi phục danh mục thành công!",
+        severity: "success",
+      });
+    } catch (error) {
+      setSnackbar({
+        open: true,
+        message: error.data?.message || "Lỗi khi khôi phục danh mục",
+        severity: "error",
+      });
+    }
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setEditCategory(null);
+    setNewCategory({ name: "", description: "" });
   };
 
   const handleCloseSnackbar = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
+  const handleRefresh = () => {
+    refetch();
+    setSnackbar({
+      open: true,
+      message: "Danh sách danh mục đã được làm mới!",
+      severity: "info",
+    });
+  };
+
   if (userLoading) {
     return <CircularProgress />;
   }
+
+  const rows = categoriesData?.items || [];
 
   return (
     <DashboardLayoutWrapper>
@@ -275,7 +255,15 @@ const CategoriesManagement = () => {
         Quản lý Danh mục
       </Typography>
       <Grid container spacing={2} sx={{ mb: 2 }}>
-        <Grid item xs={12} sm={9}></Grid>
+        <Grid item xs={12} sm={9}>
+          <Button
+            variant="outlined"
+            onClick={handleRefresh}
+          >
+            <RefreshIcon sx={{ mr: 1 }} />
+            Làm mới
+          </Button>
+        </Grid>
         <Grid item xs={12} sm={3}>
           <Button
             variant="contained"
@@ -288,24 +276,28 @@ const CategoriesManagement = () => {
         </Grid>
       </Grid>
 
-      {loading ? (
-        <CircularProgress />
-      ) : error ? (
-        <Alert severity="error">{error}</Alert>
+      {error ? (
+        <Alert severity="error">
+          {error.data?.message || "Lỗi khi tải danh mục"}
+        </Alert>
       ) : (
         <div style={{ height: 400, width: "100%" }}>
           <DataGrid
-            rows={categories}
+            rows={rows}
             columns={columns}
             pageSize={5}
-            rowsPerPageOptions={[5]}
+            rowsPerPageOptions={[5, 10, 20, 100]}
             disableSelectionOnClick
+            loading={isLoading}
+            localeText={{
+              noRowsLabel: "Hiện tại không có danh mục nào",
+            }}
           />
         </div>
       )}
 
       {/* Dialog thêm/sửa danh mục */}
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+      <Dialog open={openDialog} onClose={handleCloseDialog}>
         <DialogTitle>
           {editCategory ? "Sửa danh mục" : "Thêm danh mục"}
         </DialogTitle>
@@ -333,7 +325,7 @@ const CategoriesManagement = () => {
           <Button
             variant="outlined"
             color="primary"
-            onClick={() => setOpenDialog(false)}
+            onClick={handleCloseDialog}
           >
             Hủy
           </Button>
