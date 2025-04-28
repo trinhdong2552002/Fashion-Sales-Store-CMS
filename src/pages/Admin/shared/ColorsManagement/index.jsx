@@ -154,13 +154,13 @@ const ColorsManagement = () => {
         Quản lý màu sắc
       </Typography>
       <Grid container spacing={2} sx={{ mb: 2 }}>
-        <Grid item xs={6} sm={6}>
+         <Grid item xs={12} sm={9}>
           <Button variant="outlined" color="primary" onClick={handleRefresh}>
             <RefreshIcon sx={{ mr: 1 }} />
             Làm mới
           </Button>
         </Grid>
-        <Grid item xs={6} sm={6}>
+        <Grid item xs={12} sm={3}>
           <Button
             variant="contained"
             onClick={() => setOpenDialog(true)}
