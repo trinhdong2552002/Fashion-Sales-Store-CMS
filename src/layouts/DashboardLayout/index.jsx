@@ -32,6 +32,7 @@ import {
   Place,
   Store,
 } from "@mui/icons-material";
+import AuthButton from "../../components/AuthButton";
 
 const drawerWidth = 240;
 
@@ -198,6 +199,7 @@ const DashboardLayoutWrapper = ({ children }) => {
           >
             Admin Dashboard
           </Typography>
+          <AuthButton />
           <Switch
             checked={mode === "dark"}
             onChange={toggleTheme}
