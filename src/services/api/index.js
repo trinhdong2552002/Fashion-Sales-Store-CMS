@@ -18,7 +18,10 @@ export const axiosBaseQuery =
       ];
 
       const token = localStorage.getItem("accessToken");
+      const refreshToken = localStorage.getItem("refreshToken");
       console.log(`Token trước khi gửi request (${url}):`, token);
+      console.log(`Refresh token trước khi gửi request (${url}):`, refreshToken);
+      console.log("Token sau khi gửi request:", token);
 
       if (!publicEndpoints.includes(url) && !token) {
         return {

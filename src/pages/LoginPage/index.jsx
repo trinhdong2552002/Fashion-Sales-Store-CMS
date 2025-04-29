@@ -128,14 +128,20 @@ const Login = () => {
 
       if (response) {
         localStorage.setItem("accessToken", response.result.accessToken);
+        localStorage.setItem("refreshToken", response.result.refreshToken);
         console.log("Token saved in onSubmit:", response.result.accessToken);
+        console.log("Token saved in onSubmit:", response.result.refreshToken);
+        
 
         const savedToken = localStorage.getItem("accessToken");
+        const refreshToken = localStorage.getItem("refreshToken");
         if (!savedToken) {
           throw new Error("Không thể lưu token vào localStorage");
         }
 
         console.log("Token verified after save:", savedToken);
+        console.log("Refresh token verified after save:", refreshToken);
+        
 
         const newUserData = {
           code: response.code,

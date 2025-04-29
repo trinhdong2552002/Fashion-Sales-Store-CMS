@@ -19,15 +19,18 @@ import {
   Chip,
   Box,
   FormHelperText,
+  PaginationItem,
+  styled,
 } from "@mui/material";
-import { useDispatch } from "react-redux";
+import RefreshIcon from "@mui/icons-material/Refresh";
 import { useNavigate } from "react-router-dom";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import {
-  useListProductsQuery,
+  useListProductsForAdminQuery,
   useAddProductMutation,
   useUpdateProductMutation,
   useDeleteProductMutation,
+  useRestoreProductMutation,
 } from "@/services/api/product";
 import { useListCategoriesQuery } from "@/services/api/categories";
 import { useListColorsQuery } from "@/services/api/color";
@@ -35,16 +38,31 @@ import { useListSizesQuery } from "@/services/api/size";
 import { useListImagesQuery } from "@/services/api/productImage";
 import { useGetMyInfoQuery } from "@/services/api/auth";
 
+// Tùy chỉnh nút Back và Forward
+const CustomPaginationItem = styled(PaginationItem)(({ theme }) => ({
+  "&.MuiPaginationItem-previousNext": {
+    backgroundColor: theme.palette.primary.main,
+    color: theme.palette.common.white,
+    "&:hover": {
+      backgroundColor: theme.palette.primary.dark,
+    },
+    "&.Mui-disabled": {
+      backgroundColor: theme.palette.action.disabledBackground,
+      color: theme.palette.action.disabled,
+    },
+    borderRadius: "4px",
+    margin: "0 5px",
+    padding: "8px",
+  },
+}));
+
 const ProductsManagement = () => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(5);
-  const [products, setProducts] = useState([]);
-  const [filteredTotalRows, setFilteredTotalRows] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState("ACTIVE");
+  const [selectedStatus, setSelectedStatus] = useState("");
+  const [pageNo, setPageNo] = useState(1); // Số trang hiện tại
+  const [pageSize, setPageSize] = useState(10); // Số sản phẩm mỗi trang
 
   const [newProduct, setNewProduct] = useState({
     name: "",
@@ -55,7 +73,6 @@ const ProductsManagement = () => {
     colors: [],
     sizeIds: [],
     imageIds: [],
-    status: "ACTIVE",
   });
   const [editProduct, setEditProduct] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
@@ -68,22 +85,25 @@ const ProductsManagement = () => {
   });
   const [formErrors, setFormErrors] = useState({});
 
-  // Fetch data from API
+  // Fetch user info
   const {
     data: userInfo,
     error: userError,
     isLoading: userLoading,
   } = useGetMyInfoQuery();
+
+  // Fetch data from API với phân trang
   const {
     data: productsData,
     isLoading: isFetchingProducts,
     error: fetchProductsError,
-    isError: isProductsError,
     refetch: refetchProducts,
-  } = useListProductsQuery(
+  } = useListProductsForAdminQuery(
     {
       categoryId: selectedCategory || undefined,
       status: selectedStatus || undefined,
+      pageNo,
+      pageSize,
     },
     { refetchOnMountOrArgChange: true }
   );
@@ -107,103 +127,45 @@ const ProductsManagement = () => {
     data: imagesData,
     isLoading: isFetchingImages,
     error: fetchImagesError,
+    refetch: refetchImages,
   } = useListImagesQuery({ pageNo: 1, pageSize: 50 });
 
   // Sử dụng RTK Query mutations
   const [addProduct] = useAddProductMutation();
   const [updateProduct] = useUpdateProductMutation();
   const [deleteProduct] = useDeleteProductMutation();
+  const [restoreProduct] = useRestoreProductMutation();
 
-  // Log dữ liệu từ API để kiểm tra
+  // Check user permissions
   useEffect(() => {
-    console.log("Raw Products Data from API:", productsData);
-    console.log("Colors Data from API:", colorsData);
-    console.log("Categories Data from API:", categoriesData);
-    console.log("Sizes Data from API:", sizesData);
-    console.log("Images Data from API:", imagesData);
-  }, [productsData, colorsData, categoriesData, sizesData, imagesData]);
-
-  // Update products when productsData or selectedCategory changes
-  useEffect(() => {
-    if (productsData?.items) {
-      let filteredProducts = productsData.items;
-
-      // Lọc theo categoryId
-      if (selectedCategory) {
-        filteredProducts = filteredProducts.filter(
-          (item) => item.category?.id === parseInt(selectedCategory)
-        );
-      }
-
-      // Không cần lọc status trên frontend vì backend đã xử lý thông qua tham số status
-      const updatedProducts = filteredProducts.map((item) => {
-        console.log("Processing item:", item);
-        return {
-          id: item.id,
-          name: item.name,
-          description: item.description || "",
-          averageRating: item.averageRating || 0,
-          soldQuantity: item.soldQuantity || 0,
-          totalReviews: item.totalReviews || 0,
-          quantity: item.quantity || 0,
-          price: item.price || 0,
-          createdBy: item.createdBy || "N/A",
-          updatedBy: item.updatedBy || "N/A",
-          createdAt: item.createdAt || "",
-          updatedAt: item.updatedAt || "",
-          category: item.category || { id: null, name: "N/A" },
-          colors: item.colors || [],
-          sizes: item.sizes || [],
-          productImages: item.productImages || [],
-          status: item.status || "N/A",
-        };
-      });
-      console.log("Filtered Products:", filteredProducts);
-      console.log("Updated Products before set:", updatedProducts);
-      setProducts(updatedProducts);
-      setFilteredTotalRows(filteredProducts.length);
-      console.log("State Products after set:", updatedProducts);
-    } else {
-      setProducts([]);
-      setFilteredTotalRows(0);
-      console.log("No products found in API response.");
-    }
-  }, [productsData, selectedCategory]);
-
-  // Force refetch on mount
-  useEffect(() => {
-    refetchProducts();
-  }, [refetchProducts]);
-
-  // Handle product errors
-  useEffect(() => {
-    if (fetchProductsError || isProductsError) {
-      const errorMessage =
-        fetchProductsError?.data?.message ||
-        fetchProductsError?.error ||
-        "Lỗi khi tải sản phẩm";
+    if (userError) {
       setSnackbar({
         open: true,
-        message: errorMessage,
+        message:
+          "Bạn cần đăng nhập để truy cập trang này: " +
+          (userError?.data?.message || "Lỗi không xác định"),
         severity: "error",
       });
-      if (fetchProductsError?.status === 401) {
+      setTimeout(() => navigate("/"), 2000);
+    } else if (userInfo) {
+      const roles = userInfo.result?.roles || [];
+      const hasAdminRole = roles.some(
+        (role) => role.name?.toUpperCase() === "ADMIN"
+      );
+      if (!hasAdminRole) {
         setSnackbar({
           open: true,
-          message: "Phiên đăng nhập hết hạn, vui lòng đăng nhập lại",
+          message: `Bạn không có quyền truy cập trang này. Vai trò: ${
+            roles.map((r) => r.name).join(", ") || "Không xác định"
+          }`,
           severity: "error",
         });
-        setTimeout(() => navigate("/login"), 2000);
+        setTimeout(() => navigate("/"), 2000);
       }
-    } else if (products.length === 0 && productsData?.items?.length === 0) {
-      setSnackbar({
-        open: true,
-        message: "Hiện tại không có sản phẩm nào.",
-        severity: "info",
-      });
     }
-  }, [fetchProductsError, isProductsError, productsData, products, navigate]);
+  }, [userInfo, userError, userLoading, navigate]);
 
+  // Handle errors for categories, colors, sizes, and images
   useEffect(() => {
     if (fetchCategoriesError) {
       setSnackbar({
@@ -247,6 +209,25 @@ const ProductsManagement = () => {
     fetchSizesError,
     fetchImagesError,
   ]);
+
+  // Làm mới imagesData khi dialog được mở
+  useEffect(() => {
+    if (openDialog) {
+      refetchImages();
+    }
+  }, [openDialog, refetchImages]);
+
+  // Đặt lại pageNo về 1 khi bộ lọc thay đổi
+  useEffect(() => {
+    setPageNo(1);
+  }, [selectedCategory, selectedStatus]);
+
+  // Log dữ liệu API để kiểm tra
+  useEffect(() => {
+    if (productsData) {
+      console.log("Dữ liệu từ API useListProductsForAdminQuery:", productsData);
+    }
+  }, [productsData]);
 
   const columns = [
     { field: "id", headerName: "ID", width: 90 },
@@ -370,7 +351,7 @@ const ProductsManagement = () => {
     {
       field: "actions",
       headerName: "Hành động",
-      width: 150,
+      width: 200,
       renderCell: (params) => (
         <>
           <Button
@@ -380,13 +361,23 @@ const ProductsManagement = () => {
           >
             Sửa
           </Button>
-          <Button
-            variant="text"
-            color="error"
-            onClick={() => handleOpenDeleteDialog(params.row.id)}
-          >
-            Xóa
-          </Button>
+          {params.row.status === "ACTIVE" ? (
+            <Button
+              variant="text"
+              color="error"
+              onClick={() => handleOpenDeleteDialog(params.row.id)}
+            >
+              Xóa
+            </Button>
+          ) : (
+            <Button
+              variant="text"
+              color="success"
+              onClick={() => handleRestoreProduct(params.row.id)}
+            >
+              Khôi phục
+            </Button>
+          )}
         </>
       ),
     },
@@ -403,7 +394,6 @@ const ProductsManagement = () => {
       colors: product.colors?.map((color) => color.id) || [],
       sizeIds: product.sizes?.map((size) => size.id) || [],
       imageIds: product.productImages?.map((image) => image.id) || [],
-      status: product.status === "N/A" ? "ACTIVE" : product.status,
     });
     setOpenDialog(true);
   };
@@ -419,7 +409,6 @@ const ProductsManagement = () => {
       colors: [],
       sizeIds: [],
       imageIds: [],
-      status: "ACTIVE",
     });
     setFormErrors({});
     setOpenDialog(true);
@@ -437,7 +426,6 @@ const ProductsManagement = () => {
       colors: [],
       sizeIds: [],
       imageIds: [],
-      status: "ACTIVE",
     });
     setFormErrors({});
   };
@@ -461,6 +449,25 @@ const ProductsManagement = () => {
     return errors;
   };
 
+  const checkImageUsage = (imageIds, currentProductId = null) => {
+    const products = productsData?.items || [];
+    const usedImageIds = [];
+
+    products.forEach((product) => {
+      if (currentProductId && product.id === currentProductId) return;
+      const productImageIds = (product.productImages || []).map(
+        (img) => img.id
+      );
+      productImageIds.forEach((id) => {
+        if (imageIds.includes(id) && !usedImageIds.includes(id)) {
+          usedImageIds.push(id);
+        }
+      });
+    });
+
+    return usedImageIds;
+  };
+
   const handleAddProduct = async () => {
     const errors = validateProductData(newProduct);
     if (Object.keys(errors).length > 0) {
@@ -469,6 +476,22 @@ const ProductsManagement = () => {
         open: true,
         message: Object.values(errors).join(". "),
         severity: "error",
+      });
+      return;
+    }
+
+    const usedImageIds = checkImageUsage(newProduct.imageIds);
+    if (usedImageIds.length > 0) {
+      const usedImageNames = usedImageIds
+        .map((id) => {
+          const image = imagesData?.items?.find((img) => img.id === id);
+          return image?.fileName || `ID: ${id}`;
+        })
+        .join(", ");
+      setSnackbar({
+        open: true,
+        message: `Hình ảnh "${usedImageNames}" đã được sử dụng bởi sản phẩm khác. Vui lòng tải lên hình ảnh mới hoặc chọn hình ảnh khác.`,
+        severity: "warning",
       });
       return;
     }
@@ -483,7 +506,10 @@ const ProductsManagement = () => {
         colorIds: newProduct.colors.map((colorId) => parseInt(colorId)),
         sizeIds: newProduct.sizeIds.map((sizeId) => parseInt(sizeId)),
         imageIds: newProduct.imageIds.map((imageId) => parseInt(imageId)),
-        status: newProduct.status,
+        imagesData: imagesData?.items || [],
+        colorsData,
+        sizesData,
+        categoriesData,
       }).unwrap();
       handleCloseDialog();
       setSnackbar({
@@ -491,7 +517,7 @@ const ProductsManagement = () => {
         message: "Thêm sản phẩm thành công!",
         severity: "success",
       });
-      refetchProducts();
+      refetchProducts(); // Làm mới danh sách sản phẩm sau khi thêm
     } catch (error) {
       const errorMessage = Array.isArray(error.data?.errors)
         ? error.data.errors.join(". ")
@@ -516,6 +542,22 @@ const ProductsManagement = () => {
       return;
     }
 
+    const usedImageIds = checkImageUsage(newProduct.imageIds, editProduct?.id);
+    if (usedImageIds.length > 0) {
+      const usedImageNames = usedImageIds
+        .map((id) => {
+          const image = imagesData?.items?.find((img) => img.id === id);
+          return image?.fileName || `ID: ${id}`;
+        })
+        .join(", ");
+      setSnackbar({
+        open: true,
+        message: `Hình ảnh "${usedImageNames}" đã được sử dụng bởi sản phẩm khác. Vui lòng tải lên hình ảnh mới hoặc chọn hình ảnh khác.`,
+        severity: "warning",
+      });
+      return;
+    }
+
     try {
       const payload = {
         id: editProduct.id,
@@ -527,7 +569,6 @@ const ProductsManagement = () => {
         colorIds: newProduct.colors.map((colorId) => parseInt(colorId)),
         sizeIds: newProduct.sizeIds.map((sizeId) => parseInt(sizeId)),
         imageIds: newProduct.imageIds.map((imageId) => parseInt(imageId)),
-        status: newProduct.status,
       };
       await updateProduct(payload).unwrap();
       setSnackbar({
@@ -536,7 +577,7 @@ const ProductsManagement = () => {
         severity: "success",
       });
       handleCloseDialog();
-      refetchProducts();
+      refetchProducts(); // Làm mới danh sách sản phẩm sau khi cập nhật
     } catch (error) {
       const errorMessage =
         error.status === 400
@@ -571,7 +612,7 @@ const ProductsManagement = () => {
         message: "Xóa sản phẩm thành công!",
         severity: "success",
       });
-      refetchProducts();
+      refetchProducts(); // Làm mới danh sách sản phẩm sau khi xóa
     } catch (error) {
       const errorMessage = Array.isArray(error.data?.errors)
         ? error.data.errors.join(". ")
@@ -584,8 +625,38 @@ const ProductsManagement = () => {
     }
   };
 
+  const handleRestoreProduct = async (id) => {
+    try {
+      await restoreProduct(id).unwrap();
+      setSnackbar({
+        open: true,
+        message: "Khôi phục sản phẩm thành công!",
+        severity: "success",
+      });
+      refetchProducts(); // Làm mới danh sách sản phẩm sau khi khôi phục
+    } catch (error) {
+      const errorMessage = Array.isArray(error.data?.errors)
+        ? error.data.errors.join(". ")
+        : error.data?.message || "Lỗi khi khôi phục sản phẩm";
+      setSnackbar({
+        open: true,
+        message: errorMessage,
+        severity: "error",
+      });
+    }
+  };
+
   const handleCloseSnackbar = () => {
     setSnackbar({ ...snackbar, open: false });
+  };
+
+  const handleRefresh = () => {
+    refetchProducts();
+    setSnackbar({
+      open: true,
+      message: "Danh sách sản phẩm đã được làm mới!",
+      severity: "info",
+    });
   };
 
   if (
@@ -598,6 +669,10 @@ const ProductsManagement = () => {
   ) {
     return <CircularProgress />;
   }
+
+  const rows = productsData?.items || [];
+  // Sửa cách lấy totalElements để đảm bảo giá trị đúng
+  const totalElements = productsData?.totalElements ?? rows.length; // Nếu totalElements không có, dùng số lượng items
 
   return (
     <DashboardLayoutWrapper>
@@ -612,21 +687,15 @@ const ProductsManagement = () => {
               value={selectedCategory}
               onChange={(e) => {
                 setSelectedCategory(e.target.value);
-                setPage(0);
-                refetchProducts();
               }}
               label="Danh mục"
             >
               <MenuItem value="">Tất cả</MenuItem>
-              {Array.isArray(categoriesData) && categoriesData.length > 0 ? (
-                categoriesData.map((cat) => (
-                  <MenuItem key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </MenuItem>
-                ))
-              ) : (
-                <MenuItem disabled>Không có danh mục</MenuItem>
-              )}
+              {categoriesData?.items?.map((cat) => (
+                <MenuItem key={cat.id} value={cat.id}>
+                  {cat.name}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
         </Grid>
@@ -637,8 +706,6 @@ const ProductsManagement = () => {
               value={selectedStatus}
               onChange={(e) => {
                 setSelectedStatus(e.target.value);
-                setPage(0);
-                refetchProducts();
               }}
               label="Trạng thái"
             >
@@ -652,9 +719,10 @@ const ProductsManagement = () => {
           <Button
             variant="outlined"
             color="primary"
-            onClick={() => refetchProducts()}
+            onClick={handleRefresh}
             fullWidth
           >
+            <RefreshIcon sx={{ mr: 1 }} />
             Làm mới
           </Button>
         </Grid>
@@ -674,37 +742,64 @@ const ProductsManagement = () => {
         <Alert severity="error">
           {fetchProductsError?.data?.message || "Lỗi khi tải sản phẩm"}
         </Alert>
-      ) : products.length === 0 ? (
-        <Alert severity="info">Hiện tại không có sản phẩm nào.</Alert>
+      ) : rows.length === 0 ? (
+        <Alert severity="info">
+          Hiện tại không có sản phẩm nào phù hợp với bộ lọc.
+        </Alert>
       ) : (
-        <>
-          <Typography variant="body1" gutterBottom>
-            Tổng số sản phẩm trong state: {products.length}
-          </Typography>
-          <div style={{ height: 400, width: "100%" }}>
-            <DataGrid
-              rows={products}
-              columns={columns}
-              rowCount={filteredTotalRows}
-              paginationMode="client" // Chuyển sang client-side pagination
-              page={page}
-              onPageChange={(newPage) => setPage(newPage)}
-              pageSize={pageSize}
-              onPageSizeChange={(newPageSize) => {
-                setPageSize(newPageSize);
-                setPage(0);
-              }}
-              rowsPerPageOptions={[5, 10, 20]}
-              sortingMode="client" // Chuyển sang client-side sorting
-              getRowId={(row) => row.id}
-              disableSelectionOnClick
-              aria-label="Bảng sản phẩm"
-              localeText={{
-                noRowsLabel: "Không có dữ liệu",
-              }}
-            />
-          </div>
-        </>
+        <div style={{ height: 600, width: "100%" }}>
+          <DataGrid
+            rows={rows}
+            columns={columns}
+            rowCount={totalElements} // Tổng số sản phẩm
+            paginationMode="server" // Phân trang phía server
+            pagination
+            page={pageNo - 1} // DataGrid sử dụng page bắt đầu từ 0
+            pageSize={pageSize}
+            rowsPerPageOptions={[10, 20, 50, 100]}
+            onPageChange={(newPage) => setPageNo(newPage + 1)} // Cập nhật pageNo
+            onPageSizeChange={(newPageSize) => {
+              setPageSize(newPageSize);
+              setPageNo(1); // Đặt lại về trang 1 khi thay đổi pageSize
+            }}
+            disableSelectionOnClick
+            loading={isFetchingProducts}
+            localeText={{
+              noRowsLabel: "Hiện tại không có sản phẩm nào",
+            }}
+            slots={{
+              pagination: () => (
+                <Box
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="space-between"
+                  p={2}
+                >
+                  <Typography variant="body2">
+                    Tổng số sản phẩm: {totalElements}
+                  </Typography>
+                  <Box display="flex" alignItems="center">
+                    <CustomPaginationItem
+                      type="previous"
+                      component={Button}
+                      disabled={pageNo === 1}
+                      onClick={() => setPageNo(pageNo - 1)}
+                    />
+                    <Typography variant="body2" mx={2}>
+                      Trang {pageNo} / {Math.ceil(totalElements / pageSize)}
+                    </Typography>
+                    <CustomPaginationItem
+                      type="next"
+                      component={Button}
+                      disabled={pageNo >= Math.ceil(totalElements / pageSize)}
+                      onClick={() => setPageNo(pageNo + 1)}
+                    />
+                  </Box>
+                </Box>
+              ),
+            }}
+          />
+        </div>
       )}
 
       <Dialog
@@ -777,15 +872,11 @@ const ProductsManagement = () => {
               label="Danh mục"
               error={!!formErrors.categoryId}
             >
-              {Array.isArray(categoriesData) && categoriesData.length > 0 ? (
-                categoriesData.map((cat) => (
-                  <MenuItem key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </MenuItem>
-                ))
-              ) : (
-                <MenuItem disabled>Không có danh mục</MenuItem>
-              )}
+              {categoriesData?.items?.map((cat) => (
+                <MenuItem key={cat.id} value={cat.id}>
+                  {cat.name}
+                </MenuItem>
+              ))}
             </Select>
             {formErrors.categoryId && (
               <FormHelperText error>{formErrors.categoryId}</FormHelperText>
@@ -796,10 +887,9 @@ const ProductsManagement = () => {
             <Select
               multiple
               value={newProduct.colors || []}
-              onChange={(e) => {
-                console.log("Selected colors:", e.target.value);
-                setNewProduct({ ...newProduct, colors: e.target.value });
-              }}
+              onChange={(e) =>
+                setNewProduct({ ...newProduct, colors: e.target.value })
+              }
               label="Màu sắc"
               renderValue={(selected) => (
                 <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
@@ -814,16 +904,11 @@ const ProductsManagement = () => {
               disabled={isFetchingColors || !colorsData?.items}
               error={!!formErrors.colors}
             >
-              {Array.isArray(colorsData?.items) &&
-              colorsData.items.length > 0 ? (
-                colorsData.items.map((color) => (
-                  <MenuItem key={color.id} value={color.id}>
-                    {color.name}
-                  </MenuItem>
-                ))
-              ) : (
-                <MenuItem disabled>Không có màu sắc</MenuItem>
-              )}
+              {colorsData?.items?.map((color) => (
+                <MenuItem key={color.id} value={color.id}>
+                  {color.name}
+                </MenuItem>
+              ))}
             </Select>
             {formErrors.colors && (
               <FormHelperText error>{formErrors.colors}</FormHelperText>
@@ -849,15 +934,11 @@ const ProductsManagement = () => {
               disabled={isFetchingSizes || !sizesData?.items}
               error={!!formErrors.sizeIds}
             >
-              {Array.isArray(sizesData?.items) && sizesData.items.length > 0 ? (
-                sizesData.items.map((size) => (
-                  <MenuItem key={size.id} value={size.id}>
-                    {size.name}
-                  </MenuItem>
-                ))
-              ) : (
-                <MenuItem disabled>Không có kích thước</MenuItem>
-              )}
+              {sizesData?.items?.map((size) => (
+                <MenuItem key={size.id} value={size.id}>
+                  {size.name}
+                </MenuItem>
+              ))}
             </Select>
             {formErrors.sizeIds && (
               <FormHelperText error>{formErrors.sizeIds}</FormHelperText>
@@ -875,42 +956,27 @@ const ProductsManagement = () => {
               renderValue={(selected) => (
                 <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
                   {selected.map((value) => {
-                    const image = imagesData?.find((img) => img.id === value);
+                    const image = imagesData?.items?.find(
+                      (img) => img.id === value
+                    );
                     return (
                       <Chip key={value} label={image?.fileName || value} />
                     );
                   })}
                 </Box>
               )}
-              disabled={isFetchingImages || !imagesData}
+              disabled={isFetchingImages || !imagesData?.items}
               error={!!formErrors.imageIds}
             >
-              {Array.isArray(imagesData) && imagesData.length > 0 ? (
-                imagesData.map((image) => (
-                  <MenuItem key={image.id} value={image.id}>
-                    {image.fileName}
-                  </MenuItem>
-                ))
-              ) : (
-                <MenuItem disabled>Không có hình ảnh</MenuItem>
-              )}
+              {imagesData?.items?.map((image) => (
+                <MenuItem key={image.id} value={image.id}>
+                  {image.fileName}
+                </MenuItem>
+              )) || []}
             </Select>
             {formErrors.imageIds && (
               <FormHelperText error>{formErrors.imageIds}</FormHelperText>
             )}
-          </FormControl>
-          <FormControl fullWidth sx={{ mt: 2 }}>
-            <InputLabel>Trạng thái</InputLabel>
-            <Select
-              value={newProduct.status}
-              onChange={(e) =>
-                setNewProduct({ ...newProduct, status: e.target.value })
-              }
-              label="Trạng thái"
-            >
-              <MenuItem value="ACTIVE">ACTIVE</MenuItem>
-              <MenuItem value="INACTIVE">INACTIVE</MenuItem>
-            </Select>
           </FormControl>
         </DialogContent>
         <DialogActions>

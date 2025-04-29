@@ -13,10 +13,14 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  PaginationItem,
+  styled,
 } from "@mui/material";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import DeleteIcon from "@mui/icons-material/Delete";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
@@ -35,12 +39,36 @@ import {
   selectError as selectImageError,
 } from "@/store/redux/productImage/reducer";
 
+// Tùy chỉnh nút Back và Forward
+const CustomPaginationItem = styled(PaginationItem)(({ theme }) => ({
+  "&.MuiPaginationItem-previousNext": {
+    backgroundColor: theme.palette.primary.main,
+    color: theme.palette.common.white,
+    "&:hover": {
+      backgroundColor: theme.palette.primary.dark,
+    },
+    "&.Mui-disabled": {
+      backgroundColor: theme.palette.action.disabledBackground,
+      color: theme.palette.action.disabled,
+    },
+    borderRadius: "4px",
+    margin: "0 5px",
+    padding: "8px",
+  },
+}));
+
 // ErrorBoundary component để bắt lỗi
 class ErrorBoundary extends Component {
   state = { hasError: false };
 
   static getDerivedStateFromError(error) {
     return { hasError: true };
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.imagesData !== this.props.imagesData && this.state.hasError) {
+      this.setState({ hasError: false });
+    }
   }
 
   render() {
@@ -58,8 +86,9 @@ const ProductImagesManagement = () => {
   const imageLoading = useSelector(selectImageLoading);
   const imageError = useSelector(selectImageError);
 
-  const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(10);
+  const [page, setPage] = useState(0); // Trang bắt đầu từ 0
+  const [pageSize, setPageSize] = useState(10); // Mỗi trang 10 hình ảnh
+  const [totalRows, setTotalRows] = useState(0); // Tổng số hình ảnh
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -74,16 +103,12 @@ const ProductImagesManagement = () => {
     isLoading: isFetchingImages,
     error: fetchImagesError,
     refetch: refetchImages,
-  } = useListImagesQuery(undefined, {
-    pollingInterval: 10000,
-  });
+  } = useListImagesQuery({ pageNo: page + 1, pageSize }, { skip: userLoading });
 
   const [uploadImage] = useUploadImageMutation();
   const [deleteImage] = useDeleteImageMutation();
 
   useEffect(() => {
-    console.log("Raw Images Data from API:", imagesData);
-    console.log("Images in state before filtering:", images);
     dispatch(setImageLoading(isFetchingImages));
     if (fetchImagesError) {
       const errorMessage = fetchImagesError?.data?.message || "Lỗi khi tải danh sách hình ảnh";
@@ -93,14 +118,18 @@ const ProductImagesManagement = () => {
         message: errorMessage,
         severity: "error",
       });
-    } else if (imagesData) {
-      const validImages = imagesData.filter(
+    } else if (imagesData && imagesData.items) {
+      const validImages = imagesData.items.filter(
         (image) => image && image.id && image.fileName && image.imageUrl
       );
       dispatch(setImages(validImages));
       dispatch(setImageError(null));
+      setTotalRows(imagesData.totalItems || 0);
       console.log("Images in state after filtering:", validImages);
-      setPage(0);
+      console.log("Total rows:", imagesData.totalItems);
+    } else {
+      dispatch(setImages([]));
+      setTotalRows(0);
     }
   }, [imagesData, isFetchingImages, fetchImagesError, dispatch]);
 
@@ -149,69 +178,70 @@ const ProductImagesManagement = () => {
     },
   ];
 
-  // ProductImagesManagement/index.jsx
-const handleUploadImage = async (event) => {
-  const file = event.target.files[0];
-  if (!file) {
-    console.log("No file selected");
-    setSnackbar({
-      open: true,
-      message: "Vui lòng chọn một file để tải lên!",
-      severity: "warning",
-    });
-    return;
-  }
+  const handleUploadImage = async (event) => {
+    const file = event.target.files[0];
+    console.log("Selected file:", file);
 
-  console.log("Selected file:", {
-    name: file.name,
-    size: file.size,
-    type: file.type,
-  });
+    if (!file) {
+      console.log("No file selected");
+      setSnackbar({
+        open: true,
+        message: "Vui lòng chọn một file để tải lên!",
+        severity: "warning",
+      });
+      return;
+    }
 
-  let fileName = file.name;
-  let fileToUpload = file;
+    console.log("Selected file:", {
+      name: file.name,
+      size: file.size,
+      type: file.type,
+    });
 
-  const existingImage = images.find((image) => image.fileName === fileName);
-  if (existingImage) {
-    const fileNameParts = fileName.split(".");
-    const baseName = fileNameParts.slice(0, -1).join(".");
-    const extension = fileNameParts[fileNameParts.length -1];
-    fileName = `${baseName}_${Date.now()}.${extension}`;
-    fileToUpload = new File([file], fileName, { type: file.type });
-    setSnackbar({
-      open: true,
-      message: `Tên file "${file.name}" đã tồn tại. Đã đổi thành "${fileName}".`,
-      severity: "info",
-    });
-  }
+    let fileName = file.name;
+    let fileToUpload = file;
 
-  try {
-    console.log("Uploading file:", fileToUpload);
-    const response = await uploadImage(fileToUpload).unwrap();
-    console.log("Upload response:", response);
-    setSnackbar({
-      open: true,
-      message: "Tải lên hình ảnh thành công!",
-      severity: "success",
-    });
-    refetchImages();
-  } catch (error) {
-    console.error("Upload error:", {
-      status: error.error?.status,
-      data: error.error?.data,
-      originalError: error,
-    });
-    const errorMessage =
-      error.error?.data?.message ||
-      error.error?.data?.error ||
-      `Lỗi khi tải lên hình ảnh (Status: ${error.error?.status}, Error: ${error.error?.data?.error || "Unknown"})`;
-    setSnackbar({
-      open: true,
-      message: errorMessage,
-      severity: "error",
-    });
-  }
-};
+    const existingImage = images.find((image) => image.fileName === fileName);
+    if (existingImage) {
+      const fileNameParts = fileName.split(".");
+      const baseName = fileNameParts.slice(0, -1).join(".");
+      const extension = fileNameParts[fileNameParts.length - 1];
+      fileName = `${baseName}_${Date.now()}.${extension}`;
+      fileToUpload = new File([file], fileName, { type: file.type });
+      setSnackbar({
+        open: true,
+        message: `Tên file "${file.name}" đã tồn tại. Đã đổi thành "${fileName}".`,
+        severity: "info",
+      });
+    }
+
+    try {
+      console.log("Uploading file:", fileToUpload);
+      const response = await uploadImage(fileToUpload).unwrap();
+      console.log("Upload response:", response);
+      setSnackbar({
+        open: true,
+        message: "Tải lên hình ảnh thành công!",
+        severity: "success",
+      });
+      refetchImages();
+    } catch (error) {
+      console.error("Upload error:", {
+        status: error.error?.status,
+        data: error.error?.data,
+        originalError: error,
+      });
+      const errorMessage =
+        error.error?.data?.message ||
+        error.error?.data?.error ||
+        `Lỗi khi tải lên hình ảnh (Status: ${error.error?.status}, Error: ${error.error?.data?.error || "Unknown"})`;
+      setSnackbar({
+        open: true,
+        message: errorMessage,
+        severity: "error",
+      });
+    }
+  };
 
   const handleDeleteImage = async () => {
     try {
@@ -292,25 +322,52 @@ const handleUploadImage = async (event) => {
       ) : images.length === 0 ? (
         <Alert severity="info">Hiện tại không có hình ảnh nào.</Alert>
       ) : (
-        <ErrorBoundary>
+        <ErrorBoundary imagesData={imagesData}>
           <div style={{ height: 400, width: "100%" }}>
             <DataGrid
               rows={images}
               columns={columns}
-              paginationMode="client"
+              paginationMode="server" // Phân trang phía server
+              rowCount={totalRows} // Tổng số hình ảnh
               page={page}
-              onPageChange={(newPage) => setPage(newPage)}
               pageSize={pageSize}
+              onPageChange={(newPage) => setPage(newPage)} // Cập nhật trang
               onPageSizeChange={(newPageSize) => {
                 setPageSize(newPageSize);
-                setPage(0);
+                setPage(0); // Reset về trang đầu khi đổi pageSize
               }}
-              rowsPerPageOptions={[10, 20, 50]}
+              rowsPerPageOptions={[10, 20, 50]} // Tùy chọn số hàng mỗi trang
               getRowId={(row) => row.id}
               disableSelectionOnClick
               aria-label="Bảng hình ảnh sản phẩm"
               localeText={{
                 noRowsLabel: "Không có dữ liệu",
+              }}
+              slots={{
+                pagination: () => (
+                  <Box display="flex" alignItems="center" justifyContent="space-between" p={2}>
+                    <Typography variant="body2">
+                      Tổng số hình ảnh: {totalRows}
+                    </Typography>
+                    <Box display="flex" alignItems="center">
+                      <CustomPaginationItem
+                        type="previous"
+                        component={Button}
+                        disabled={page === 0}
+                        onClick={() => setPage(page - 1)}
+                      />
+                      <Typography variant="body2" mx={2}>
+                        Trang {page + 1} / {Math.ceil(totalRows / pageSize)}
+                      </Typography>
+                      <CustomPaginationItem
+                        type="next"
+                        component={Button}
+                        disabled={page >= Math.ceil(totalRows / pageSize) - 1}
+                        onClick={() => setPage(page + 1)}
+                      />
+                    </Box>
+                  </Box>
+                ),
               }}
             />
           </div>

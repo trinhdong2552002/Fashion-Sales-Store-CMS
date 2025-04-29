@@ -19,7 +19,7 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
-import { useListProductsQuery } from "@/services/api/product";
+import { useListProductsForAdminQuery } from "@/services/api/product"; // Thay đổi import
 import {
   useListProductVariantsQuery,
   useUpdateProductVariantMutation,
@@ -61,7 +61,7 @@ const ProductVariantsManagement = () => {
     data: productsData,
     isLoading: isFetchingProducts,
     error: fetchProductsError,
-  } = useListProductsQuery({ pageNo: 1, pageSize: 50 });
+  } = useListProductsForAdminQuery({ status: "ACTIVE" }, { skip: userLoading }); // Cập nhật query
   const {
     data: variantsData,
     isLoading: isFetchingVariants,
@@ -100,6 +100,35 @@ const ProductVariantsManagement = () => {
       });
     }
   }, [fetchProductsError]);
+
+  // Check user permissions
+  useEffect(() => {
+    if (userError) {
+      setSnackbar({
+        open: true,
+        message:
+          "Bạn cần đăng nhập để truy cập trang này: " +
+          (userError?.data?.message || "Lỗi không xác định"),
+        severity: "error",
+      });
+      setTimeout(() => navigate("/"), 2000);
+    } else if (userInfo) {
+      const roles = userInfo.result?.roles || [];
+      const hasAdminRole = roles.some(
+        (role) => role.name?.toUpperCase() === "ADMIN"
+      );
+      if (!hasAdminRole) {
+        setSnackbar({
+          open: true,
+          message: `Bạn không có quyền truy cập trang này. Vai trò: ${
+            roles.map((r) => r.name).join(", ") || "Không xác định"
+          }`,
+          severity: "error",
+        });
+        setTimeout(() => navigate("/"), 2000);
+      }
+    }
+  }, [userInfo, userError, userLoading, navigate]);
 
   const columns = [
     { field: "id", headerName: "ID", width: 90 },

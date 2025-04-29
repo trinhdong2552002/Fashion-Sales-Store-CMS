@@ -6,16 +6,12 @@ export const productImageApi = baseApi.injectEndpoints({
     uploadImage: builder.mutation({
       query: (file) => {
         const formData = new FormData();
-        formData.append("Content-Type", file.type);
         formData.append("fileImage", file);
 
-        console.log("FormData entries:");
-        for (let [key, value] of formData.entries()) {
-          console.log(`${key}:`, value);
-        }
+        console.log("FormData:", formData);
 
         return {
-          url: `/v1/file/upload/image`,
+          url: "/v1/file/upload/image",
           method: "POST",
           body: formData,
         };
@@ -37,26 +33,37 @@ export const productImageApi = baseApi.injectEndpoints({
     }),
 
     listImages: builder.query({
-      query: () => ({
+      query: ({ pageNo, pageSize }) => ({
         url: `/v1/file/all`,
         method: "GET",
+        params: { pageNo, pageSize },
       }),
       providesTags: [TAG_KEYS.PRODUCT_IMAGE],
       transformResponse: (response) => {
         console.log("Raw images response:", response);
-        const items = Array.isArray(response.result?.items)
+        if (!response || !response.result) {
+          console.warn("Invalid response structure:", response);
+          return { items: [], totalItems: 0 };
+        }
+
+        const items = Array.isArray(response.result.items)
           ? response.result.items
           : Array.isArray(response)
           ? response
           : [];
+        const totalItems = response.result.totalItems || 0;
+
         if (items.length === 0) {
           console.warn("No images found in response");
         }
-        return items.map((item) => ({
+
+        const transformedItems = items.map((item) => ({
           id: item.id,
           fileName: item.fileName || item.name || "Unknown",
           imageUrl: item.imageUrl || item.url || "",
         }));
+
+        return { items: transformedItems, totalItems };
       },
       onQueryStarted: async (arg, { queryFulfilled }) => {
         try {
