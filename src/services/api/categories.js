@@ -4,16 +4,52 @@ import { TAG_KEYS } from "@/constants/tagKeys";
 export const categoryApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     listCategories: builder.query({
-      query: () => ({
+      query: ({ pageNo, pageSize }) => ({
         url: "/v1/categories/admin",
         method: "GET",
+        params: { pageNo, pageSize }, // Pass pagination parameters
       }),
       providesTags: [TAG_KEYS.CATEGORIES],
-      transformResponse: (response) => ({
-        items: Array.isArray(response.result?.items)
+      transformResponse: (response) => {
+        console.log("Raw categories response:", response);
+        if (!response || !response.result) {
+          console.warn("Invalid response structure:", response);
+          return { items: [], totalItems: 0 };
+        }
+
+        const items = Array.isArray(response.result.items)
           ? response.result.items
-          : response.result || [],
-      }),
+          : Array.isArray(response.result)
+          ? response.result
+          : [];
+        const totalItems = response.result.totalItems || 0;
+
+        if (items.length === 0) {
+          console.warn("No categories found in response");
+        }
+
+        return {
+          items,
+          totalItems,
+          totalPages: response.result.totalPages || 1,
+          page: response.result.page || 1,
+          pageSize: response.result.pageSize || 10,
+        };
+      },
+      onQueryStarted: async (arg, { queryFulfilled }) => {
+        try {
+          const { data } = await queryFulfilled;
+          console.log("Transformed categories data:", data);
+        } catch (error) {
+          console.error("Error fetching categories:", {
+            status: error.error?.status,
+            data: error.error?.data,
+            params: arg,
+          });
+        }
+      },
+      retry: (error) => error.status === 400,
+      retryMax: 2,
     }),
     addCategory: builder.mutation({
       query: (category) => ({
