@@ -81,6 +81,35 @@ export const productImageApi = baseApi.injectEndpoints({
       retryMax: 2,
     }),
 
+    listAllImages: builder.query({
+      query: () => ({
+        url: `/v1/file/all`,
+        method: "GET",
+        params: { pageNo: 1, pageSize: 10 },
+      }),
+      providesTags: [TAG_KEYS.PRODUCT_IMAGE],
+      transformResponse: (response) => {
+        console.log("Raw images response for page 1:", response);
+        if (!response || !response.result) {
+          console.warn("Invalid response structure:", response);
+          return { items: [], totalItems: 0 };
+        }
+
+        const items = Array.isArray(response.result.items)
+          ? response.result.items
+          : [];
+        const totalItems = response.result.totalItems || 0;
+
+        const transformedItems = items.map((item) => ({
+          id: item.id,
+          fileName: item.fileName || item.name || "Unknown",
+          imageUrl: item.imageUrl || item.url || "",
+        }));
+
+        return { items: transformedItems, totalItems, totalPages: response.result.totalPages || 1 };
+      },
+    }),
+
     deleteImage: builder.mutation({
       query: (id) => ({
         url: `/v1/file/delete/${id}`,
@@ -94,5 +123,7 @@ export const productImageApi = baseApi.injectEndpoints({
 export const {
   useUploadImageMutation,
   useListImagesQuery,
+  useListAllImagesQuery,
+  useLazyListImagesQuery,
   useDeleteImageMutation,
 } = productImageApi;
