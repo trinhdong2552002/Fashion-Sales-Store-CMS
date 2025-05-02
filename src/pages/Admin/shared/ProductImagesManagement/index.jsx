@@ -22,7 +22,6 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import {
   useListImagesQuery,
@@ -35,8 +34,6 @@ import {
   setLoading as setImageLoading,
   setError as setImageError,
   selectImages,
-  selectLoading as selectImageLoading,
-  selectError as selectImageError,
 } from "@/store/redux/productImage/reducer";
 
 // Tùy chỉnh nút Back và Forward
@@ -61,7 +58,7 @@ const CustomPaginationItem = styled(PaginationItem)(({ theme }) => ({
 class ErrorBoundary extends Component {
   state = { hasError: false };
 
-  static getDerivedStateFromError(error) {
+  static getDerivedStateFromError() {
     return { hasError: true };
   }
 
@@ -73,7 +70,11 @@ class ErrorBoundary extends Component {
 
   render() {
     if (this.state.hasError) {
-      return <Alert severity="error">Đã xảy ra lỗi khi hiển thị bảng hình ảnh.</Alert>;
+      return (
+        <Alert severity="error">
+          Đã xảy ra lỗi khi hiển thị bảng hình ảnh.
+        </Alert>
+      );
     }
     return this.props.children;
   }
@@ -81,10 +82,7 @@ class ErrorBoundary extends Component {
 
 const ProductImagesManagement = () => {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const images = useSelector(selectImages);
-  const imageLoading = useSelector(selectImageLoading);
-  const imageError = useSelector(selectImageError);
 
   const [page, setPage] = useState(0); // Trang bắt đầu từ 0
   const [pageSize, setPageSize] = useState(10); // Mỗi trang 10 hình ảnh
@@ -97,7 +95,7 @@ const ProductImagesManagement = () => {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [imageIdToDelete, setImageIdToDelete] = useState(null);
 
-  const { data: userInfo, error: userError, isLoading: userLoading } = useGetMyInfoQuery();
+  const { isLoading: userLoading } = useGetMyInfoQuery();
   const {
     data: imagesData,
     isLoading: isFetchingImages,
@@ -111,7 +109,8 @@ const ProductImagesManagement = () => {
   useEffect(() => {
     dispatch(setImageLoading(isFetchingImages));
     if (fetchImagesError) {
-      const errorMessage = fetchImagesError?.data?.message || "Lỗi khi tải danh sách hình ảnh";
+      const errorMessage =
+        fetchImagesError?.data?.message || "Lỗi khi tải danh sách hình ảnh";
       dispatch(setImageError(errorMessage));
       setSnackbar({
         open: true,
@@ -234,7 +233,9 @@ const ProductImagesManagement = () => {
       const errorMessage =
         error.error?.data?.message ||
         error.error?.data?.error ||
-        `Lỗi khi tải lên hình ảnh (Status: ${error.error?.status}, Error: ${error.error?.data?.error || "Unknown"})`;
+        `Lỗi khi tải lên hình ảnh (Status: ${error.error?.status}, Error: ${
+          error.error?.data?.error || "Unknown"
+        })`;
       setSnackbar({
         open: true,
         message: errorMessage,
@@ -318,7 +319,9 @@ const ProductImagesManagement = () => {
       </Box>
 
       {fetchImagesError ? (
-        <Alert severity="error">{fetchImagesError?.data?.message || "Lỗi khi tải hình ảnh"}</Alert>
+        <Alert severity="error">
+          {fetchImagesError?.data?.message || "Lỗi khi tải hình ảnh"}
+        </Alert>
       ) : images.length === 0 ? (
         <Alert severity="info">Hiện tại không có hình ảnh nào.</Alert>
       ) : (
@@ -345,7 +348,12 @@ const ProductImagesManagement = () => {
               }}
               slots={{
                 pagination: () => (
-                  <Box display="flex" alignItems="center" justifyContent="space-between" p={2}>
+                  <Box
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="space-between"
+                    p={2}
+                  >
                     <Typography variant="body2">
                       Tổng số hình ảnh: {totalRows}
                     </Typography>
@@ -380,10 +388,13 @@ const ProductImagesManagement = () => {
         aria-labelledby="delete-dialog-title"
         aria-describedby="delete-dialog-description"
       >
-        <DialogTitle id="delete-dialog-title">Xác nhận xóa hình ảnh</DialogTitle>
+        <DialogTitle id="delete-dialog-title">
+          Xác nhận xóa hình ảnh
+        </DialogTitle>
         <DialogContent>
           <DialogContentText id="delete-dialog-description">
-            Bạn có chắc chắn muốn xóa hình ảnh này không? Hành động này không thể hoàn tác.
+            Bạn có chắc chắn muốn xóa hình ảnh này không? Hành động này không
+            thể hoàn tác.
           </DialogContentText>
         </DialogContent>
         <DialogActions>

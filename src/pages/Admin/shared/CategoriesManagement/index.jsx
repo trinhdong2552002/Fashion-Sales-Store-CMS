@@ -34,8 +34,6 @@ import {
   setLoading as setCategoryLoading,
   setError as setCategoryError,
   selectCategories,
-  selectLoading as selectCategoryLoading,
-  selectError as selectCategoryError,
 } from "@/store/redux/categories/reducer";
 
 // Tùy chỉnh nút Back và Forward
@@ -60,19 +58,26 @@ const CustomPaginationItem = styled(PaginationItem)(({ theme }) => ({
 class ErrorBoundary extends Component {
   state = { hasError: false };
 
-  static getDerivedStateFromError(error) {
+  static getDerivedStateFromError() {
     return { hasError: true };
   }
 
   componentDidUpdate(prevProps) {
-    if (prevProps.categoriesData !== this.props.categoriesData && this.state.hasError) {
+    if (
+      prevProps.categoriesData !== this.props.categoriesData &&
+      this.state.hasError
+    ) {
       this.setState({ hasError: false });
     }
   }
 
   render() {
     if (this.state.hasError) {
-      return <Alert severity="error">Đã xảy ra lỗi khi hiển thị bảng danh mục.</Alert>;
+      return (
+        <Alert severity="error">
+          Đã xảy ra lỗi khi hiển thị bảng danh mục.
+        </Alert>
+      );
     }
     return this.props.children;
   }
@@ -82,8 +87,6 @@ const CategoriesManagement = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const categories = useSelector(selectCategories);
-  const categoryLoading = useSelector(selectCategoryLoading);
-  const categoryError = useSelector(selectCategoryError);
 
   const [page, setPage] = useState(0); // Trang bắt đầu từ 0
   const [pageSize, setPageSize] = useState(10); // Mỗi trang 10 danh mục
@@ -115,10 +118,13 @@ const CategoriesManagement = () => {
     isLoading: isFetchingCategories,
     error: fetchCategoriesError,
     refetch: refetchCategories,
-  } = useListCategoriesQuery({ pageNo: page + 1, pageSize }, { 
-    skip: userLoading,
-    refetchOnMountOrArgChange: true, // Force refetch on mount or argument change
-  });
+  } = useListCategoriesQuery(
+    { pageNo: page + 1, pageSize },
+    {
+      skip: userLoading,
+      refetchOnMountOrArgChange: true, // Force refetch on mount or argument change
+    }
+  );
 
   const [addCategory] = useAddCategoryMutation();
   const [updateCategory] = useUpdateCategoryMutation();
@@ -156,7 +162,8 @@ const CategoriesManagement = () => {
   useEffect(() => {
     dispatch(setCategoryLoading(isFetchingCategories));
     if (fetchCategoriesError) {
-      const errorMessage = fetchCategoriesError?.data?.message || "Lỗi khi tải danh sách danh mục";
+      const errorMessage =
+        fetchCategoriesError?.data?.message || "Lỗi khi tải danh sách danh mục";
       dispatch(setCategoryError(errorMessage));
       setSnackbar({
         open: true,
@@ -497,10 +504,13 @@ const CategoriesManagement = () => {
         aria-labelledby="delete-dialog-title"
         aria-describedby="delete-dialog-description"
       >
-        <DialogTitle id="delete-dialog-title">Xác nhận xóa danh mục</DialogTitle>
+        <DialogTitle id="delete-dialog-title">
+          Xác nhận xóa danh mục
+        </DialogTitle>
         <DialogContent>
           <DialogContentText id="delete-dialog-description">
-            Bạn có chắc chắn muốn xóa danh mục này không? Hành động này không thể hoàn tác.
+            Bạn có chắc chắn muốn xóa danh mục này không? Hành động này không
+            thể hoàn tác.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
