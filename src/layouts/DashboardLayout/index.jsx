@@ -13,8 +13,9 @@ import {
   Box,
   IconButton,
   Switch,
-  Menu,
+  Stack,
 } from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import CategoryIcon from "@mui/icons-material/Category";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
@@ -189,7 +190,7 @@ const DashboardLayoutWrapper = ({ children }) => {
             onClick={handleDrawerToggle}
             sx={{ mr: 2, display: { sm: "none" } }}
           >
-            <Menu />
+            <MenuIcon />
           </IconButton>
           <Typography
             variant="h6"
@@ -199,22 +200,24 @@ const DashboardLayoutWrapper = ({ children }) => {
           >
             Admin Dashboard
           </Typography>
-          <AuthButton />
-          <Switch
-            checked={mode === "dark"}
-            onChange={toggleTheme}
-            sx={{
-              "& .MuiSwitch-switchBase": {
-                color: mode === "dark" ? "#" : undefined,
-              },
-              "& .MuiSwitch-track": {
-                backgroundColor: mode === "dark" ? "#bbbbbb" : undefined,
-              },
-              "& .MuiSwitch-thumb": {
-                color: mode === "dark" ? "#ffffff" : undefined,
-              },
-            }}
-          />
+          <Stack direction="row" alignItems="center" spacing={2}>
+            <AuthButton />
+            <Switch
+              checked={mode === "dark"}
+              onChange={toggleTheme}
+              sx={{
+                "& .MuiSwitch-switchBase": {
+                  color: mode === "dark" ? "#" : undefined,
+                },
+                "& .MuiSwitch-track": {
+                  backgroundColor: mode === "dark" ? "#bbbbbb" : undefined,
+                },
+                "& .MuiSwitch-thumb": {
+                  color: mode === "dark" ? "#ffffff" : undefined,
+                },
+              }}
+            />
+          </Stack>
         </Toolbar>
       </AppBar>
       <Box
