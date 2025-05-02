@@ -69,7 +69,7 @@ const AuthButton = () => {
               alt={storedUser.email || "User"}
             />
             <Typography sx={{ marginLeft: "5px" }}>
-              {storedUser.email || "Người dùng"}
+              {storedUser.email || "Tài khoản"}
             </Typography>
           </Stack>
 
