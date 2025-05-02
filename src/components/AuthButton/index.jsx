@@ -7,16 +7,17 @@ import {
   Avatar,
   Divider,
 } from "@mui/material";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { clearUser, selectUser } from "@/store/redux/user/reducer";
-import { baseApi } from "@/services/api";
+import { useLogoutMutation } from "@/services/api/auth";
 import storage from "redux-persist/lib/storage";
 
 const AuthButton = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [logout] = useLogoutMutation();
 
   const storedUser = useSelector(selectUser);
   console.log("storedUser:", storedUser);
@@ -31,26 +32,30 @@ const AuthButton = () => {
     setAnchorEl(null);
   };
 
-  const handleLogout = () => {
-    // Xóa accessToken và user khỏi localStorage
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("user");
+  const handleLogout = async () => {
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      if (!accessToken) {
+        throw new Error("No accessToken found in localStorage");
+      }
 
-    // Xóa dữ liệu persist:root để redux-persist không khôi phục trạng thái cũ
-    storage.removeItem("persist:root");
+      await logout({
+        accessToken,
+      }).unwrap();
 
-    // Xóa user khỏi Redux store
-    dispatch(clearUser());
+      localStorage.removeItem("accessToken");
+      storage.removeItem("persist:root");
+      dispatch(clearUser());
 
-    // Xóa toàn bộ cache của RTK Query
-    dispatch(baseApi.util.resetApiState());
-
-    handleMenuClose();
-    navigate("/");
+      handleMenuClose();
+      navigate("/");
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
   };
 
   return (
-    <Stack direction="row" alignItems="center">
+    <Fragment>
       {storedUser && (
         <>
           <Stack
@@ -81,7 +86,7 @@ const AuthButton = () => {
           </Menu>
         </>
       )}
-    </Stack>
+    </Fragment>
   );
 };
 

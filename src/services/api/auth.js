@@ -28,72 +28,58 @@ export const authApi = baseApi.injectEndpoints({
       },
     }),
 
-    // Đăng ký
-    register: builder.mutation({
-      query: (credentials) => ({
-        url: "/v1/auth/register",
-        method: "POST",
-        data: {
-          name: credentials.name,
-          email: credentials.email,
-          phone: credentials.phone,
-          password: credentials.password,
-          confirmPassword: credentials.confirmPassword,
-        },
-      }),
+    // Đăng xuất
+    logout: builder.mutation({
+      query: (credentials) => {
+        if (!credentials.accessToken) {
+          throw new Error("accessToken is required for logout");
+        }
+
+        return {
+          url: "/v1/auth/logout",
+          method: "POST",
+          data: {
+            accessToken: credentials.accessToken,
+          },
+        };
+      },
       invalidatesTags: [TAG_KEYS.USER],
+      onQueryStarted: async (arg, { queryFulfilled }) => {
+        try {
+          const { data } = await queryFulfilled;
+          // Xóa accessToken khỏi localStorage
+          if (data?.result?.accessToken) {
+            localStorage.removeItem("accessToken");
+            console.log("Token removed:", data.result.accessToken); // Log token để debug
+          }
+        } catch (error) {
+          console.error("Logout failed:", error);
+        }
+      },
     }),
 
-    // Verify-OTP
-    verifyOtp: builder.mutation({
+    // refreshToken
+    refreshToken: builder.mutation({
       query: (credentials) => ({
-        url: "/v1/auth/register/verify",
+        url: "/v1/auth/refresh-token",
         method: "POST",
         data: {
-          email: credentials.email,
-          verificationCode: credentials.verificationCode,
+          refreshToken: credentials.refreshToken,
         },
       }),
       invalidatesTags: [TAG_KEYS.USER],
-    }),
-
-    // Quên mật khẩu
-    forgotPassword: builder.mutation({
-      query: (credentials) => ({
-        url: "/v1/auth/forgot-password",
-        method: "POST",
-        data: {
-          email: credentials.email,
-        },
-      }),
-      invalidatesTags: [TAG_KEYS.USER],
-    }),
-
-    // Xác thực mật khẩu
-    forgotPasswordVerify: builder.mutation({
-      query: (credentials) => ({
-        url: "/v1/auth/forgot-password/verify-code",
-        method: "POST",
-        data: {
-          email: credentials.email,
-          verificationCode: credentials.verificationCode,
-        },
-      }),
-      invalidatesTags: [TAG_KEYS.USER],
-    }),
-
-    // Đặt lại mật khẩu
-    resetPassword: builder.mutation({
-      query: (credentials) => ({
-        url: "/v1/auth/forgot-password/reset-password",
-        method: "POST",
-        data: {
-          forgotPasswordToken: credentials.forgotPasswordToken,
-          newPassword: credentials.newPassword,
-          confirmPassword: credentials.confirmPassword,
-        },
-      }),
-      invalidatesTags: [TAG_KEYS.USER],
+      onQueryStarted: async (arg, { queryFulfilled }) => {
+        try {
+          const { data } = await queryFulfilled;
+          // Lưu refreshToken vào localStorage
+          if (data?.result?.refreshToken) {
+            localStorage.setItem("refreshToken", data.result.refreshToken);
+            console.log("Refresh token saved:", data.result.refreshToken); // Log token để debug
+          }
+        } catch (error) {
+          console.error("Refresh token failed:", error);
+        }
+      },
     }),
 
     getMyInfo: builder.query({
@@ -139,11 +125,8 @@ export const authApi = baseApi.injectEndpoints({
 
 export const {
   useLoginMutation,
-  useRegisterMutation,
-  useVerifyOtpMutation,
-  useForgotPasswordMutation,
-  useForgotPasswordVerifyMutation,
-  useResetPasswordMutation,
+  useLogoutMutation,
+  useRefreshTokenMutation,
   useGetMyInfoQuery,
   useUpdateUserMutation,
 } = authApi;
