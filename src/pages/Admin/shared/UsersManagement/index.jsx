@@ -383,7 +383,7 @@ const UsersManagement = () => {
           </Button>
         </Grid>
       </Grid>
-      <div style={{ height: 600, width: "100%" }}>
+      <div style={{ height: 550, width: "100%" }}>
         <DataGrid
           rows={filteredRows}
           columns={columns}
