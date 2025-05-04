@@ -784,7 +784,7 @@ const ProductsManagement = () => {
           Hiện tại không có sản phẩm nào phù hợp với bộ lọc.
         </Alert>
       ) : (
-        <div style={{ height: 600, width: "100%" }}>
+        <div style={{ height: 550, width: "100%" }}>
           <DataGrid
             rows={rows}
             columns={columns}
