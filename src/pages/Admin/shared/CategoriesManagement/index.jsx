@@ -397,11 +397,11 @@ const CategoriesManagement = () => {
               page={page}
               pageSize={pageSize}
               onPageChange={(newPage) => {
-                console.log("Page changed to:", newPage); // Debug: Verify page change
+                console.log("Page changed to:", newPage); 
                 setPage(newPage);
               }}
               onPageSizeChange={(newPageSize) => {
-                console.log("Page size changed to:", newPageSize); // Debug: Verify page size change
+                console.log("Page size changed to:", newPageSize); 
                 setPageSize(newPageSize);
                 setPage(0); // Reset về trang đầu khi đổi pageSize
               }}

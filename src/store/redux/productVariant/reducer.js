@@ -9,7 +9,7 @@ const productVariantSlice = createSlice({
     error: null,
   },
   reducers: {
-    setVariants: (state, action) => {
+    setProductVariants: (state, action) => {
       state.variants = action.payload;
       state.loading = false;
       state.error = null;
@@ -24,9 +24,9 @@ const productVariantSlice = createSlice({
   },
 });
 
-export const { setVariants, setLoading, setError } = productVariantSlice.actions;
+export const { setProductVariants, setLoading, setError } = productVariantSlice.actions;
 
-export const selectVariants = (state) => state.productVariant.variants;
+export const selectProductVariants = (state) => state.productVariant.variants;
 export const selectLoading = (state) => state.productVariant.loading;
 export const selectError = (state) => state.productVariant.error;
 

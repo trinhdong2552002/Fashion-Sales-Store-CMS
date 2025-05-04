@@ -20,7 +20,7 @@ const AuthButton = () => {
   const [logout] = useLogoutMutation();
 
   const storedUser = useSelector(selectUser);
-  console.log("storedUser:", storedUser);
+  // console.log("storedUser:", storedUser);
 
   const [anchorEl, setAnchorEl] = useState(null);
 
