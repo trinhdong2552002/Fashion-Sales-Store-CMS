@@ -19,6 +19,7 @@ import {
   PaginationItem,
   styled,
 } from "@mui/material";
+import RefreshIcon from "@mui/icons-material/Refresh";
 import {
   useFetchAllUsersForAdminQuery,
   useCreateUserWithRoleMutation,
@@ -224,7 +225,7 @@ const UsersManagement = () => {
   };
 
   const handleRefresh = () => {
-    setPage(0); // Reset to first page on refresh
+    setPage(0);
     refetchUsers();
     setSnackbar({
       open: true,
@@ -347,6 +348,12 @@ const UsersManagement = () => {
         Quản lý Người dùng
       </Typography>
       <Grid container spacing={2} sx={{ mb: 2 }}>
+        <Grid item xs={12} sm={9}>
+          <Button variant="outlined" onClick={handleRefresh}>
+            <RefreshIcon sx={{ mr: 1 }} />
+            Làm mới
+          </Button>
+        </Grid>
         <Grid item xs={12} sm={6}>
           <TextField
             label="Tìm kiếm theo tên"
@@ -383,7 +390,7 @@ const UsersManagement = () => {
           </Button>
         </Grid>
       </Grid>
-      <div style={{ height: 550, width: "100%" }}>
+      <div style={{ height: 500, width: "100%" }}>
         <DataGrid
           rows={filteredRows}
           columns={columns}
@@ -408,11 +415,6 @@ const UsersManagement = () => {
             noRowsLabel: "Hiện tại không có người dùng nào",
           }}
           slots={{
-            toolbar: () => (
-              <Button variant="outlined" onClick={handleRefresh}>
-                Làm mới
-              </Button>
-            ),
             pagination: () => (
               <Box
                 display="flex"
