@@ -3,9 +3,8 @@ import { TAG_KEYS } from "/src/constants/tagKeys.js";
 
 export const addressApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    // Lấy danh sách địa chỉ của người dùng
     getAddresses: builder.query({
-      query: ({ pageNo = 1, pageSize = 10, sortBy = "" } = {}) => ({
+      query: ({ pageNo = 1, pageSize = 100, sortBy = "" } = {}) => ({
         url: `/v1/addresses`,
         method: "GET",
         params: { pageNo, pageSize, sortBy },
@@ -13,31 +12,26 @@ export const addressApi = baseApi.injectEndpoints({
       providesTags: [TAG_KEYS.ADDRESS],
       transformResponse: (response) => {
         console.log("Get Addresses API Response:", response);
-        // Ánh xạ dữ liệu để UI dễ sử dụng
         const items = Array.isArray(response.result?.items)
-          ? response.result.items.map((address) => {
-              console.log("Address item:", address); // Log để kiểm tra cấu trúc address
-              return {
-                ...address,
-                provinceName: address.province?.name || address.province?.ProvinceName || "",
-                districtName: address.district?.name || address.district?.DistrictName || "",
-                wardName: address.ward?.name || address.ward?.WardName || "",
-                provinceId: address.province?.id || address.province?.ProvinceID || "",
-                districtId: address.district?.id || address.district?.DistrictID || "",
-                wardCode: address.ward?.code || address.ward?.WardCode || "",
-              };
-            })
+          ? response.result.items.map((address) => ({
+              ...address,
+              provinceName: address.province?.name || "",
+              districtName: address.district?.name || "",
+              wardName: address.ward?.name || "",
+              provinceId: address.province?.id || "",
+              districtId: address.district?.id || "",
+              wardCode: address.ward?.code || "",
+            }))
           : [];
         return {
           items,
           page: response.result?.page || 1,
-          size: response.result?.size || 10,
+          size: response.result?.size || 100,
           totalPages: response.result?.totalPages || 1,
           totalItems: response.result?.totalItems || 0,
         };
       },
     }),
-    // Thêm địa chỉ mới
     createAddress: builder.mutation({
       query: (addressData) => ({
         url: `/v1/addresses`,
@@ -46,7 +40,6 @@ export const addressApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [TAG_KEYS.ADDRESS],
     }),
-    // Cập nhật địa chỉ
     updateAddress: builder.mutation({
       query: ({ addressId, addressData }) => ({
         url: `/v1/addresses/${addressId}`,
@@ -55,7 +48,6 @@ export const addressApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [TAG_KEYS.ADDRESS],
     }),
-    // Xóa địa chỉ
     deleteAddress: builder.mutation({
       query: (addressId) => ({
         url: `/v1/addresses/${addressId}`,
@@ -66,4 +58,9 @@ export const addressApi = baseApi.injectEndpoints({
   }),
 });
 
-export const { useGetAddressesQuery, useCreateAddressMutation, useUpdateAddressMutation, useDeleteAddressMutation } = addressApi;
+export const {
+  useGetAddressesQuery,
+  useCreateAddressMutation,
+  useUpdateAddressMutation,
+  useDeleteAddressMutation,
+} = addressApi;

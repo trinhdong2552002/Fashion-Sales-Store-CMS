@@ -13,123 +13,204 @@ import {
   Select,
   MenuItem,
   Grid,
+  Snackbar,
+  Alert,
+  Box,
+  PaginationItem,
+  styled,
 } from "@mui/material";
-import axios from "axios";
+import {
+  useFetchAllUsersForAdminQuery,
+  useCreateUserWithRoleMutation,
+  useSoftDeleteUserMutation,
+  useRestoreUserMutation,
+} from "@/services/api/user";
+import { useGetMyInfoQuery } from "@/services/api/auth";
+import { useGetAddressesQuery } from "@/services/api/address";
+import { useListRolesQuery } from "@/services/api/role";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
+import { useNavigate } from "react-router-dom";
+
+// Tùy chỉnh nút Back và Forward
+const CustomPaginationItem = styled(PaginationItem)(({ theme }) => ({
+  "&.MuiPaginationItem-previousNext": {
+    backgroundColor: theme.palette.primary.main,
+    color: theme.palette.common.white,
+    "&:hover": {
+      backgroundColor: theme.palette.primary.dark,
+    },
+    "&.Mui-disabled": {
+      backgroundColor: theme.palette.action.disabledBackground,
+      color: theme.palette.action.disabled,
+    },
+    borderRadius: "4px",
+    margin: "0 5px",
+    padding: "8px",
+  },
+}));
 
 const UsersManagement = () => {
-  const [users, setUsers] = useState([]);
-  const [roles, setRoles] = useState([]);
+  const navigate = useNavigate();
   const [searchUser, setSearchUser] = useState("");
-  const [filterRole, setFilterRole] = useState("");
-  const [newUser, setNewUser] = useState({
-    name: "",
-    email: "",
-    role: "",
-    status: "ACTIVE",
-  });
-  const [editUser, setEditUser] = useState(null);
+  const [filterRoles, setFilterRoles] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
+  const [page, setPage] = useState(0); // Trang bắt đầu từ 0
+  const [pageSize, setPageSize] = useState(10); // Mỗi trang 10 người dùng
+  const [totalRows, setTotalRows] = useState(0); // Tổng số người dùng
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+  const [newUser, setNewUser] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    password: "",
+    roleIds: [],
+  });
 
-  // Lấy dữ liệu
+  const {
+    data: userInfo,
+    error: userError,
+    isLoading: userLoading,
+  } = useGetMyInfoQuery();
+
+  const {
+    data: usersData,
+    refetch: refetchUsers,
+    isLoading: isFetchingUsers,
+  } = useFetchAllUsersForAdminQuery({
+    pageNo: page + 1, // API bắt đầu từ trang 1
+    pageSize,
+    search: searchUser,
+    sortBy: "name-asc",
+    roles: filterRoles.length ? filterRoles.join(",") : undefined,
+  });
+  const { data: rolesData } = useListRolesQuery({ pageNo: 1, pageSize: 100 });
+  const { data: addressesData, refetch: refetchAddresses } =
+    useGetAddressesQuery({
+      pageNo: 1,
+      pageSize: 100,
+    });
+
+  const [createUserWithRole] = useCreateUserWithRoleMutation();
+  const [softDeleteUser] = useSoftDeleteUserMutation();
+  const [restoreUser] = useRestoreUserMutation();
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Lấy danh sách vai trò
-        const rolesRes = await axios.get("http://localhost:3000/roles");
-        setRoles(rolesRes.data);
-
-        // Lấy danh sách người dùng
-        const usersRes = await axios.get("http://localhost:3000/users", {
-          params: {
-            search: searchUser || undefined,
-            role: filterRole || undefined,
-          },
+    if (userError) {
+      setSnackbar({
+        open: true,
+        message:
+          "Bạn cần đăng nhập để truy cập trang này: " +
+          (userError?.data?.message || "Lỗi không xác định"),
+        severity: "error",
+      });
+      setTimeout(() => navigate("/"), 2000);
+    } else if (userInfo) {
+      const roles = userInfo.result?.roles || [];
+      const hasAdminRole = roles.some(
+        (role) => role.name?.toUpperCase() === "ADMIN"
+      );
+      if (!hasAdminRole) {
+        setSnackbar({
+          open: true,
+          message: `Bạn không có quyền truy cập trang này. Vai trò: ${
+            roles.map((r) => r.name).join(", ") || "Không xác định"
+          }`,
+          severity: "error",
         });
-        setUsers(usersRes.data);
-      } catch (error) {
-        console.error("Error fetching data:", error);
+        setTimeout(() => navigate("/"), 2000);
       }
-    };
-    fetchData();
-  }, [searchUser, filterRole]);
+    }
+  }, [userInfo, userError, userLoading, navigate]);
 
-  const columns = [
-    { field: "id", headerName: "ID", width: 90 },
-    { field: "name", headerName: "Tên", width: 150 },
-    { field: "email", headerName: "Email", width: 200 },
-    {
-      field: "role",
-      headerName: "Vai trò",
-      width: 150,
-      valueGetter: (params) =>
-        params.row.roles?.map((role) => role.name).join(", ") || "",
-    },
-    {
-      field: "actions",
-      headerName: "Hành động",
-      width: 150,
-      renderCell: (params) => (
-        <>
-          <Button onClick={() => handleEditUser(params.row)}>Sửa</Button>
-          <Button
-            onClick={() => handleOpenDeleteDialog(params.row.id)}
-            color="error"
-          >
-            Xóa
-          </Button>
-        </>
-      ),
-    },
-  ];
+  useEffect(() => {
+    refetchUsers();
+    refetchAddresses();
+  }, [searchUser, filterRoles, page, pageSize, refetchUsers, refetchAddresses]);
+
+  useEffect(() => {
+    if (usersData) {
+      setTotalRows(usersData.totalItems || 0);
+    }
+  }, [usersData]);
 
   const handleAddUser = async () => {
     try {
-      const userData = {
+      await createUserWithRole({
         name: newUser.name,
         email: newUser.email,
-        roleIds: [newUser.role], // Giả sử API yêu cầu gửi danh sách role IDs
-        status: newUser.status,
-      };
-      await axios.post("http://localhost:3000/users", userData);
-      const response = await axios.get("http://localhost:3000/users");
-      setUsers(response.data);
-      setNewUser({ name: "", email: "", role: "", status: "ACTIVE" });
+        phone: newUser.phone,
+        password: newUser.password,
+        roleIds: newUser.roleIds,
+      }).unwrap();
+      setNewUser({
+        name: "",
+        email: "",
+        phone: "",
+        password: "",
+        roleIds: [],
+      });
       setOpenDialog(false);
+      setSnackbar({
+        open: true,
+        message: "Thêm người dùng thành công!",
+        severity: "success",
+      });
+      refetchUsers();
+      refetchAddresses();
     } catch (error) {
-      console.error("Error adding user:", error);
+      const errorMessage = error.data?.message || "Lỗi khi thêm người dùng";
+      setSnackbar({
+        open: true,
+        message: errorMessage,
+        severity: "error",
+      });
     }
   };
 
-  const handleEditUser = (user) => {
-    setEditUser(user);
-    setNewUser({
-      name: user.name,
-      email: user.email,
-      role: user.roles?.[0]?.id || "",
-      status: user.status,
-    });
-    setOpenDialog(true);
+  const handleDeleteUser = async () => {
+    try {
+      await softDeleteUser(userToDelete).unwrap();
+      setOpenDeleteDialog(false);
+      setUserToDelete(null);
+      setSnackbar({
+        open: true,
+        message: "Xóa người dùng thành công!",
+        severity: "success",
+      });
+      refetchUsers();
+      refetchAddresses();
+    } catch (error) {
+      const errorMessage = error.data?.message || "Lỗi khi xóa người dùng";
+      setSnackbar({
+        open: true,
+        message: errorMessage,
+        severity: "error",
+      });
+    }
   };
 
-  const handleUpdateUser = async () => {
+  const handleRestoreUser = async (id) => {
     try {
-      const userData = {
-        name: newUser.name,
-        email: newUser.email,
-        roleIds: [newUser.role],
-        status: newUser.status,
-      };
-      await axios.put(`http://localhost:3000/users/${editUser.id}`, userData);
-      const response = await axios.get("http://localhost:3000/users");
-      setUsers(response.data);
-      setEditUser(null);
-      setNewUser({ name: "", email: "", role: "", status: "ACTIVE" });
-      setOpenDialog(false);
+      await restoreUser(id).unwrap();
+      setSnackbar({
+        open: true,
+        message: "Khôi phục người dùng thành công!",
+        severity: "success",
+      });
+      refetchUsers();
+      refetchAddresses();
     } catch (error) {
-      console.error("Error updating user:", error);
+      setSnackbar({
+        open: true,
+        message: error.data?.message || "Lỗi khi khôi phục người dùng",
+        severity: "error",
+      });
     }
   };
 
@@ -138,17 +219,127 @@ const UsersManagement = () => {
     setOpenDeleteDialog(true);
   };
 
-  const handleDeleteUser = async () => {
-    try {
-      await axios.delete(`http://localhost:3000/users/${userToDelete}`);
-      const response = await axios.get("http://localhost:3000/users");
-      setUsers(response.data);
-      setOpenDeleteDialog(false);
-      setUserToDelete(null);
-    } catch (error) {
-      console.error("Error deleting user:", error);
-    }
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
   };
+
+  const handleRefresh = () => {
+    setPage(0); // Reset to first page on refresh
+    refetchUsers();
+    setSnackbar({
+      open: true,
+      message: "Danh sách người dùng đã được làm mới!",
+      severity: "info",
+    });
+  };
+
+  const columns = [
+    { field: "id", headerName: "ID", width: 90 },
+    { field: "name", headerName: "Tên", width: 150 },
+    { field: "email", headerName: "Email", width: 200 },
+    { field: "phone", headerName: "Sđt", width: 150 },
+    { field: "status", headerName: "Trạng thái", width: 120 },
+    {
+      field: "address",
+      headerName: "Địa chỉ",
+      width: 200,
+      valueGetter: (params) => {
+        if (
+          !params?.row ||
+          !addressesData?.items ||
+          !Array.isArray(addressesData.items)
+        )
+          return "N/A";
+        const userAddress = addressesData.items.find(
+          (addr) => addr.userName === params.row.email
+        );
+        if (userAddress) {
+          return (
+            `${userAddress.street || ""}, ${userAddress.wardName || ""}, ${
+              userAddress.districtName || ""
+            }, ${userAddress.provinceName || ""}`.trim() || "N/A"
+          );
+        }
+        return "N/A";
+      },
+    },
+    {
+      field: "createdBy",
+      headerName: "Người tạo",
+      width: 200,
+      renderCell: (params) => params.row.createdBy || "N/A",
+    },
+    {
+      field: "updatedBy",
+      headerName: "Người cập nhật",
+      width: 200,
+      renderCell: (params) => params.row.updatedBy || "N/A",
+    },
+    {
+      field: "createdAt",
+      headerName: "Ngày tạo",
+      width: 150,
+      renderCell: (params) =>
+        params.row.createdAt
+          ? new Date(params.row.createdAt).toLocaleDateString("vi-VN")
+          : "N/A",
+    },
+    {
+      field: "updatedAt",
+      headerName: "Ngày cập nhật",
+      width: 150,
+      renderCell: (params) =>
+        params.row.updatedAt
+          ? new Date(params.row.updatedAt).toLocaleDateString("vi-VN")
+          : "N/A",
+    },
+    {
+      field: "roles",
+      headerName: "Vai trò",
+      width: 150,
+      renderCell: (params) =>
+        params.row?.roles?.map((role) => role.name).join(", ") || "N/A",
+    },
+    {
+      field: "actions",
+      headerName: "Hành động",
+      width: 200,
+      renderCell: (params) => (
+        <>
+          {params.row?.status === "INACTIVE" ? (
+            <Button
+              onClick={() => handleRestoreUser(params.row.id)}
+              color="success"
+            >
+              Khôi phục
+            </Button>
+          ) : (
+            <Button
+              onClick={() => handleOpenDeleteDialog(params.row.id)}
+              color="error"
+            >
+              Xóa
+            </Button>
+          )}
+        </>
+      ),
+    },
+  ];
+
+  // Lọc dữ liệu thủ công trên frontend
+  const filteredRows = (usersData?.items || []).filter((user) => {
+    // Lọc theo vai trò
+    const matchesRoles = filterRoles.length
+      ? user.roles?.some((role) => filterRoles.includes(role.name))
+      : true;
+
+    // Lọc theo tên (searchUser)
+    const matchesSearch = searchUser
+      ? user.name?.toLowerCase().includes(searchUser.toLowerCase())
+      : true;
+
+    return matchesRoles && matchesSearch;
+  });
 
   return (
     <DashboardLayoutWrapper>
@@ -158,7 +349,7 @@ const UsersManagement = () => {
       <Grid container spacing={2} sx={{ mb: 2 }}>
         <Grid item xs={12} sm={6}>
           <TextField
-            label="Tìm kiếm người dùng"
+            label="Tìm kiếm theo tên"
             value={searchUser}
             onChange={(e) => setSearchUser(e.target.value)}
             fullWidth
@@ -168,12 +359,13 @@ const UsersManagement = () => {
           <FormControl fullWidth>
             <InputLabel>Vai trò</InputLabel>
             <Select
-              value={filterRole}
-              onChange={(e) => setFilterRole(e.target.value)}
+              multiple
+              value={filterRoles}
+              onChange={(e) => setFilterRoles(e.target.value)}
               label="Vai trò"
+              renderValue={(selected) => selected.join(", ")}
             >
-              <MenuItem value="">Tất cả</MenuItem>
-              {roles.map((role) => (
+              {rolesData?.items?.map((role) => (
                 <MenuItem key={role.id} value={role.name}>
                   {role.name}
                 </MenuItem>
@@ -191,101 +383,168 @@ const UsersManagement = () => {
           </Button>
         </Grid>
       </Grid>
-      <div style={{ height: 400, width: "100%" }}>
+      <div style={{ height: 600, width: "100%" }}>
         <DataGrid
-          rows={users}
+          rows={filteredRows}
           columns={columns}
-          pageSize={5}
-          rowsPerPageOptions={[5]}
+          paginationMode="server" // Phân trang phía server
+          rowCount={totalRows} // Tổng số người dùng từ API (không thay đổi)
+          page={page}
+          pageSize={pageSize}
+          onPageChange={(newPage) => {
+            console.log("Page changed to:", newPage);
+            setPage(newPage);
+          }}
+          onPageSizeChange={(newPageSize) => {
+            console.log("Page size changed to:", newPageSize);
+            setPageSize(newPageSize);
+            setPage(0); // Reset về trang đầu khi đổi pageSize
+          }}
+          rowsPerPageOptions={[10, 20, 50]} // Tùy chọn số hàng mỗi trang
+          getRowId={(row) => row.id}
           disableSelectionOnClick
+          loading={isFetchingUsers}
+          localeText={{
+            noRowsLabel: "Hiện tại không có người dùng nào",
+          }}
+          slots={{
+            toolbar: () => (
+              <Button variant="outlined" onClick={handleRefresh}>
+                Làm mới
+              </Button>
+            ),
+            pagination: () => (
+              <Box
+                display="flex"
+                alignItems="center"
+                justifyContent="space-between"
+                p={2}
+              >
+                <Typography variant="body2">
+                  Tổng số người dùng: {totalRows}
+                </Typography>
+                <Box display="flex" alignItems="center">
+                  <CustomPaginationItem
+                    type="previous"
+                    component={Button}
+                    disabled={page === 0}
+                    onClick={() => setPage(page - 1)}
+                  />
+                  <Typography variant="body2" mx={2}>
+                    Trang {page + 1} / {Math.ceil(totalRows / pageSize)}
+                  </Typography>
+                  <CustomPaginationItem
+                    type="next"
+                    component={Button}
+                    disabled={page >= Math.ceil(totalRows / pageSize) - 1}
+                    onClick={() => setPage(page + 1)}
+                  />
+                </Box>
+              </Box>
+            ),
+          }}
         />
       </div>
 
-      {/* Dialog thêm/sửa người dùng */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
-        <DialogTitle>
-          {editUser ? "Sửa người dùng" : "Thêm người dùng"}
-        </DialogTitle>
+        <DialogTitle>Thêm người dùng</DialogTitle>
         <DialogContent>
           <TextField
             label="Tên"
             value={newUser.name}
-            onChange={(e) =>
-              setNewUser({ ...newUser, name: e.target.value })
-            }
+            onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
             fullWidth
             sx={{ mt: 2 }}
           />
           <TextField
             label="Email"
             value={newUser.email}
+            onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+            fullWidth
+            sx={{ mt: 2 }}
+          />
+          <TextField
+            label="Số điện thoại"
+            value={newUser.phone}
+            onChange={(e) => setNewUser({ ...newUser, phone: e.target.value })}
+            fullWidth
+            sx={{ mt: 2 }}
+          />
+          <TextField
+            label="Mật khẩu"
+            value={newUser.password}
             onChange={(e) =>
-              setNewUser({ ...newUser, email: e.target.value })
+              setNewUser({ ...newUser, password: e.target.value })
             }
             fullWidth
             sx={{ mt: 2 }}
+            type="password"
           />
           <FormControl fullWidth sx={{ mt: 2 }}>
             <InputLabel>Vai trò</InputLabel>
             <Select
-              value={newUser.role}
+              multiple
+              value={newUser.roleIds}
               onChange={(e) =>
-                setNewUser({ ...newUser, role: e.target.value })
+                setNewUser({ ...newUser, roleIds: e.target.value })
               }
               label="Vai trò"
+              renderValue={(selected) =>
+                selected
+                  .map(
+                    (id) =>
+                      rolesData?.items.find((r) => r.id === id)?.name || ""
+                  )
+                  .join(", ")
+              }
             >
-              {roles.map((role) => (
+              {rolesData?.items?.map((role) => (
                 <MenuItem key={role.id} value={role.id}>
                   {role.name}
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
-          <FormControl fullWidth sx={{ mt: 2 }}>
-            <InputLabel>Trạng thái</InputLabel>
-            <Select
-              value={newUser.status}
-              onChange={(e) =>
-                setNewUser({ ...newUser, status: e.target.value })
-              }
-              label="Trạng thái"
-            >
-              <MenuItem value="ACTIVE">ACTIVE</MenuItem>
-              <MenuItem value="INACTIVE">INACTIVE</MenuItem>
-            </Select>
-          </FormControl>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenDialog(false)}>Hủy</Button>
-          <Button
-            onClick={editUser ? handleUpdateUser : handleAddUser}
-            variant="contained"
-          >
-            {editUser ? "Cập nhật" : "Thêm"}
+          <Button onClick={handleAddUser} variant="contained">
+            Thêm
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Dialog xác nhận xóa */}
       <Dialog
         open={openDeleteDialog}
         onClose={() => setOpenDeleteDialog(false)}
       >
         <DialogTitle>Xác nhận xóa</DialogTitle>
         <DialogContent>
-          <Typography>Bạn có chắc chắn muốn xóa người dùng này không?</Typography>
+          <Typography>
+            Bạn có chắc chắn muốn xóa người dùng này không?
+          </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenDeleteDialog(false)}>Hủy</Button>
-          <Button
-            onClick={handleDeleteUser}
-            color="error"
-            variant="contained"
-          >
+          <Button onClick={handleDeleteUser} color="error" variant="contained">
             Xóa
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </DashboardLayoutWrapper>
   );
 };
