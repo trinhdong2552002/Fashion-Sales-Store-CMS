@@ -388,7 +388,7 @@ const CategoriesManagement = () => {
         <Alert severity="info">Hiện tại không có danh mục nào.</Alert>
       ) : (
         <ErrorBoundary categoriesData={categoriesData}>
-          <div style={{ height: 400, width: "100%" }}>
+          <div style={{ height: 500, width: "100%" }}>
             <DataGrid
               rows={categories}
               columns={columns}
