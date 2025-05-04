@@ -67,7 +67,7 @@ const ProductVariantsManagement = () => {
     data: productsData,
     isLoading: isFetchingProducts,
     error: fetchProductsError,
-  } = useListProductsForAdminQuery({ status: "ACTIVE" }, { skip: userLoading }); // Cập nhật query
+  } = useListProductsForAdminQuery();
   const {
     data: productVariantsData,
     isLoading: isFetchingProductVariants,
@@ -89,11 +89,7 @@ const ProductVariantsManagement = () => {
       dispatch(setProductVariants(productVariantsData.items));
       dispatch(setProductVariantError(null));
     }
-  }, [
-    productVariantsData,
-    isFetchingProductVariants,
-    dispatch,
-  ]);
+  }, [productVariantsData, isFetchingProductVariants, dispatch]);
 
   useEffect(() => {
     if (fetchProductsError) {
@@ -173,21 +169,19 @@ const ProductVariantsManagement = () => {
           >
             Sửa
           </Button>
-          {params.row.status === "ACTIVE" ? (
+          {params.row?.status === "INACTIVE" ? (
             <Button
-              variant="text"
-              color="error"
-              onClick={() => handleOpenDeleteDialog(params.row.id)}
+              onClick={() => handleRestoreVariant(params.row.id)}
+              color="success"
             >
-              Xóa
+              Khôi phục
             </Button>
           ) : (
             <Button
-              variant="text"
-              color="success"
-              onClick={() => handleRestoreVariant(params.row.id)}
+              onClick={() => handleOpenDeleteDialog(params.row.id)}
+              color="error"
             >
-              Khôi phục
+              Xóa
             </Button>
           )}
         </>
@@ -221,9 +215,7 @@ const ProductVariantsManagement = () => {
       });
       refetchProductVariants();
     } catch (error) {
-      const errorMessage = Array.isArray(error.data?.errors)
-        ? error.data.errors.join(". ")
-        : error.data?.message || "Lỗi khi xóa sản phẩm";
+      const errorMessage = error.data?.message || "Lỗi khi xóa sản phẩm";
       setSnackbar({
         open: true,
         message: errorMessage,
@@ -242,9 +234,7 @@ const ProductVariantsManagement = () => {
       });
       refetchProductVariants();
     } catch (error) {
-      const errorMessage = Array.isArray(error.data?.errors)
-        ? error.data.errors.join(". ")
-        : error.data?.message || "Lỗi khi khôi phục sản phẩm";
+      const errorMessage = error.data?.message || "Lỗi khi khôi phục sản phẩm";
       setSnackbar({
         open: true,
         message: errorMessage,
@@ -296,8 +286,7 @@ const ProductVariantsManagement = () => {
       handleCloseDialog();
       refetchProductVariants();
     } catch (error) {
-      const errorMessage =
-        error.status === error.data?.message || "Lỗi khi cập nhật biến thể";
+      const errorMessage = error.data?.message || "Lỗi khi cập nhật biến thể";
       setSnackbar({
         open: true,
         message: errorMessage,
