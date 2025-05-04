@@ -13,5 +13,6 @@ export const TAG_KEYS = {
   PROVINCE: "Province",
   ORDER: "Order",
   ORDER_ITEM: "OrderItem",
+  BRANCHES: "Branches",
   PROMOTION: "Promotion",
 };

@@ -12,6 +12,7 @@ import productReducer from "@/store/redux/product/reducer";
 import productVariantReducer from "@/store/redux/productVariant/reducer";
 import productImageReducer from "@/store/redux/productImage/reducer";
 import colorReducer from "@/store/redux/color/reducer";
+import branchesReducer from "@/store/redux/branches/reducer";
 
 export const RESET_STATE = "RESET_STATE";
 
@@ -29,6 +30,7 @@ const appReducer = combineReducers({
   productVariant: productVariantReducer,
   productImage: productImageReducer,
   color: colorReducer,
+  branches: branchesReducer,
 });
 
 const rootReducer = (state, action) => {

@@ -110,6 +110,7 @@ export const baseApi = createApi({
     "Province",
     "Order",
     "OrderItem",
+    "Branches",
     "Promotion",
   ],
 });
