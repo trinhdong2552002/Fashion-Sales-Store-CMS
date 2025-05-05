@@ -7,7 +7,7 @@ export const categoryApi = baseApi.injectEndpoints({
       query: ({ pageNo, pageSize }) => ({
         url: "/v1/categories/admin",
         method: "GET",
-        params: { pageNo, pageSize }, // Pass pagination parameters
+        params: { pageNo, pageSize },
       }),
       providesTags: [TAG_KEYS.CATEGORIES],
       transformResponse: (response) => {
@@ -101,17 +101,19 @@ export const categoryApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [TAG_KEYS.CATEGORIES],
       async onQueryStarted(id, { dispatch, queryFulfilled }) {
+        // Optimistic Update
+        const patchResult = dispatch(
+          categoryApi.util.updateQueryData("listCategories", undefined, (draft) => {
+            const index = draft.items.findIndex((item) => item.id === id);
+            if (index !== -1) {
+              draft.items[index].status = "INACTIVE";
+            }
+          })
+        );
         try {
           await queryFulfilled;
-          dispatch(
-            categoryApi.util.updateQueryData("listCategories", undefined, (draft) => {
-              const index = draft.items.findIndex((item) => item.id === id);
-              if (index !== -1) {
-                draft.items[index].status = "INACTIVE";
-              }
-            })
-          );
         } catch (error) {
+          patchResult.undo(); // Hoàn tác nếu có lỗi
           console.log("Error deleting category:", error);
         }
       },
@@ -123,17 +125,19 @@ export const categoryApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [TAG_KEYS.CATEGORIES],
       async onQueryStarted(id, { dispatch, queryFulfilled }) {
+        // Optimistic Update
+        const patchResult = dispatch(
+          categoryApi.util.updateQueryData("listCategories", undefined, (draft) => {
+            const index = draft.items.findIndex((item) => item.id === id);
+            if (index !== -1) {
+              draft.items[index].status = "ACTIVE";
+            }
+          })
+        );
         try {
           await queryFulfilled;
-          dispatch(
-            categoryApi.util.updateQueryData("listCategories", undefined, (draft) => {
-              const index = draft.items.findIndex((item) => item.id === id);
-              if (index !== -1) {
-                draft.items[index].status = "ACTIVE";
-              }
-            })
-          );
         } catch (error) {
+          patchResult.undo(); // Hoàn tác nếu có lỗi
           console.log("Error restoring category:", error);
         }
       },
