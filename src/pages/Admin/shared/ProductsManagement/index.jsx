@@ -360,26 +360,28 @@ const ProductsManagement = () => {
       ),
     },
     {
-      field: "productImages",
+      field: "images",
       headerName: "Hình ảnh",
       width: 200,
-      renderCell: (params) => (
-        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-          {params.row.productImages?.map((image) => (
-            <img
-              key={image.id}
-              src={image.imageUrl}
-              alt={image.fileName}
-              style={{
-                width: 30,
-                height: 30,
-                objectFit: "cover",
-                marginRight: 5,
-              }}
-            />
-          ))}
-        </Box>
-      ),
+      renderCell: (params) => {
+        return (
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+            {params.row.images?.map((image) => (
+              <img
+                key={image.id}
+                src={image.imageUrl}
+                alt={image.fileName}
+                style={{
+                  width: 30,
+                  height: 30,
+                  objectFit: "cover",
+                  marginRight: 5,
+                }}
+              />
+            ))}
+          </Box>
+        );
+      },
     },
     {
       field: "status",
@@ -431,7 +433,7 @@ const ProductsManagement = () => {
       categoryId: product.category?.id || "",
       colors: product.colors?.map((color) => color.id) || [],
       sizeIds: product.sizes?.map((size) => size.id) || [],
-      imageIds: product.productImages?.map((image) => image.id) || [],
+      imageIds: product.images?.map((image) => image.id) || [],
     });
     setOpenDialog(true);
   };
@@ -493,7 +495,7 @@ const ProductsManagement = () => {
 
     products.forEach((product) => {
       if (currentProductId && product.id === currentProductId) return;
-      const productImageIds = (product.productImages || []).map(
+      const productImageIds = (product.images || []).map(
         (img) => img.id
       );
       productImageIds.forEach((id) => {
@@ -607,6 +609,7 @@ const ProductsManagement = () => {
         colorIds: newProduct.colors.map((colorId) => parseInt(colorId)),
         sizeIds: newProduct.sizeIds.map((sizeId) => parseInt(sizeId)),
         imageIds: newProduct.imageIds.map((imageId) => parseInt(imageId)),
+        
       };
       await updateProduct(payload).unwrap();
       setSnackbar({
@@ -994,7 +997,9 @@ const ProductsManagement = () => {
                 <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
                   {selected.map((value) => {
                     const image = allImages.find((img) => img.id === value);
-                    return <Chip key={value} label={image?.fileName || value} />;
+                    return (
+                      <Chip key={value} label={image?.fileName || value} />
+                    );
                   })}
                 </Box>
               )}
@@ -1003,6 +1008,16 @@ const ProductsManagement = () => {
             >
               {allImages.map((image) => (
                 <MenuItem key={image.id} value={image.id}>
+                <img
+                src={image.imageUrl}
+                alt={image.fileName}
+                style={{
+                  width: 30,
+                  height: 30,
+                  objectFit: "cover",
+                  marginRight: 5,
+                }}
+              />
                   {image.fileName}
                 </MenuItem>
               ))}
