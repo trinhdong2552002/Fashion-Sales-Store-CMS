@@ -12,27 +12,25 @@ export const axiosBaseQuery =
       headers,
     });
 
+    const publicEndpoints = ["/v1/auth/login"];
+
+    const token = localStorage.getItem("accessToken");
+    const refreshToken = localStorage.getItem("refreshToken");
+    console.log(`Token before request (${url}):`, token);
+    console.log(`Refresh token before request (${url}):`, refreshToken);
+
+    if (!publicEndpoints.includes(url) && !token && !refreshToken) {
+      console.log("No token found for non-public endpoint:", url);
+      return {
+        error: {
+          status: 401,
+          data: { message: "Không tìm thấy token, vui lòng đăng nhập lại" },
+        },
+      };
+    }
+
     try {
-      const publicEndpoints = [
-        "/v1/auth/login",
-      ];
-
-      const token = localStorage.getItem("accessToken");
-      const refreshToken = localStorage.getItem("refreshToken");
-      console.log(`Token trước khi gửi request (${url}):`, token);
-      console.log(`Refresh token trước khi gửi request (${url}):`, refreshToken);
-      console.log("Token sau khi gửi request:", token);
-
-      if (!publicEndpoints.includes(url) && !token) {
-        return {
-          error: {
-            status: 401,
-            data: { message: "Không tìm thấy token, vui lòng đăng nhập lại" },
-          },
-        };
-      }
-
-      const config = {
+      const result = await axios({
         url,
         method,
         data,
@@ -42,22 +40,11 @@ export const axiosBaseQuery =
           ...(token && { Authorization: `Bearer ${token}` }),
         },
         baseURL: import.meta.env.VITE_API_URL,
-      };
-
-      if (data instanceof FormData) {
-        delete config.headers["Content-Type"];
-        console.log("FormData detected, Content-Type will be set by axios");
-      }
-
-      console.log("Final axios config before request:", config);
-      console.log("Full request URL:", `${config.baseURL}${config.url}`);
-
-      const result = await axios(config);
+      });
       console.log("Axios response received:", result);
 
       if (result.status >= 400) {
-        console.log("Axios response error:", result);
-        console.log("Server received path:", result.data?.path || "N/A");
+        console.log("Server error response:", result.data);
         return {
           error: {
             status: result.status,
@@ -76,16 +63,13 @@ export const axiosBaseQuery =
 
       console.error("Axios error:", error);
 
-      if (
-        error.status === 401 &&
-        (error.data?.message ===
-          "Không tìm thấy token, vui lòng đăng nhập lại" ||
-          error.data?.message?.includes("Invalid token") ||
-          error.data?.message?.includes("Expired token"))
-      ) {
-        console.log("Xóa token do lỗi 401:", error.data?.message);
+      if (error.status === 401) {
+        console.log("Handling 401 error:", error.data?.message);
+        // Nếu token không hợp lệ, xóa token cũ và yêu cầu đăng nhập lại
         localStorage.removeItem("accessToken");
-        window.location.href = "/login";
+        localStorage.removeItem("refreshToken");
+        window.location.href = "/";
+        return { error };
       }
 
       return { error };
@@ -97,6 +81,7 @@ export const baseApi = createApi({
   baseQuery: axiosBaseQuery(),
   endpoints: () => ({}),
   tagTypes: [
+    "Auth",
     "User",
     "Product",
     "ProductVariant",
