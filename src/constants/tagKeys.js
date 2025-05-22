@@ -1,5 +1,6 @@
 // src/constants/tagKeys.js
 export const TAG_KEYS = {
+  AUTH: "Auth",
   USER: "User",
   PRODUCT: "Product",
   PRODUCT_VARIANT: "ProductVariant",

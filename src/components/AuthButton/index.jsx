@@ -10,9 +10,9 @@ import {
 import { Fragment, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { clearUser, selectUser } from "@/store/redux/user/reducer";
 import { useLogoutMutation } from "@/services/api/auth";
-import storage from "redux-persist/lib/storage";
+import { clearAuth } from "../../store/redux/auth/reducer";
+import { clearUser, selectUser } from "../../store/redux/user/reducer";
 
 const AuthButton = () => {
   const navigate = useNavigate();
@@ -20,7 +20,7 @@ const AuthButton = () => {
   const [logout] = useLogoutMutation();
 
   const storedUser = useSelector(selectUser);
-  // console.log("storedUser:", storedUser);
+  console.log("storedUser:", storedUser);
 
   const [anchorEl, setAnchorEl] = useState(null);
 
@@ -34,19 +34,24 @@ const AuthButton = () => {
 
   const handleLogout = async () => {
     try {
-      const accessToken = localStorage.getItem("accessToken");
-      if (!accessToken) {
-        throw new Error("No accessToken found in localStorage");
+      if (!localStorage.getItem("accessToken")) {
+        throw new Error("accessToken is required for logout");
       }
-
-      await logout({
-        accessToken,
+      const response = await logout({
+        accessToken: localStorage.getItem("accessToken"),
       }).unwrap();
+      console.log("Logout response:", response);
 
       localStorage.removeItem("accessToken");
-      storage.removeItem("persist:root");
+      localStorage.removeItem("refreshToken");
+      dispatch(
+        clearAuth({
+          accessToken: null,
+          refreshToken: null,
+          authenticated: false,
+        })
+      );
       dispatch(clearUser());
-
       handleMenuClose();
       navigate("/");
     } catch (error) {

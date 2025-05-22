@@ -13,19 +13,7 @@ export const authApi = baseApi.injectEndpoints({
           password: credentials.password,
         },
       }),
-      invalidatesTags: [TAG_KEYS.USER],
-      onQueryStarted: async (arg, { queryFulfilled }) => {
-        try {
-          const { data } = await queryFulfilled;
-          // Lưu accessToken vào localStorage
-          if (data?.result?.accessToken) {
-            localStorage.setItem("accessToken", data.result.accessToken);
-            console.log("Token saved:", data.result.accessToken); // Log token để debug
-          }
-        } catch (error) {
-          console.error("Login failed:", error);
-        }
-      },
+      invalidatesTags: [TAG_KEYS.AUTH],
     }),
 
     // Đăng xuất
@@ -43,19 +31,7 @@ export const authApi = baseApi.injectEndpoints({
           },
         };
       },
-      invalidatesTags: [TAG_KEYS.USER],
-      onQueryStarted: async (arg, { queryFulfilled }) => {
-        try {
-          const { data } = await queryFulfilled;
-          // Xóa accessToken khỏi localStorage
-          if (data?.result?.accessToken) {
-            localStorage.removeItem("accessToken");
-            console.log("Token removed:", data.result.accessToken); // Log token để debug
-          }
-        } catch (error) {
-          console.error("Logout failed:", error);
-        }
-      },
+      invalidatesTags: [TAG_KEYS.AUTH],
     }),
 
     // refreshToken
@@ -67,58 +43,14 @@ export const authApi = baseApi.injectEndpoints({
           refreshToken: credentials.refreshToken,
         },
       }),
-      invalidatesTags: [TAG_KEYS.USER],
-      onQueryStarted: async (arg, { queryFulfilled }) => {
-        try {
-          const { data } = await queryFulfilled;
-          // Lưu refreshToken vào localStorage
-          if (data?.result?.refreshToken) {
-            localStorage.setItem("refreshToken", data.result.refreshToken);
-            console.log("Refresh token saved:", data.result.refreshToken); // Log token để debug
-          }
-        } catch (error) {
-          console.error("Refresh token failed:", error);
-        }
-      },
+      invalidatesTags: [TAG_KEYS.AUTH],
     }),
 
     getMyInfo: builder.query({
       query: () => ({
         url: "/v1/auth/myInfo",
-        method: "GET",
       }),
-      providesTags: [TAG_KEYS.USER],
-    }),
-
-    // Cập nhật thông tin người dùng
-    updateUser: builder.mutation({
-      query: ({ id, ...credentials }) => {
-        // Chuyển đổi birthDate thành định dạng YYYY-MM-DD
-        const dob =
-          credentials.birthDate?.year &&
-          credentials.birthDate?.month &&
-          credentials.birthDate?.date
-            ? `${credentials.birthDate.year}-${String(
-                credentials.birthDate.month
-              ).padStart(2, "0")}-${String(credentials.birthDate.date).padStart(
-                2,
-                "0"
-              )}`
-            : undefined;
-
-        return {
-          url: `/v1/users/${id}`,
-          method: "PUT",
-          body: {
-            name: credentials.name,
-            avatarUrl: credentials.image, // Đổi image thành avatarUrl
-            dob: dob, // Gửi dob thay vì birthDate
-            gender: credentials.gender,
-            roles: [], // Backend yêu cầu roles, gửi mảng rỗng nếu không có
-          },
-        };
-      },
-      invalidatesTags: [TAG_KEYS.USER],
+      providesTags: [TAG_KEYS.AUTH],
     }),
   }),
 });
@@ -128,5 +60,4 @@ export const {
   useLogoutMutation,
   useRefreshTokenMutation,
   useGetMyInfoQuery,
-  useUpdateUserMutation,
 } = authApi;

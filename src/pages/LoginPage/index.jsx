@@ -12,40 +12,34 @@ import {
   Snackbar,
   Alert,
 } from "@mui/material";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import styles from "./index.module.css";
 import { useLoginMutation, useGetMyInfoQuery } from "@/services/api/auth";
 import customTheme from "@/components/CustemTheme";
+import { useDispatch, useSelector } from "react-redux";
+import { setAuth } from "../../store/redux/auth/reducer";
 
 const Login = () => {
   const outerTheme = useTheme();
   const navigate = useNavigate();
-  const [login, { isLoading: isLoginLoading }] = useLoginMutation();
+  const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
-  const location = useLocation();
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
     severity: "success",
   });
-  const [userData, setUserData] = useState(null);
+  const [login, { isLoading: isLoginLoading, error: loginError }] =
+    useLoginMutation();
+  const { data: myInfo, isLoading: isMyInfoLoading } = useGetMyInfoQuery();
 
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm();
-
-  const {
-    data: myInfo,
-    isLoading: isMyInfoLoading,
-    error: myInfoError,
-  } = useGetMyInfoQuery(undefined, {
-    skip: !userData || !localStorage.getItem("accessToken"),
-  });
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
@@ -66,60 +60,11 @@ const Login = () => {
     });
   };
 
-  useEffect(() => {
-    if (location.state?.message) {
-      setSnackbar({
-        open: true,
-        message: location.state.message || "",
-        severity: location.state.severity || "success",
-      });
-    }
-    window.history.replaceState({}, document.title);
-  }, [location]);
-
-  useEffect(() => {
-    if (myInfoError) {
-      handleShowSnackbar(false, "Không thể lấy thông tin người dùng!");
-      return;
-    }
-
-    if (myInfo && userData) {
-      const role = myInfo?.result?.roles?.[0]?.name || "USER";
-
-      // Lưu user vào localStorage để đồng bộ với các trang khác (nếu cần)
-      const updatedUserData = {
-        code: myInfo.code,
-        message: myInfo.message,
-        result: {
-          ...userData.result,
-          id: myInfo.result?.id,
-          name: myInfo.result?.name,
-          email: myInfo.result?.email,
-          roles: myInfo.result?.roles,
-        },
-      };
-      localStorage.setItem("user", JSON.stringify(updatedUserData));
-      console.log("User saved to localStorage:", updatedUserData);
-
-      handleShowSnackbar(true);
-
-      setTimeout(() => {
-        if (role === "ADMIN") {
-          navigate("/admin/dashboard");
-        } else {
-          navigate("/");
-        }
-      }, 1500);
-    }
-  }, [myInfo, myInfoError, userData, navigate]);
-
   const handleCloseSnackbar = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
-  const onSubmit = async (data) => {
-    setError("");
-
+  const handleLogin = async (data) => {
     try {
       const response = await login({
         email: data?.email,
@@ -129,19 +74,8 @@ const Login = () => {
       if (response) {
         localStorage.setItem("accessToken", response.result.accessToken);
         localStorage.setItem("refreshToken", response.result.refreshToken);
-        console.log("Token saved in onSubmit:", response.result.accessToken);
-        console.log("Token saved in onSubmit:", response.result.refreshToken);
-        
 
-        const savedToken = localStorage.getItem("accessToken");
-        const refreshToken = localStorage.getItem("refreshToken");
-        if (!savedToken) {
-          throw new Error("Không thể lưu token vào localStorage");
-        }
-
-        console.log("Token verified after save:", savedToken);
-        console.log("Refresh token verified after save:", refreshToken);
-        
+        console.log("Login response:", response);
 
         const newUserData = {
           code: response.code,
@@ -151,10 +85,25 @@ const Login = () => {
             refreshToken: response.result.refreshToken,
             authenticated: response.result.authenticated,
             email: response.result.email,
+            roles: response.result.roles,
           },
         };
 
-        setUserData(newUserData);
+        dispatch(setAuth(newUserData));
+
+        handleShowSnackbar(true);
+
+        if (myInfo) {
+          const role = myInfo?.result?.roles?.[0]?.name || "USER";
+          if (role === "ADMIN") {
+            handleShowSnackbar(true, "Đăng nhập với quyền ADMIN");
+            setTimeout(() => {
+              navigate("/admin/dashboard");
+            }, 1000);
+          } else {
+            handleShowSnackbar(false, "Tài khoản không có quyền ADMIN!");
+          }
+        }
       }
     } catch (error) {
       handleShowSnackbar(false);
@@ -212,9 +161,9 @@ const Login = () => {
               <Stack
                 sx={{ padding: "0px 36px" }}
                 component={"form"}
-                onSubmit={handleSubmit(onSubmit)}
+                onSubmit={handleSubmit(handleLogin)}
               >
-                {error && <p style={{ color: "red" }}>{error}</p>}
+                {loginError && <p style={{ color: "red" }}>{loginError}</p>}
                 <Stack className={styles.formLabelInput}>
                   <label className={styles.labelInput} htmlFor="email">
                     Email
