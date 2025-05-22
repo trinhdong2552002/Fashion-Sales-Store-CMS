@@ -30,21 +30,7 @@ const OrdersManagement = () => {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [orderToDelete, setOrderToDelete] = useState(null);
 
-  // Lấy dữ liệu
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const ordersRes = await axios.get("http://localhost:3000/orders");
-        setOrders(ordersRes.data);
 
-        const usersRes = await axios.get("http://localhost:3000/users");
-        setUsers(usersRes.data);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-    fetchData();
-  }, []);
 
   const columns = [
     { field: "id", headerName: "ID", width: 90 },

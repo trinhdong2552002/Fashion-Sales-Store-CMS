@@ -33,23 +33,7 @@ const PaymentHistoriesManagement = () => {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [paymentHistoryToDelete, setPaymentHistoryToDelete] = useState(null);
 
-  // Lấy dữ liệu
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const paymentHistoriesRes = await axios.get(
-          "http://localhost:3000/payment-histories"
-        );
-        setPaymentHistories(paymentHistoriesRes.data);
 
-        const ordersRes = await axios.get("http://localhost:3000/orders");
-        setOrders(ordersRes.data);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-    fetchData();
-  }, []);
 
   const columns = [
     { field: "id", headerName: "ID", width: 90 },

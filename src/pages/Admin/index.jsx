@@ -11,32 +11,7 @@ const Admin = () => {
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchRevenue = async () => {
-      try {
-        const revenueRes = await axios.get(
-          "http://localhost:3000/orders/revenue?months=6"
-        );
-        setRevenueData(revenueRes.data);
-      } catch (error) {
-        console.error("Error fetching revenue data:", error);
-      }
-    };
 
-    const fetchOrderStatus = async () => {
-      try {
-        const statusRes = await axios.get(
-          "http://localhost:3000/orders/count-by-status"
-        );
-        setOrderStatusData(statusRes.data);
-      } catch (error) {
-        console.error("Error fetching order status data:", error);
-      }
-    };
-
-    fetchRevenue();
-    fetchOrderStatus();
-  }, []);
 
   return (
     <DashboardLayoutWrapper>
@@ -49,7 +24,7 @@ const Admin = () => {
         <Grid item xs={12} md={6}>
           <Card>
             <CardContent>
-              <LineChart
+              {/* <LineChart
                 xAxis={[
                   {
                     data: revenueData.map((data) => data.month),
@@ -67,7 +42,7 @@ const Admin = () => {
                 height={300}
                 margin={{ top: 50, bottom: 50, left: 60, right: 20 }}
                 title="Doanh thu 6 tháng gần nhất"
-              />
+              /> */}
             </CardContent>
           </Card>
         </Grid>

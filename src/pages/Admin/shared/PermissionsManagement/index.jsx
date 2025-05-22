@@ -30,18 +30,7 @@ const PermissionsManagement = () => {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [permissionToDelete, setPermissionToDelete] = useState(null);
 
-  // Lấy danh sách quyền hạn
-  useEffect(() => {
-    const fetchPermissions = async () => {
-      try {
-        const response = await axios.get("http://localhost:3000/permissions");
-        setPermissions(response.data);
-      } catch (error) {
-        console.error("Error fetching permissions:", error);
-      }
-    };
-    fetchPermissions();
-  }, []);
+
 
   const columns = [
     { field: "id", headerName: "ID", width: 90 },
