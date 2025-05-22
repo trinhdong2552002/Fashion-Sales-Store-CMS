@@ -1,5 +1,5 @@
 // layouts/DashboardLayout/index.jsx
-import { useState } from "react";
+import {  useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   AppBar,
@@ -128,12 +128,8 @@ const DashboardLayoutWrapper = ({ children }) => {
       title: "Khuyến mãi",
       icon: <LocalOffer />,
     },
-    {
-      path: "/admin/chatbotManagement",
-      title: "Chatbot",
-      icon: <Chat />,
-    },
   ];
+
 
   const drawer = (
     <div>
@@ -146,7 +142,7 @@ const DashboardLayoutWrapper = ({ children }) => {
             style={{ textDecoration: "none", color: "inherit" }}
           >
             <ListItem
-              sx={{
+              sx={{ 
                 "&:hover": {
                   backgroundColor: mode === "dark" ? "#424242" : "#f5f5f5",
                 },
@@ -168,6 +164,8 @@ const DashboardLayoutWrapper = ({ children }) => {
             </ListItem>
           </Link>
         ))}
+
+
       </List>
     </div>
   );
