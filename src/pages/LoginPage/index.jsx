@@ -1,24 +1,23 @@
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import {
   Button,
-  Grid,
   IconButton,
   InputAdornment,
   Stack,
   TextField,
   ThemeProvider,
   useTheme,
-  CircularProgress,
   Snackbar,
   Alert,
+  Box,
 } from "@mui/material";
 import { Fragment, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import styles from "./index.module.css";
 import { useLoginMutation, useGetMyInfoQuery } from "@/services/api/auth";
 import customTheme from "@/components/CustemTheme";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { setAuth } from "../../store/redux/auth/reducer";
 
 const Login = () => {
@@ -101,7 +100,7 @@ const Login = () => {
               navigate("/admin/dashboard");
             }, 1000);
           } else {
-            handleShowSnackbar(false, "Tài khoản không có quyền ADMIN!");
+            handleShowSnackbar(false, "USER không được quyền truy cập!");
           }
         }
       }
@@ -131,155 +130,158 @@ const Login = () => {
 
       <Stack
         alignItems={"center"}
-        justifyContent={"center"}
         sx={{
-          backgroundImage: "linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%)",
+          backgroundColor: "#F8FAFC",
           height: "100vh",
         }}
       >
-        <Stack
+        <img
+          src="/src/assets/images/cms.png"
+          alt="CMS"
+          width={100}
+          height={100}
+          draggable="false"
+          style={{ margin: "40px 0" }}
+        />
+
+        <Box
           sx={{
             backgroundColor: "white",
-            width: 800,
-            height: 500,
-            borderRadius: 4,
+            width: 500,
+            height: 650,
+            borderRadius: 2,
             boxShadow: "0px 4px 30px 5px rgba(0, 0, 0, 0.3)",
           }}
         >
-          <Grid container>
-            <Grid item lg={6} md={6}>
-              <h2
-                style={{
-                  textAlign: "center",
-                  margin: "46px 0 20px 0",
-                  fontWeight: "inherit",
+          <Box sx={{ p: "40px 40px 0 40px" }}>
+            <h1 style={{ fontWeight: "500", textAlign: "center" }}>
+              ĐĂNG NHẬP
+            </h1>
+            <h3
+              style={{
+                fontWeight: "normal",
+                marginTop: 20,
+                color: "var(--text-color)",
+              }}
+            >
+              Chào mừng đến với hệ thống CMS của chúng tôi.
+            </h3>
+
+            <form onSubmit={handleSubmit(handleLogin)}>
+              {loginError && <p style={{ color: "red" }}>{loginError}</p>}
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  margin: "30px 0",
                 }}
               >
-                THÔNG TIN ĐĂNG NHẬP
-              </h2>
+                <label
+                  style={{
+                    fontSize: "1.2rem",
+                  }}
+                  htmlFor="email"
+                >
+                  Email
+                </label>
+                <ThemeProvider theme={customTheme(outerTheme)}>
+                  <TextField
+                    id="email"
+                    label="Email"
+                    variant="standard"
+                    disabled={isLoginLoading || isMyInfoLoading}
+                    {...register("email", {
+                      required: "Email không được để trống",
+                      pattern: {
+                        value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                        message: "Email không hợp lệ",
+                      },
+                    })}
+                  />
+                </ThemeProvider>
+                {errors.email && (
+                  <p className={styles.errorMessage}>{errors.email.message}</p>
+                )}
 
-              <Stack
-                sx={{ padding: "0px 36px" }}
-                component={"form"}
-                onSubmit={handleSubmit(handleLogin)}
+                <label
+                  style={{ padding: "30px 0 0 0", fontSize: "1.2rem" }}
+                  htmlFor="password"
+                >
+                  Mật khẩu
+                </label>
+                <ThemeProvider theme={customTheme(outerTheme)}>
+                  <TextField
+                    id="password"
+                    label="Mật khẩu"
+                    type={showPassword ? "text" : "password"}
+                    variant="standard"
+                    disabled={isLoginLoading || isMyInfoLoading}
+                    {...register("password", {
+                      required: "Mật khẩu không được để trống",
+                      minLength: {
+                        value: 6,
+                        message: "Mật khẩu phải có ít nhất 6 ký tự",
+                      },
+                    })}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            aria-label={
+                              showPassword
+                                ? "hide the password"
+                                : "display the password"
+                            }
+                            onClick={handleClickShowPassword}
+                            onMouseDown={handleMouseDownPassword}
+                            onMouseUp={handleMouseUpPassword}
+                            edge="end"
+                            disabled={isLoginLoading || isMyInfoLoading}
+                          >
+                            {showPassword ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </ThemeProvider>
+                {errors.password && (
+                  <p className={styles.errorMessage}>
+                    {errors.password.message}
+                  </p>
+                )}
+              </Box>
+
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                }}
               >
-                {loginError && <p style={{ color: "red" }}>{loginError}</p>}
-                <Stack className={styles.formLabelInput}>
-                  <label className={styles.labelInput} htmlFor="email">
-                    Email
-                  </label>
-                  <ThemeProvider theme={customTheme(outerTheme)}>
-                    <TextField
-                      id="email"
-                      label="Email"
-                      variant="outlined"
-                      disabled={isLoginLoading || isMyInfoLoading}
-                      {...register("email", {
-                        required: "Email không được để trống",
-                        pattern: {
-                          value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                          message: "Email không hợp lệ",
-                        },
-                      })}
-                    />
-                  </ThemeProvider>
-                  {errors.email && (
-                    <p className={styles.errorMessage}>
-                      {errors.email.message}
-                    </p>
-                  )}
-                </Stack>
-
-                <Stack className={styles.formLabelInput}>
-                  <label className={styles.labelInput} htmlFor="password">
-                    Mật khẩu
-                  </label>
-                  <ThemeProvider theme={customTheme(outerTheme)}>
-                    <TextField
-                      id="password"
-                      label="Mật khẩu"
-                      type={showPassword ? "text" : "password"}
-                      variant="outlined"
-                      disabled={isLoginLoading || isMyInfoLoading}
-                      {...register("password", {
-                        required: "Mật khẩu không được để trống",
-                        minLength: {
-                          value: 6,
-                          message: "Mật khẩu phải có ít nhất 6 ký tự",
-                        },
-                      })}
-                      InputProps={{
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <IconButton
-                              aria-label={
-                                showPassword
-                                  ? "hide the password"
-                                  : "display the password"
-                              }
-                              onClick={handleClickShowPassword}
-                              onMouseDown={handleMouseDownPassword}
-                              onMouseUp={handleMouseUpPassword}
-                              edge="end"
-                              disabled={isLoginLoading || isMyInfoLoading}
-                            >
-                              {showPassword ? (
-                                <VisibilityOff />
-                              ) : (
-                                <Visibility />
-                              )}
-                            </IconButton>
-                          </InputAdornment>
-                        ),
-                      }}
-                    />
-                  </ThemeProvider>
-                  {errors.password && (
-                    <p className={styles.errorMessage}>
-                      {errors.password.message}
-                    </p>
-                  )}
-                </Stack>
+                <Link className={styles.forgotPassword} to="/forgot-password">
+                  Quên mật khẩu ?
+                </Link>
 
                 <Button
                   variant="contained"
                   sx={{
                     backgroundColor: "black",
                     color: "white",
-                    padding: "10px 24px",
-                    marginTop: "14px",
+                    p: "10px 80px",
+                    mt: 3,
                     fontSize: "1.2rem",
-                    fontWeight: "regular",
-                    "&:hover": {
-                      backgroundColor: "#333",
-                    },
+                    fontWeight: "normal",
                   }}
                   type="submit"
                   disabled={isLoginLoading || isMyInfoLoading}
                 >
-                  {isLoginLoading || isMyInfoLoading ? (
-                    <CircularProgress size={34} color="inherit" />
-                  ) : (
-                    "ĐĂNG NHẬP"
-                  )}
+                  ĐĂNG NHẬP
                 </Button>
-              </Stack>
-            </Grid>
-
-            <Grid item lg={6} md={6}>
-              <img
-                style={{
-                  width: "100%",
-                  height: 500,
-                  borderTopRightRadius: 16,
-                  borderBottomRightRadius: 16,
-                  objectFit: "cover",
-                }}
-                src="/src/assets/images/backgroundFashions/background-login.jpg"
-              />
-            </Grid>
-          </Grid>
-        </Stack>
+              </Box>
+            </form>
+          </Box>
+        </Box>
       </Stack>
     </Fragment>
   );

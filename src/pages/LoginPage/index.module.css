@@ -1,12 +1,3 @@
-.formLabelInput {
-    margin: 12px 0;
-}
-
-.labelInput {
-    padding-bottom: 4px;
-    font-size: 1.2rem;
-}
-
 .forgotPassword,
 .createAccount,
 .backToHome {
@@ -26,12 +17,11 @@
     margin-top: 10px;
 }
 
-.forgotPassword:hover,
-.createAccount:hover,
-.backToHome:hover {
+.forgotPassword:hover {
     text-decoration: underline;
 }
 
 .errorMessage {
     color: red;
+    margin-top: 10px;
 }
