@@ -12,7 +12,12 @@ export const axiosBaseQuery =
       headers,
     });
 
-    const publicEndpoints = ["/v1/auth/login"];
+    const publicEndpoints = [
+      "/v1/auth/login",
+      "/v1/auth/forgot-password",
+      "/v1/auth/forgot-password/verify-code",
+      "/v1/auth/forgot-password/reset-password",
+    ];
 
     const token = localStorage.getItem("accessToken");
     const refreshToken = localStorage.getItem("refreshToken");
