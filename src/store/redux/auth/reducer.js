@@ -4,29 +4,23 @@ const authSlice = createSlice({
   name: "auth",
   initialState: {
     accessToken: null,
-    refreshToken: null,
     authenticated: false,
+    email: null,
   },
   reducers: {
     setAuth: (state, action) => {
       state.accessToken = action.payload.accessToken;
-      state.refreshToken = action.payload.refreshToken;
       state.authenticated = true;
+      state.email = action.payload.email;
       console.log("setAuth", action.payload);
     },
     clearAuth: (state) => {
       state.accessToken = null;
-      state.refreshToken = null;
       state.authenticated = false;
-    },
-    refreshAuth: (state, action) => {
-      state.accessToken = action.payload.accessToken;
-      state.refreshToken = action.payload.refreshToken;
-      state.authenticated = action.payload.authenticated;
     },
   },
 });
 
-export const { setAuth, clearAuth, refreshAuth } = authSlice.actions;
-export const selectAuthAccessToken = (state) => state.auth.accessToken;
+export const { setAuth, clearAuth } = authSlice.actions;
+export const selectAuth = (state) => state.auth;
 export default authSlice.reducer;

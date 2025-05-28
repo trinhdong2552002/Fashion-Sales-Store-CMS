@@ -15,24 +15,22 @@ import { Fragment, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import styles from "./index.module.css";
-import { useLoginMutation, useGetMyInfoQuery } from "@/services/api/auth";
+import { useLoginMutation } from "@/services/api/auth";
 import customTheme from "@/components/CustemTheme";
-import { useDispatch } from "react-redux";
-import { setAuth } from "../../store/redux/auth/reducer";
+import { useLazyGetMyInfoQuery } from "../../services/api/auth";
 
 const Login = () => {
   const outerTheme = useTheme();
   const navigate = useNavigate();
-  const dispatch = useDispatch();
+
   const [showPassword, setShowPassword] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
     severity: "success",
   });
-  const [login, { isLoading: isLoginLoading, error: loginError }] =
-    useLoginMutation();
-  const { data: myInfo, isLoading: isMyInfoLoading } = useGetMyInfoQuery();
+  const [login, { isLoading: isLoginLoading }] = useLoginMutation();
+  const [triggerMyInfo] = useLazyGetMyInfoQuery();
 
   const {
     register,
@@ -71,41 +69,33 @@ const Login = () => {
       }).unwrap();
 
       if (response) {
+        const role = response?.result?.roles?.[0]?.name;
+        if (!role) {
+          throw new Error(
+            "Không thể xác định vai trò người dùng. Vui lòng thử lại."
+          );
+        }
+
+        if (role !== "ADMIN") {
+          throw new Error("Bạn không có quyền truy cập vào trang quản trị !");
+        }
+
+        if (role === "ADMIN" && "USER") {
+          handleShowSnackbar(true, "Đăng nhập với quyền ADMIN");
+          setTimeout(() => {
+            navigate("/admin/dashboard");
+          }, 1000);
+        }
+
         localStorage.setItem("accessToken", response.result.accessToken);
         localStorage.setItem("refreshToken", response.result.refreshToken);
 
-        console.log("Login response:", response);
-
-        const newUserData = {
-          code: response.code,
-          message: response.message,
-          result: {
-            accessToken: response.result.accessToken,
-            refreshToken: response.result.refreshToken,
-            authenticated: response.result.authenticated,
-            email: response.result.email,
-            roles: response.result.roles,
-          },
-        };
-
-        dispatch(setAuth(newUserData));
-
-        handleShowSnackbar(true);
-
-        if (myInfo) {
-          const role = myInfo?.result?.roles?.[0]?.name || "USER";
-          if (role === "ADMIN") {
-            handleShowSnackbar(true, "Đăng nhập với quyền ADMIN");
-            setTimeout(() => {
-              navigate("/admin/dashboard");
-            }, 1000);
-          } else {
-            handleShowSnackbar(false, "USER không được quyền truy cập!");
-          }
-        }
+        await triggerMyInfo();
       }
     } catch (error) {
-      handleShowSnackbar(false);
+      const messageError =
+        error?.message || error?.data?.message || "Đăng nhập thất bại !";
+      handleShowSnackbar(false, messageError);
       console.log("Login failed:", error);
     }
   };
@@ -168,7 +158,6 @@ const Login = () => {
             </h3>
 
             <form onSubmit={handleSubmit(handleLogin)}>
-              {loginError && <p style={{ color: "red" }}>{loginError}</p>}
               <Box
                 sx={{
                   display: "flex",
@@ -189,7 +178,7 @@ const Login = () => {
                     id="email"
                     label="Email"
                     variant="standard"
-                    disabled={isLoginLoading || isMyInfoLoading}
+                    disabled={isLoginLoading}
                     {...register("email", {
                       required: "Email không được để trống",
                       pattern: {
@@ -215,7 +204,7 @@ const Login = () => {
                     label="Mật khẩu"
                     type={showPassword ? "text" : "password"}
                     variant="standard"
-                    disabled={isLoginLoading || isMyInfoLoading}
+                    disabled={isLoginLoading}
                     {...register("password", {
                       required: "Mật khẩu không được để trống",
                       minLength: {
@@ -236,7 +225,7 @@ const Login = () => {
                             onMouseDown={handleMouseDownPassword}
                             onMouseUp={handleMouseUpPassword}
                             edge="end"
-                            disabled={isLoginLoading || isMyInfoLoading}
+                            disabled={isLoginLoading}
                           >
                             {showPassword ? <VisibilityOff /> : <Visibility />}
                           </IconButton>
@@ -274,7 +263,7 @@ const Login = () => {
                     fontWeight: "normal",
                   }}
                   type="submit"
-                  disabled={isLoginLoading || isMyInfoLoading}
+                  disabled={isLoginLoading}
                 >
                   ĐĂNG NHẬP
                 </Button>

@@ -23,6 +23,7 @@
     "lodash": "^4.17.21",
     "normalize.css": "^8.0.1",
     "react": "^19.0.0",
+    "react-devtools": "^6.1.2",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.56.1",
     "react-redux": "^9.2.0",

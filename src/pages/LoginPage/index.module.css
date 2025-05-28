@@ -1,12 +1,6 @@
-.forgotPassword,
-.createAccount,
-.backToHome {
+.forgotPassword {
     color: black;
     text-decoration: none;
-}
-
-.forgotPassword {
-    margin-top: 24px;
 }
 
 .createAccount {
