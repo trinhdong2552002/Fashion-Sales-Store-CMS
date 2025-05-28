@@ -1,5 +1,5 @@
 // layouts/DashboardLayout/index.jsx
-import {  useState } from "react";
+import { Fragment, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   AppBar,
@@ -14,19 +14,22 @@ import {
   IconButton,
   Switch,
   Stack,
+  ListItemAvatar,
+  Avatar,
+  styled,
+  Grid,
 } from "@mui/material";
+import Badge from "@mui/material/Badge";
 import MenuIcon from "@mui/icons-material/Menu";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import CategoryIcon from "@mui/icons-material/Category";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import { useTheme } from "/src/context/ThemeProvider";
 import {
-  Chat,
   Height,
   Image,
   Inventory,
   LocalOffer,
-  Lock,
   Palette,
   Payment,
   People,
@@ -34,13 +37,46 @@ import {
   Store,
 } from "@mui/icons-material";
 import AuthButton from "../../components/AuthButton";
+import { useSelector } from "react-redux";
+import { selectUser } from "../../store/redux/user/reducer";
 
-const drawerWidth = 240;
+const drawerWidth = 300;
+
+const StyledBadge = styled(Badge)(({ theme }) => ({
+  "& .MuiBadge-badge": {
+    backgroundColor: "#44b700",
+    color: "#44b700",
+    boxShadow: `0 0 0 2px ${theme.palette.background.paper}`,
+    "&::after": {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "100%",
+      borderRadius: "50%",
+      animation: "ripple 1.2s infinite ease-in-out",
+      border: "1px solid currentColor",
+      content: '""',
+    },
+  },
+  "@keyframes ripple": {
+    "0%": {
+      transform: "scale(.8)",
+      opacity: 1,
+    },
+    "100%": {
+      transform: "scale(2.4)",
+      opacity: 0,
+    },
+  },
+}));
 
 const DashboardLayoutWrapper = ({ children }) => {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { toggleTheme, mode } = useTheme();
+  const myInfo = useSelector(selectUser);
+  console.log("myInfo", myInfo);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -109,11 +145,6 @@ const DashboardLayoutWrapper = ({ children }) => {
       icon: <People />,
     },
     {
-      path: "/admin/permissionsManagement",
-      title: "Quyền hạn",
-      icon: <Lock />,
-    },
-    {
       path: "/admin/paymentHistoriesManagement",
       title: "Lịch sử Thanh toán",
       icon: <Payment />,
@@ -130,44 +161,77 @@ const DashboardLayoutWrapper = ({ children }) => {
     },
   ];
 
-
   const drawer = (
-    <div>
+    <Fragment>
       <Toolbar />
-      <List>
-        {navigationItems.map((item) => (
-          <Link
-            to={item.path}
-            key={item.path}
-            style={{ textDecoration: "none", color: "inherit" }}
+
+      <Grid container spacing={5}>
+        <Grid size={12}>
+          <List>
+            {navigationItems.map((item) => (
+              <Link
+                to={item.path}
+                key={item.path}
+                style={{ textDecoration: "none", color: "inherit" }}
+              >
+                <ListItem
+                  sx={{
+                    "&:hover": {
+                      backgroundColor: mode === "dark" ? "#424242" : "#f5f5f5",
+                    },
+                    backgroundColor:
+                      location.pathname === item.path
+                        ? mode === "dark"
+                          ? "#616161"
+                          : "#f0f0f0"
+                        : "transparent",
+                  }}
+                >
+                  <ListItemIcon>{item.icon}</ListItemIcon>
+                  <ListItemText
+                    primary={item.title}
+                    sx={{
+                      color: mode === "dark" ? "#ffffff" : "black",
+                    }}
+                  />
+                </ListItem>
+              </Link>
+            ))}
+          </List>
+        </Grid>
+
+        <Grid size={12}>
+          <List
+            sx={{
+              backgroundColor: "#f5f5f5",
+              width: "100%",
+              p: "12px 10px",
+              position: "relative",
+              bottom: 0,
+              left: 0,
+            }}
           >
-            <ListItem
-              sx={{ 
-                "&:hover": {
-                  backgroundColor: mode === "dark" ? "#424242" : "#f5f5f5",
-                },
-                backgroundColor:
-                  location.pathname === item.path
-                    ? mode === "dark"
-                      ? "#616161"
-                      : "#e0e0e0"
-                    : "transparent",
-              }}
-            >
-              <ListItemIcon>{item.icon}</ListItemIcon>
+            <ListItem sx={{ p: 0 }}>
+              <ListItemAvatar sx={{ m: 0 }}>
+                <StyledBadge
+                  overlap="circular"
+                  anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                  variant="dot"
+                >
+                  <Avatar alt={myInfo.name} src={myInfo.avatarUrl} />
+                </StyledBadge>
+              </ListItemAvatar>
               <ListItemText
-                primary={item.title}
-                sx={{
-                  color: mode === "dark" ? "#ffffff" : "black",
-                }}
+                primary={myInfo.name}
+                secondary={
+                  <Typography variant="body2">{myInfo.email}</Typography>
+                }
               />
             </ListItem>
-          </Link>
-        ))}
-
-
-      </List>
-    </div>
+          </List>
+        </Grid>
+      </Grid>
+    </Fragment>
   );
 
   return (

@@ -11,8 +11,6 @@ const Admin = () => {
 
   const navigate = useNavigate();
 
-
-
   return (
     <DashboardLayoutWrapper>
       <Typography variant="h5" gutterBottom>
@@ -21,7 +19,7 @@ const Admin = () => {
 
       {/* Biểu đồ doanh thu và thống kê đơn hàng */}
       <Grid container spacing={3} sx={{ mb: 3 }}>
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card>
             <CardContent>
               {/* <LineChart
@@ -46,7 +44,7 @@ const Admin = () => {
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Card>
             <CardContent>
               <BarChart
