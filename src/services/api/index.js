@@ -73,7 +73,6 @@ export const axiosBaseQuery =
         // Nếu token không hợp lệ, xóa token cũ và yêu cầu đăng nhập lại
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
-        window.location.href = "/";
         return { error };
       }
 
