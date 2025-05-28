@@ -6,21 +6,52 @@ import {
   Button,
   Avatar,
   Divider,
+  styled,
 } from "@mui/material";
+import Badge from "@mui/material/Badge";
 import { Fragment, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useLogoutMutation } from "@/services/api/auth";
 import { clearAuth } from "../../store/redux/auth/reducer";
 import { clearUser, selectUser } from "../../store/redux/user/reducer";
+
+const StyledBadge = styled(Badge)(({ theme }) => ({
+  "& .MuiBadge-badge": {
+    backgroundColor: "#44b700",
+    color: "#44b700",
+    boxShadow: `0 0 0 2px ${theme.palette.background.paper}`,
+    "&::after": {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "100%",
+      borderRadius: "50%",
+      animation: "ripple 1.2s infinite ease-in-out",
+      border: "1px solid currentColor",
+      content: '""',
+    },
+  },
+  "@keyframes ripple": {
+    "0%": {
+      transform: "scale(.8)",
+      opacity: 1,
+    },
+    "100%": {
+      transform: "scale(2.4)",
+      opacity: 0,
+    },
+  },
+}));
 
 const AuthButton = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [logout] = useLogoutMutation();
 
-  const storedUser = useSelector(selectUser);
-  console.log("storedUser:", storedUser);
+  const user = useSelector(selectUser);
+  console.log("user", user);
 
   const [anchorEl, setAnchorEl] = useState(null);
 
@@ -44,13 +75,7 @@ const AuthButton = () => {
 
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
-      dispatch(
-        clearAuth({
-          accessToken: null,
-          refreshToken: null,
-          authenticated: false,
-        })
-      );
+      dispatch(clearAuth());
       dispatch(clearUser());
       handleMenuClose();
       navigate("/");
@@ -61,22 +86,20 @@ const AuthButton = () => {
 
   return (
     <Fragment>
-      {storedUser && (
-        <>
-          <Stack
-            direction="row"
-            alignItems="center"
-            onClick={handleMenuOpen}
-            sx={{ cursor: "pointer" }}
+      {user && (
+        <Fragment>
+          <StyledBadge
+            overlap="circular"
+            anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+            variant="dot"
           >
             <Avatar
-              src={storedUser.avatarUrl}
-              alt={storedUser.email || "User"}
+              sx={{ cursor: "pointer" }}
+              onClick={handleMenuOpen}
+              src={user.avatarUrl}
+              alt={user.name || user.email}
             />
-            <Typography sx={{ marginLeft: "5px" }}>
-              {storedUser.email || "Tài khoản"}
-            </Typography>
-          </Stack>
+          </StyledBadge>
 
           <Menu
             anchorEl={anchorEl}
@@ -89,7 +112,7 @@ const AuthButton = () => {
             <Divider />
             <MenuItem onClick={handleLogout}>Đăng xuất</MenuItem>
           </Menu>
-        </>
+        </Fragment>
       )}
     </Fragment>
   );
