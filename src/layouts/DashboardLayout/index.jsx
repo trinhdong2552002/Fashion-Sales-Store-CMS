@@ -1,6 +1,6 @@
 // layouts/DashboardLayout/index.jsx
 import { Fragment, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   AppBar,
   Toolbar,
@@ -12,33 +12,35 @@ import {
   ListItemText,
   Box,
   IconButton,
-  Switch,
   Stack,
   ListItemAvatar,
   Avatar,
   styled,
   Grid,
+  MenuItem,
+  Menu,
 } from "@mui/material";
 import Badge from "@mui/material/Badge";
 import MenuIcon from "@mui/icons-material/Menu";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import CategoryIcon from "@mui/icons-material/Category";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
-import { useTheme } from "/src/context/ThemeProvider";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import LogoutIcon from "@mui/icons-material/Logout";
 import {
   Height,
   Image,
   Inventory,
   LocalOffer,
-  Palette,
   Payment,
   People,
   Place,
   Store,
 } from "@mui/icons-material";
-import AuthButton from "../../components/AuthButton";
-import { useSelector } from "react-redux";
-import { selectUser } from "../../store/redux/user/reducer";
+import { useDispatch, useSelector } from "react-redux";
+import { clearUser, selectUser } from "../../store/redux/user/reducer";
+import { useLogoutMutation } from "../../services/api/auth";
+import { clearAuth } from "../../store/redux/auth/reducer";
 
 const drawerWidth = 300;
 
@@ -72,14 +74,48 @@ const StyledBadge = styled(Badge)(({ theme }) => ({
 }));
 
 const DashboardLayoutWrapper = ({ children }) => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [logout] = useLogoutMutation();
   const location = useLocation();
+  const [anchorEl, setAnchorEl] = useState(null);
+
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { toggleTheme, mode } = useTheme();
   const myInfo = useSelector(selectUser);
-  console.log("myInfo", myInfo);
+  const user = useSelector(selectUser);
+  console.log("user", user);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
+  };
+
+  const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleLogout = async () => {
+    try {
+      if (!localStorage.getItem("accessToken")) {
+        throw new Error("accessToken is required for logout");
+      }
+      const response = await logout({
+        accessToken: localStorage.getItem("accessToken"),
+      }).unwrap();
+      console.log("Logout response:", response);
+
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      dispatch(clearAuth());
+      dispatch(clearUser());
+      handleMenuClose();
+      navigate("/");
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
   };
 
   const navigationItems = [
@@ -102,7 +138,7 @@ const DashboardLayoutWrapper = ({ children }) => {
     {
       path: "/admin/colorsManagement",
       title: "Màu sắc",
-      icon: <Palette />,
+      icon: <Height />,
     },
     {
       path: "/admin/sizesManagement",
@@ -164,7 +200,6 @@ const DashboardLayoutWrapper = ({ children }) => {
   const drawer = (
     <Fragment>
       <Toolbar />
-
       <Grid container spacing={5}>
         <Grid size={12}>
           <List>
@@ -172,34 +207,26 @@ const DashboardLayoutWrapper = ({ children }) => {
               <Link
                 to={item.path}
                 key={item.path}
-                style={{ textDecoration: "none", color: "inherit" }}
+                style={{ textDecoration: "none", color: "black" }}
               >
                 <ListItem
                   sx={{
                     "&:hover": {
-                      backgroundColor: mode === "dark" ? "#424242" : "#f5f5f5",
+                      backgroundColor: "#f5f5f5",
                     },
                     backgroundColor:
                       location.pathname === item.path
-                        ? mode === "dark"
-                          ? "#616161"
-                          : "#f0f0f0"
+                        ? "#f0f0f0"
                         : "transparent",
                   }}
                 >
                   <ListItemIcon>{item.icon}</ListItemIcon>
-                  <ListItemText
-                    primary={item.title}
-                    sx={{
-                      color: mode === "dark" ? "#ffffff" : "black",
-                    }}
-                  />
+                  <ListItemText primary={item.title} />
                 </ListItem>
               </Link>
             ))}
           </List>
         </Grid>
-
         <Grid size={12}>
           <List
             sx={{
@@ -227,6 +254,44 @@ const DashboardLayoutWrapper = ({ children }) => {
                   <Typography variant="body2">{myInfo.email}</Typography>
                 }
               />
+
+              <IconButton onClick={handleMenuOpen}>
+                <MoreVertIcon color="action" />
+              </IconButton>
+
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleMenuClose}
+                onClick={handleMenuClose}
+                slotProps={{
+                  paper: {
+                    elevation: 0,
+                    sx: {
+                      overflow: "visible",
+                      filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
+                      ml: 5,
+                      "&::before": {
+                        content: '""',
+                        display: "block",
+                        position: "absolute",
+                        top: 26,
+                        left: -4,
+                        width: 10,
+                        height: 10,
+                        bgcolor: "background.paper",
+                        transform: "translateY(-50%) rotate(45deg)",
+                        zIndex: 0,
+                      },
+                    },
+                  },
+                }}
+              >
+                <MenuItem onClick={handleLogout}>
+                  <LogoutIcon color="action" sx={{mr: 1}}/>
+                  Đăng xuất
+                </MenuItem>
+              </Menu>
             </ListItem>
           </List>
         </Grid>
@@ -235,13 +300,11 @@ const DashboardLayoutWrapper = ({ children }) => {
   );
 
   return (
-    <Box sx={{ display: "flex" }}>
+    <Box sx={{ display: "flex", backgroundColor: "var(--color-bg)", height: "100vh" }}>
       <AppBar
         position="fixed"
         sx={{
           zIndex: (theme) => theme.zIndex.drawer + 1,
-          backgroundColor: mode === "dark" ? "#333333" : undefined,
-          color: mode === "dark" ? "#ffffff" : undefined,
         }}
       >
         <Toolbar>
@@ -254,31 +317,11 @@ const DashboardLayoutWrapper = ({ children }) => {
           >
             <MenuIcon />
           </IconButton>
-          <Typography
-            variant="h6"
-            noWrap
-            component="div"
-            sx={{ flexGrow: 1, color: mode === "dark" ? "#ffffff" : undefined }}
-          >
+          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
             Admin Dashboard
           </Typography>
           <Stack direction="row" alignItems="center" spacing={2}>
-            <AuthButton />
-            <Switch
-              checked={mode === "dark"}
-              onChange={toggleTheme}
-              sx={{
-                "& .MuiSwitch-switchBase": {
-                  color: mode === "dark" ? "#" : undefined,
-                },
-                "& .MuiSwitch-track": {
-                  backgroundColor: mode === "dark" ? "#bbbbbb" : undefined,
-                },
-                "& .MuiSwitch-thumb": {
-                  color: mode === "dark" ? "#ffffff" : undefined,
-                },
-              }}
-            />
+            
           </Stack>
         </Toolbar>
       </AppBar>
@@ -298,7 +341,6 @@ const DashboardLayoutWrapper = ({ children }) => {
             "& .MuiDrawer-paper": {
               boxSizing: "border-box",
               width: drawerWidth,
-              backgroundColor: mode === "dark" ? "#212121" : undefined,
             },
           }}
         >
@@ -311,7 +353,6 @@ const DashboardLayoutWrapper = ({ children }) => {
             "& .MuiDrawer-paper": {
               boxSizing: "border-box",
               width: drawerWidth,
-              backgroundColor: mode === "dark" ? "#212121" : undefined,
             },
           }}
           open
@@ -325,7 +366,6 @@ const DashboardLayoutWrapper = ({ children }) => {
           flexGrow: 1,
           p: 3,
           width: { sm: `calc(100% - ${drawerWidth}px)` },
-          backgroundColor: mode === "dark" ? "#000000" : undefined,
         }}
       >
         <Toolbar />
