@@ -77,7 +77,7 @@ const ForgotPassword = () => {
     <Stack
       alignItems={"center"}
       sx={{
-        backgroundColor: "#F8FAFC",
+        backgroundColor: "var(--color-bg)",
         height: "100vh",
       }}
     >
@@ -108,7 +108,7 @@ const ForgotPassword = () => {
             style={{
               fontWeight: "normal",
               marginTop: 20,
-              color: "var(--text-color)",
+              color: "var(--color-text-muted)",
               textAlign: "center",
             }}
           >
@@ -165,8 +165,6 @@ const ForgotPassword = () => {
               <Button
                 variant="contained"
                 sx={{
-                  backgroundColor: "black",
-                  color: "white",
                   p: "10px 80px",
                   mt: 3,
                   fontSize: "1.2rem",

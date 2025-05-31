@@ -135,7 +135,7 @@ const ResetPassword = () => {
       <Stack
         alignItems={"center"}
         sx={{
-          backgroundColor: "white",
+          backgroundColor: "var(--color-bg)",
           height: "100vh",
         }}
       >
@@ -162,6 +162,7 @@ const ResetPassword = () => {
               style={{
                 fontWeight: "500",
                 textAlign: "center",
+                margin: "20px 0 40px"
               }}
             >
               ĐẶT LẠI MẬT KHẨU
@@ -299,15 +300,9 @@ const ResetPassword = () => {
                 <Button
                   variant="contained"
                   sx={{
-                    backgroundColor: "black",
-                    color: "white",
-                    padding: "10px 24px",
-                    marginTop: "14px",
+                    p: "10px 80px",
                     fontSize: "1.2rem",
-                    fontWeight: "regular",
-                    "&:hover": {
-                      backgroundColor: "#333",
-                    },
+                    fontWeight: "normal",
                   }}
                   type="submit"
                   disabled={isLoading}

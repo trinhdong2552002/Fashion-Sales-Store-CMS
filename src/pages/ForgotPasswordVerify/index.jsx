@@ -136,7 +136,7 @@ const ForgotPasswordVerify = () => {
       <Stack
         alignItems={"center"}
         sx={{
-          backgroundColor: "#F8FAFC",
+          backgroundColor: "var(--color-bg)",
           height: "100vh",
         }}
       >
@@ -183,7 +183,12 @@ const ForgotPasswordVerify = () => {
                 <Typography variant="body1" sx={{ fontWeight: "bold" }}>
                   Email:
                 </Typography>
-                <Typography variant="body1">{email}</Typography>
+                <Typography
+                  variant="body1"
+                  sx={{ color: "var(--color-text-muted)" }}
+                >
+                  {email}
+                </Typography>
 
                 {error && (
                   <Typography color="error" sx={{ mt: 2 }}>
@@ -252,8 +257,6 @@ const ForgotPasswordVerify = () => {
               <Button
                 variant="contained"
                 sx={{
-                  backgroundColor: "black",
-                  color: "white",
                   p: "10px 80px",
                   fontSize: "1.2rem",
                   fontWeight: "normal",
