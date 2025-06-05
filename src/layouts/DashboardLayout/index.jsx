@@ -82,8 +82,6 @@ const DashboardLayoutWrapper = ({ children }) => {
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const myInfo = useSelector(selectUser);
-  const user = useSelector(selectUser);
-  console.log("user", user);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -200,7 +198,7 @@ const DashboardLayoutWrapper = ({ children }) => {
   const drawer = (
     <Fragment>
       <Toolbar />
-      <Grid container spacing={5}>
+      <Grid container>
         <Grid size={12}>
           <List>
             {navigationItems.map((item) => (
