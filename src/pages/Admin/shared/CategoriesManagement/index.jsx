@@ -1,537 +1,400 @@
-import React, { useState, useEffect, Component } from "react";
+import React, { useState, useEffect, Fragment } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import {
   Typography,
+  Grid,
   Button,
-  TextField,
+  Box,
+  IconButton,
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogContentText,
+  TextField,
   DialogActions,
-  Grid,
-  CircularProgress,
-  Alert,
   Snackbar,
-  Box,
-  PaginationItem,
-  styled,
+  Alert,
 } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
-import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import RestoreIcon from "@mui/icons-material/Restore";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import {
-  useListCategoriesQuery,
-  useAddCategoryMutation,
-  useUpdateCategoryMutation,
-  useDeleteCategoryMutation,
-  useRestoreCategoryMutation,
-} from "@/services/api/categories";
-import { useGetMyInfoQuery } from "@/services/api/auth";
-import {
-  setCategories,
-  setLoading as setCategoryLoading,
-  setError as setCategoryError,
-  selectCategories,
-} from "@/store/redux/categories/reducer";
-
-// Tùy chỉnh nút Back và Forward
-const CustomPaginationItem = styled(PaginationItem)(({ theme }) => ({
-  "&.MuiPaginationItem-previousNext": {
-    backgroundColor: theme.palette.primary.main,
-    color: theme.palette.common.white,
-    "&:hover": {
-      backgroundColor: theme.palette.primary.dark,
-    },
-    "&.Mui-disabled": {
-      backgroundColor: theme.palette.action.disabledBackground,
-      color: theme.palette.action.disabled,
-    },
-    borderRadius: "4px",
-    margin: "0 5px",
-    padding: "8px",
-  },
-}));
-
-// ErrorBoundary component để bắt lỗi
-class ErrorBoundary extends Component {
-  state = { hasError: false };
-
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
-
-  componentDidUpdate(prevProps) {
-    if (
-      prevProps.categoriesData !== this.props.categoriesData &&
-      this.state.hasError
-    ) {
-      this.setState({ hasError: false });
-    }
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <Alert severity="error">
-          Đã xảy ra lỗi khi hiển thị bảng danh mục.
-        </Alert>
-      );
-    }
-    return this.props.children;
-  }
-}
+  useAddCategoriesMutation,
+  useDeleteCategoriesMutation,
+  useListCategoriesForAdminQuery,
+  useRestoreCategoriesMutation,
+  useUpdateCategoriesMutation,
+} from "../../../../services/api/categories";
 
 const CategoriesManagement = () => {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const categories = useSelector(selectCategories);
-
-  const [page, setPage] = useState(0); // Trang bắt đầu từ 0
-  const [pageSize, setPageSize] = useState(10); // Mỗi trang 10 danh mục
-  const [totalRows, setTotalRows] = useState(0); // Tổng số danh mục
-  const [newCategory, setNewCategory] = useState({
+  const [openDialog, setOpenDialog] = useState(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [openRestoreDialog, setOpenRestoreDialog] = useState(false);
+  const [selectedCategoriesId, setSelectedCategoriesId] = useState(null);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [paginationModel, setPaginationModel] = useState({
+    page: 0,
+    pageSize: 10,
+  });
+  const [newCategories, setNewCategories] = useState({
     name: "",
     description: "",
   });
-  const [editCategory, setEditCategory] = useState(null);
-  const [openDialog, setOpenDialog] = useState(false);
-  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-  const [categoryToDelete, setCategoryToDelete] = useState(null);
   const [snackbar, setSnackbar] = useState({
     open: false,
-    message: "",
     severity: "success",
+    message: "",
   });
-
-  // Kiểm tra thông tin người dùng và quyền admin
-  const {
-    data: userInfo,
-    error: userError,
-    isLoading: userLoading,
-  } = useGetMyInfoQuery();
-
-  // Lấy danh sách danh mục với phân trang
-  const {
-    data: categoriesData,
-    isLoading: isFetchingCategories,
-    error: fetchCategoriesError,
-    refetch: refetchCategories,
-  } = useListCategoriesQuery(
-    { pageNo: page + 1, pageSize },
-    {
-      skip: userLoading,
-      refetchOnMountOrArgChange: true, // Force refetch on mount or argument change
-    }
-  );
-
-  const [addCategory] = useAddCategoryMutation();
-  const [updateCategory] = useUpdateCategoryMutation();
-  const [deleteCategory] = useDeleteCategoryMutation();
-  const [restoreCategory] = useRestoreCategoryMutation();
-
-  useEffect(() => {
-    if (userError) {
-      setSnackbar({
-        open: true,
-        message:
-          "Bạn cần đăng nhập để truy cập trang này: " +
-          (userError?.data?.message || "Lỗi không xác định"),
-        severity: "error",
-      });
-      setTimeout(() => navigate("/"), 2000);
-    } else if (userInfo) {
-      const roles = userInfo.result?.roles || [];
-      const hasAdminRole = roles.some(
-        (role) => role.name?.toUpperCase() === "ADMIN"
-      );
-      if (!hasAdminRole) {
-        setSnackbar({
-          open: true,
-          message: `Bạn không có quyền truy cập trang này. Vai trò: ${
-            roles.map((r) => r.name).join(", ") || "Không xác định"
-          }`,
-          severity: "error",
-        });
-        setTimeout(() => navigate("/"), 2000);
-      }
-    }
-  }, [userInfo, userError, userLoading, navigate]);
-
-  useEffect(() => {
-    dispatch(setCategoryLoading(isFetchingCategories));
-    if (fetchCategoriesError) {
-      const errorMessage =
-        fetchCategoriesError?.data?.message || "Lỗi khi tải danh sách danh mục";
-      dispatch(setCategoryError(errorMessage));
-      setSnackbar({
-        open: true,
-        message: errorMessage,
-        severity: "error",
-      });
-    } else if (categoriesData && categoriesData.items) {
-      const validCategories = categoriesData.items.filter(
-        (category) => category && category.id && category.name
-      );
-      dispatch(setCategories(validCategories));
-      dispatch(setCategoryError(null));
-      setTotalRows(categoriesData.totalItems || 0);
-      console.log("Categories in state after filtering:", validCategories);
-      console.log("Total rows:", categoriesData.totalItems);
-    } else {
-      dispatch(setCategories([]));
-      setTotalRows(0);
-    }
-  }, [categoriesData, isFetchingCategories, fetchCategoriesError, dispatch]);
-
-  const columns = [
-    { field: "id", headerName: "ID", width: 90 },
-    { field: "name", headerName: "Tên", width: 150 },
-    { field: "description", headerName: "Mô tả", width: 200 },
-    { field: "createdBy", headerName: "Người tạo", width: 200 },
-    { field: "createdAt", headerName: "Ngày tạo", width: 120 },
-    { field: "status", headerName: "Trạng thái", width: 120 },
-    {
-      field: "actions",
-      headerName: "Hành động",
-      width: 200,
-      renderCell: (params) => (
-        <>
-          <Button
-            variant="text"
-            color="primary"
-            onClick={() => handleEditCategory(params.row)}
-          >
-            Sửa
-          </Button>
-          {params.row.status === "ACTIVE" ? (
-            <Button
-              variant="text"
-              color="error"
-              onClick={() => handleOpenDeleteDialog(params.row.id)}
-            >
-              Xóa
-            </Button>
-          ) : (
-            <Button
-              variant="text"
-              color="success"
-              onClick={() => handleRestoreCategory(params.row.id)}
-            >
-              Khôi phục
-            </Button>
-          )}
-        </>
-      ),
-    },
-  ];
-
-  const handleAddCategory = async () => {
-    try {
-      await addCategory(newCategory).unwrap();
-      setNewCategory({ name: "", description: "" });
-      setOpenDialog(false);
-      setSnackbar({
-        open: true,
-        message: "Thêm danh mục thành công!",
-        severity: "success",
-      });
-      refetchCategories();
-    } catch (error) {
-      const errorMessage = error.data?.message || "Lỗi khi thêm danh mục";
-      setSnackbar({
-        open: true,
-        message: errorMessage,
-        severity: "error",
-      });
-    }
-  };
-
-  const handleEditCategory = (category) => {
-    setEditCategory(category);
-    setNewCategory({
-      name: category.name,
-      description: category.description || "",
-    });
-    setOpenDialog(true);
-  };
-
-  const handleUpdateCategory = async () => {
-    try {
-      await updateCategory({
-        id: editCategory.id,
-        ...newCategory,
-      }).unwrap();
-      setEditCategory(null);
-      setNewCategory({ name: "", description: "" });
-      setOpenDialog(false);
-      setSnackbar({
-        open: true,
-        message: "Cập nhật danh mục thành công!",
-        severity: "success",
-      });
-      refetchCategories();
-    } catch (error) {
-      const errorMessage = error.data?.message || "Lỗi khi cập nhật danh mục";
-      setSnackbar({
-        open: true,
-        message: errorMessage,
-        severity: "error",
-      });
-    }
-  };
-
-  const handleOpenDeleteDialog = (id) => {
-    setCategoryToDelete(id);
-    setOpenDeleteDialog(true);
-  };
-
-  const handleDeleteCategory = async () => {
-    try {
-      await deleteCategory(categoryToDelete).unwrap();
-      setOpenDeleteDialog(false);
-      setCategoryToDelete(null);
-      setSnackbar({
-        open: true,
-        message: "Xóa danh mục thành công!",
-        severity: "success",
-      });
-      refetchCategories();
-    } catch (error) {
-      const errorMessage = error.data?.message || "Lỗi khi xóa danh mục";
-      setSnackbar({
-        open: true,
-        message: errorMessage,
-        severity: "error",
-      });
-    }
-  };
-
-  const handleRestoreCategory = async (id) => {
-    try {
-      await restoreCategory(id).unwrap();
-      setSnackbar({
-        open: true,
-        message: "Khôi phục danh mục thành công!",
-        severity: "success",
-      });
-      refetchCategories();
-    } catch (error) {
-      const errorMessage = error.data?.message || "Lỗi khi khôi phục danh mục";
-      setSnackbar({
-        open: true,
-        message: errorMessage,
-        severity: "error",
-      });
-    }
-  };
-
-  const handleCloseDialog = () => {
-    setOpenDialog(false);
-    setEditCategory(null);
-    setNewCategory({ name: "", description: "" });
-  };
-
-  const handleCloseDeleteDialog = () => {
-    setOpenDeleteDialog(false);
-    setCategoryToDelete(null);
-  };
 
   const handleCloseSnackbar = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
+  const handleOpenDeleteDialog = (id) => {
+    setSelectedCategoriesId(id);
+    setOpenDeleteDialog(true);
+  };
+
+  const handleOpenRestoreDialog = (id) => {
+    setSelectedCategoriesId(id);
+    setOpenRestoreDialog(true);
+  };
+
   const handleRefresh = () => {
-    setPage(0); // Reset to first page on refresh
-    refetchCategories();
+    refetch();
     setSnackbar({
       open: true,
-      message: "Danh sách danh mục đã được làm mới!",
+      message: "Danh mục đã được làm mới!",
       severity: "info",
     });
   };
 
-  if (userLoading || isFetchingCategories) {
-    return <CircularProgress />;
-  }
+  // TODO: UseQuery with two parameters useQuery(arg, options)
+  const {
+    data: dataCategories,
+    isLoading: isLoadingCategories,
+    isError: errorCategories,
+    refetch,
+  } = useListCategoriesForAdminQuery(
+    {
+      pageNo: paginationModel.page + 1,
+      pageSize: paginationModel.pageSize,
+    },
+    {
+      refetchOnFocus: true,
+      refetchOnMountOrArgChange: true,
+      refetchOnReconnect: true,
+    }
+  );
+
+  const [addCategories] = useAddCategoriesMutation();
+  const [updateCategories] = useUpdateCategoriesMutation();
+  const [deleteCategories] = useDeleteCategoriesMutation();
+  const [restoreCategories] = useRestoreCategoriesMutation();
+
+  const dataRowCategories = dataCategories?.result?.items || [];
+  const totalRows = dataCategories?.result?.totalItems || 0;
+
+  const columnsCategories = [
+    { field: "id", headerName: "ID", width: 100 },
+    { field: "name", headerName: "Tên danh mục", width: 200 },
+    { field: "description", headerName: "Mô tả danh mục", width: 200 },
+    { field: "status", headerName: "Trạng thái", width: 200 },
+    { field: "createdBy", headerName: "Người tạo", width: 200 },
+    { field: "updatedBy", headerName: "Người cập nhật", width: 200 },
+    { field: "createdAt", headerName: "Ngày tạo", width: 200 },
+    { field: "updatedAt", headerName: "Ngày cập nhật", width: 200 },
+    {
+      field: "action",
+      headerName: "Hành động",
+      width: 150,
+      renderCell: (params) => (
+        <Fragment>
+          <IconButton onClick={() => handleEditCategories(params.row.id)}>
+            <EditIcon color="primary" />
+          </IconButton>
+          {params.row?.status === "INACTIVE" ? (
+            <IconButton onClick={() => handleOpenRestoreDialog(params.row.id)}>
+              <RestoreIcon color="success" />
+            </IconButton>
+          ) : (
+            <IconButton onClick={() => handleOpenDeleteDialog(params.row.id)}>
+              <DeleteIcon color="error" />
+            </IconButton>
+          )}
+        </Fragment>
+      ),
+    },
+  ];
+
+  const handleDeleteCategories = async () => {
+    try {
+      await deleteCategories({ id: selectedCategoriesId }).unwrap();
+      setSnackbar({
+        open: true,
+        severity: "success",
+        message: "Xoá danh mục thành công!",
+      });
+      refetch();
+    } catch (error) {
+      setSnackbar({
+        open: true,
+        severity: "error",
+        message: "Xoá danh mục thất bại!",
+      });
+      console.error("Delete error:", error);
+    }
+    setOpenDeleteDialog(false);
+    setSelectedCategoriesId(null);
+  };
+
+  const handleRestoreCategories = async () => {
+    try {
+      await restoreCategories({ id: selectedCategoriesId }).unwrap();
+      setSnackbar({
+        open: true,
+        severity: "success",
+        message: "Khôi phục danh mục thành công!",
+      });
+      refetch();
+    } catch (error) {
+      setSnackbar({
+        open: true,
+        severity: "error",
+        message: "Khôi phục danh mục thất bại!",
+      });
+      console.error("Restore error:", error);
+    }
+    setOpenRestoreDialog(false);
+    setSelectedCategoriesId(null);
+  };
+
+  const handleAddCategories = async (data) => {
+    try {
+      await addCategories({
+        name: data?.name,
+        description: data?.description,
+      }).unwrap();
+      console.log("Add categories", addCategories);
+      setNewCategories({ name: "", description: "" });
+      setOpenDialog(false);
+      setSnackbar({
+        open: true,
+        severity: "success",
+        message: "Thêm danh mục thành công!",
+      });
+      refetch();
+    } catch (error) {
+      console.log("Error add categories", error);
+      setSnackbar({
+        open: true,
+        severity: "error",
+        message: "Thêm danh mục thất bại!",
+      });
+    }
+  };
+
+  const handleEditCategories = async (id) => {
+    const categoryToEdit = dataRowCategories.find((item) => item.id === id);
+    if (categoryToEdit) {
+      setNewCategories({
+        name: categoryToEdit.name,
+        description: categoryToEdit.description,
+      });
+      setSelectedCategoriesId(id);
+      setIsEditMode(true);
+      setOpenDialog(true);
+    }
+  };
+
+  const handleUpdateCategories = async () => {
+    try {
+      await updateCategories({
+        id: selectedCategoriesId,
+        name: newCategories.name,
+        description: newCategories.description,
+      }).unwrap();
+      setSnackbar({
+        open: true,
+        severity: "success",
+        message: "Cập nhật danh mục thành công!",
+      });
+      setNewCategories({ name: "", description: "" });
+      setOpenDialog(false);
+      setIsEditMode(false);
+      setSelectedCategoriesId(null);
+      refetch();
+    } catch (error) {
+      console.log("Update error", error);
+    }
+  };
+
+  if (errorCategories) return <p>Error loading category.</p>;
 
   return (
     <DashboardLayoutWrapper>
-      <Typography variant="h5" gutterBottom>
-        Quản lý Danh mục
-      </Typography>
-      <Grid container spacing={2} sx={{ mb: 2 }}>
-        <Grid item xs={12} sm={9}>
-          <Button variant="outlined" onClick={handleRefresh}>
-            <RefreshIcon sx={{ mr: 1 }} />
-            Làm mới
-          </Button>
+      <Box sx={{ m: "0 10px" }}>
+        <Typography variant="h5" gutterBottom>
+          Quản lý Danh mục
+        </Typography>
+        <Grid
+          container
+          sx={{ mb: 2 }}
+          display={"flex"}
+          justifyContent={"space-between"}
+          alignItems={"center"}
+        >
+          <Grid size={{ xs: 12, sm: 3 }}>
+            <Button variant="outlined" onClick={handleRefresh}>
+              <RefreshIcon />
+              Làm mới
+            </Button>
+          </Grid>
+          <Grid size={{ xs: 12, sm: 2 }}>
+            <Button
+              variant="contained"
+              color="primary"
+              fullWidth
+              onClick={() => {
+                setNewCategories({ name: "", description: "" });
+                setIsEditMode(false);
+                setOpenDialog(true);
+              }}
+            >
+              Thêm danh mục
+            </Button>
+          </Grid>
         </Grid>
-        <Grid item xs={12} sm={3}>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => setOpenDialog(true)}
-            fullWidth
-          >
-            Thêm danh mục
-          </Button>
-        </Grid>
-      </Grid>
 
-      {fetchCategoriesError ? (
-        <Alert severity="error">
-          {fetchCategoriesError?.data?.message || "Lỗi khi tải danh mục"}
-        </Alert>
-      ) : categories.length === 0 ? (
-        <Alert severity="info">Hiện tại không có danh mục nào.</Alert>
-      ) : (
-        <ErrorBoundary categoriesData={categoriesData}>
-          <div style={{ height: 500, width: "100%" }}>
-            <DataGrid
-              rows={categories}
-              columns={columns}
-              paginationMode="server" // Phân trang phía server
-              rowCount={totalRows} // Tổng số danh mục
-              page={page}
-              pageSize={pageSize}
-              onPageChange={(newPage) => {
-                console.log("Page changed to:", newPage); 
-                setPage(newPage);
-              }}
-              onPageSizeChange={(newPageSize) => {
-                console.log("Page size changed to:", newPageSize); 
-                setPageSize(newPageSize);
-                setPage(0); // Reset về trang đầu khi đổi pageSize
-              }}
-              rowsPerPageOptions={[10, 20, 50]} // Tùy chọn số hàng mỗi trang
-              getRowId={(row) => row.id}
-              disableSelectionOnClick
-              loading={isFetchingCategories}
-              localeText={{
-                noRowsLabel: "Hiện tại không có danh mục nào",
-              }}
-              slots={{
-                pagination: () => (
-                  <Box
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="space-between"
-                    p={2}
-                  >
-                    <Typography variant="body2">
-                      Tổng số danh mục: {totalRows}
-                    </Typography>
-                    <Box display="flex" alignItems="center">
-                      <CustomPaginationItem
-                        type="previous"
-                        component={Button}
-                        disabled={page === 0}
-                        onClick={() => setPage(page - 1)}
-                      />
-                      <Typography variant="body2" mx={2}>
-                        Trang {page + 1} / {Math.ceil(totalRows / pageSize)}
-                      </Typography>
-                      <CustomPaginationItem
-                        type="next"
-                        component={Button}
-                        disabled={page >= Math.ceil(totalRows / pageSize) - 1}
-                        onClick={() => setPage(page + 1)}
-                      />
-                    </Box>
-                  </Box>
-                ),
-              }}
+        <Box height={500} width={"100%"}>
+          <DataGrid
+            columns={columnsCategories}
+            rows={dataRowCategories}
+            loading={isLoadingCategories}
+            slotProps={{
+              loadingOverlay: {
+                variant: "linear-progress",
+                noRowsVariant: "linear-progress",
+              },
+            }}
+            pagination
+            paginationMode="server"
+            sortingMode="server"
+            filterMode="server"
+            rowCount={totalRows}
+            paginationModel={paginationModel}
+            onPaginationModelChange={setPaginationModel}
+            pageSizeOptions={[10, 20, 50]}
+          />
+        </Box>
+
+        {/* TODO: Dialog add categories */}
+        <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+          <DialogTitle>
+            {isEditMode ? "Cập nhật danh mục" : "Thêm danh mục"}
+          </DialogTitle>
+          <DialogContent>
+            <TextField
+              label="Tên danh mục"
+              value={newCategories.name}
+              onChange={(e) =>
+                setNewCategories({ ...newCategories, name: e.target.value })
+              }
+              fullWidth
+              sx={{ mt: 2 }}
             />
-          </div>
-        </ErrorBoundary>
-      )}
+            <TextField
+              label="Mô tả danh mục"
+              value={newCategories.description}
+              onChange={(e) =>
+                setNewCategories({
+                  ...newCategories,
+                  description: e.target.value,
+                })
+              }
+              fullWidth
+              sx={{ mt: 3 }}
+            />
+          </DialogContent>
+          <DialogActions sx={{ p: 2 }}>
+            <Button color="error" onClick={() => setOpenDialog(false)}>
+              Huỷ
+            </Button>
+            {isEditMode ? (
+              <Button variant="contained" onClick={handleUpdateCategories}>
+                Cập nhật
+              </Button>
+            ) : (
+              <Button
+                variant="contained"
+                onClick={() => handleAddCategories(newCategories)}
+              >
+                Thêm
+              </Button>
+            )}
+          </DialogActions>
+        </Dialog>
 
-      {/* Dialog thêm/sửa danh mục */}
-      <Dialog
-        open={openDialog}
-        onClose={handleCloseDialog}
-        aria-labelledby="category-dialog-title"
-        aria-describedby="category-dialog-description"
-      >
-        <DialogTitle id="category-dialog-title">
-          {editCategory ? "Sửa danh mục" : "Thêm danh mục"}
-        </DialogTitle>
-        <DialogContent>
-          <TextField
-            label="Tên"
-            value={newCategory.name}
-            onChange={(e) =>
-              setNewCategory({ ...newCategory, name: e.target.value })
-            }
-            fullWidth
-            sx={{ mt: 2 }}
-            required
-          />
-          <TextField
-            label="Mô tả"
-            value={newCategory.description}
-            onChange={(e) =>
-              setNewCategory({ ...newCategory, description: e.target.value })
-            }
-            fullWidth
-            sx={{ mt: 2 }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button
-            variant="outlined"
-            color="primary"
-            onClick={handleCloseDialog}
-          >
-            Hủy
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={editCategory ? handleUpdateCategory : handleAddCategory}
-          >
-            {editCategory ? "Cập nhật" : "Thêm"}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        <Dialog
+          open={openDeleteDialog}
+          onClose={() => setOpenDeleteDialog(false)}
+        >
+          <DialogTitle>Xác nhận xoá</DialogTitle>
+          <DialogContent>
+            <Typography>
+              Bạn có chắc chắn muốn xoá danh mục này không?
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button color="error" onClick={() => setOpenDeleteDialog(false)}>
+              Huỷ
+            </Button>
+            <Button
+              variant="contained"
+              color="error"
+              onClick={handleDeleteCategories}
+            >
+              Xoá
+            </Button>
+          </DialogActions>
+        </Dialog>
 
-      {/* Dialog xác nhận xóa */}
-      <Dialog
-        open={openDeleteDialog}
-        onClose={handleCloseDeleteDialog}
-        aria-labelledby="delete-dialog-title"
-        aria-describedby="delete-dialog-description"
-      >
-        <DialogTitle id="delete-dialog-title">
-          Xác nhận xóa danh mục
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText id="delete-dialog-description">
-            Bạn có chắc chắn muốn xóa danh mục này không? Hành động này không
-            thể hoàn tác.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDeleteDialog} color="primary">
-            Hủy
-          </Button>
-          <Button onClick={handleDeleteCategory} color="error" autoFocus>
-            Xóa
-          </Button>
-        </DialogActions>
-      </Dialog>
+        <Dialog
+          open={openRestoreDialog}
+          onClose={() => setOpenRestoreDialog(false)}
+        >
+          <DialogTitle>Xác nhận khôi phục</DialogTitle>
+          <DialogContent>
+            <Typography>
+              Bạn có chắc chắn muốn khôi phục danh mục này không?
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button color="error" onClick={() => setOpenRestoreDialog(false)}>
+              Huỷ
+            </Button>
+            <Button
+              variant="contained"
+              color="success"
+              onClick={handleRestoreCategories}
+            >
+              Khôi phục
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </Box>
 
-      {/* Snackbar hiển thị thông báo */}
       <Snackbar
         open={snackbar.open}
-        autoHideDuration={6000} // Increase duration to match ProductImagesManagement
+        autoHideDuration={4000}
         onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       >
         <Alert
           onClose={handleCloseSnackbar}
           severity={snackbar.severity}
+          variant="standard"
           sx={{ width: "100%" }}
         >
           {snackbar.message}
