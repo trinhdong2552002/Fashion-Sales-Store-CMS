@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Fragment } from "react";
+import React, { useState, Fragment } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import {
   Typography,
@@ -14,10 +14,6 @@ import {
   Snackbar,
   Alert,
 } from "@mui/material";
-import RefreshIcon from "@mui/icons-material/Refresh";
-import RestoreIcon from "@mui/icons-material/Restore";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import {
   useAddCategoriesMutation,
@@ -25,17 +21,19 @@ import {
   useListCategoriesForAdminQuery,
   useRestoreCategoriesMutation,
   useUpdateCategoriesMutation,
-} from "../../../../services/api/categories";
+} from "@/services/api/categories";
+import { Delete, Edit, Refresh, Restore } from "@mui/icons-material";
 
 const CategoriesManagement = () => {
-  const [openDialog, setOpenDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [openRestoreDialog, setOpenRestoreDialog] = useState(false);
+  const [openAddDialog, setOpenAddDialog] = useState(false);
+  const [openUpdateDialog, setOpenUpdateDialog] = useState(false);
   const [selectedCategoriesId, setSelectedCategoriesId] = useState(null);
-  const [isEditMode, setIsEditMode] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
-    pageSize: 10,
+    pageSize: 5,
   });
   const [newCategories, setNewCategories] = useState({
     name: "",
@@ -82,11 +80,10 @@ const CategoriesManagement = () => {
       pageSize: paginationModel.pageSize,
     },
     {
-      refetchOnFocus: true,
       refetchOnMountOrArgChange: true,
-      refetchOnReconnect: true,
     }
   );
+  console.log("dataCategories", dataCategories);
 
   const [addCategories] = useAddCategoriesMutation();
   const [updateCategories] = useUpdateCategoriesMutation();
@@ -112,15 +109,15 @@ const CategoriesManagement = () => {
       renderCell: (params) => (
         <Fragment>
           <IconButton onClick={() => handleEditCategories(params.row.id)}>
-            <EditIcon color="primary" />
+            <Edit color="primary" />
           </IconButton>
           {params.row?.status === "INACTIVE" ? (
             <IconButton onClick={() => handleOpenRestoreDialog(params.row.id)}>
-              <RestoreIcon color="success" />
+              <Restore color="success" />
             </IconButton>
           ) : (
             <IconButton onClick={() => handleOpenDeleteDialog(params.row.id)}>
-              <DeleteIcon color="error" />
+              <Delete color="error" />
             </IconButton>
           )}
         </Fragment>
@@ -136,17 +133,17 @@ const CategoriesManagement = () => {
         severity: "success",
         message: "Xoá danh mục thành công!",
       });
+      setOpenDeleteDialog(false);
+      setSelectedCategoriesId(null);
       refetch();
     } catch (error) {
+      const errorMessage = error?.data?.message;
       setSnackbar({
         open: true,
         severity: "error",
-        message: "Xoá danh mục thất bại!",
+        message: errorMessage,
       });
-      console.error("Delete error:", error);
     }
-    setOpenDeleteDialog(false);
-    setSelectedCategoriesId(null);
   };
 
   const handleRestoreCategories = async () => {
@@ -155,60 +152,65 @@ const CategoriesManagement = () => {
       setSnackbar({
         open: true,
         severity: "success",
-        message: "Khôi phục danh mục thành công!",
+        message: "Khôi phục danh mục thành công !",
       });
+      setOpenRestoreDialog(false);
+      setSelectedCategoriesId(null);
       refetch();
     } catch (error) {
+      const errorMessage = error?.data?.message;
       setSnackbar({
         open: true,
         severity: "error",
-        message: "Khôi phục danh mục thất bại!",
+        message: errorMessage,
       });
-      console.error("Restore error:", error);
     }
-    setOpenRestoreDialog(false);
-    setSelectedCategoriesId(null);
   };
 
   const handleAddCategories = async (data) => {
+    setSubmitted(true);
+
     try {
       await addCategories({
         name: data?.name,
         description: data?.description,
       }).unwrap();
       console.log("Add categories", addCategories);
-      setNewCategories({ name: "", description: "" });
-      setOpenDialog(false);
       setSnackbar({
         open: true,
         severity: "success",
-        message: "Thêm danh mục thành công!",
+        message: "Thêm danh mục thành công !",
       });
+      setNewCategories({ name: "", description: "" });
+      setOpenAddDialog(false);
+      setSubmitted(false);
       refetch();
     } catch (error) {
-      console.log("Error add categories", error);
+      const errorMessage = error?.data?.message;
       setSnackbar({
         open: true,
         severity: "error",
-        message: "Thêm danh mục thất bại!",
+        message: errorMessage,
       });
     }
   };
 
   const handleEditCategories = async (id) => {
     const categoryToEdit = dataRowCategories.find((item) => item.id === id);
+
     if (categoryToEdit) {
       setNewCategories({
         name: categoryToEdit.name,
         description: categoryToEdit.description,
       });
       setSelectedCategoriesId(id);
-      setIsEditMode(true);
-      setOpenDialog(true);
+      setOpenUpdateDialog(true);
     }
   };
 
   const handleUpdateCategories = async () => {
+    setSubmitted(true);
+
     try {
       await updateCategories({
         id: selectedCategoriesId,
@@ -218,15 +220,20 @@ const CategoriesManagement = () => {
       setSnackbar({
         open: true,
         severity: "success",
-        message: "Cập nhật danh mục thành công!",
+        message: "Cập nhật danh mục thành công !",
       });
       setNewCategories({ name: "", description: "" });
-      setOpenDialog(false);
-      setIsEditMode(false);
+      setOpenUpdateDialog(false);
+      setSubmitted(false);
       setSelectedCategoriesId(null);
       refetch();
     } catch (error) {
-      console.log("Update error", error);
+      const errorMessage = error?.data?.message;
+      setSnackbar({
+        open: true,
+        severity: "error",
+        message: errorMessage,
+      });
     }
   };
 
@@ -247,7 +254,7 @@ const CategoriesManagement = () => {
         >
           <Grid size={{ xs: 12, sm: 3 }}>
             <Button variant="outlined" onClick={handleRefresh}>
-              <RefreshIcon />
+              <Refresh />
               Làm mới
             </Button>
           </Grid>
@@ -258,8 +265,7 @@ const CategoriesManagement = () => {
               fullWidth
               onClick={() => {
                 setNewCategories({ name: "", description: "" });
-                setIsEditMode(false);
-                setOpenDialog(true);
+                setOpenAddDialog(true);
               }}
             >
               Thêm danh mục
@@ -285,15 +291,19 @@ const CategoriesManagement = () => {
             rowCount={totalRows}
             paginationModel={paginationModel}
             onPaginationModelChange={setPaginationModel}
-            pageSizeOptions={[10, 20, 50]}
+            pageSizeOptions={[5, 10, 15]}
           />
         </Box>
 
         {/* TODO: Dialog add categories */}
-        <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
-          <DialogTitle>
-            {isEditMode ? "Cập nhật danh mục" : "Thêm danh mục"}
-          </DialogTitle>
+        <Dialog
+          open={openAddDialog}
+          onClose={() => {
+            setOpenAddDialog(false);
+            setSubmitted(false);
+          }}
+        >
+          <DialogTitle>Thêm danh mục</DialogTitle>
           <DialogContent>
             <TextField
               label="Tên danh mục"
@@ -303,6 +313,12 @@ const CategoriesManagement = () => {
               }
               fullWidth
               sx={{ mt: 2 }}
+              error={submitted && !newCategories.name}
+              helperText={
+                submitted && !newCategories.name
+                  ? "name không được để trống"
+                  : ""
+              }
             />
             <TextField
               label="Mô tả danh mục"
@@ -318,21 +334,65 @@ const CategoriesManagement = () => {
             />
           </DialogContent>
           <DialogActions sx={{ p: 2 }}>
-            <Button color="error" onClick={() => setOpenDialog(false)}>
+            <Button color="error" onClick={() => setOpenAddDialog(false)}>
               Huỷ
             </Button>
-            {isEditMode ? (
-              <Button variant="contained" onClick={handleUpdateCategories}>
-                Cập nhật
-              </Button>
-            ) : (
-              <Button
-                variant="contained"
-                onClick={() => handleAddCategories(newCategories)}
-              >
-                Thêm
-              </Button>
-            )}
+
+            <Button
+              variant="contained"
+              onClick={() => handleAddCategories(newCategories)}
+            >
+              Thêm
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* TODO: Dialog update categories */}
+        <Dialog
+          open={openUpdateDialog}
+          onClose={() => {
+            setOpenUpdateDialog(false);
+            setSubmitted(false);
+          }}
+        >
+          <DialogTitle>Cập nhật danh mục</DialogTitle>
+          <DialogContent>
+            <TextField
+              label="Tên danh mục"
+              value={newCategories.name}
+              onChange={(e) =>
+                setNewCategories({ ...newCategories, name: e.target.value })
+              }
+              fullWidth
+              sx={{ mt: 2 }}
+              error={submitted && !newCategories.name}
+              helperText={
+                submitted && !newCategories.name
+                  ? "name không được để trống"
+                  : ""
+              }
+            />
+            <TextField
+              label="Mô tả danh mục"
+              value={newCategories.description}
+              onChange={(e) =>
+                setNewCategories({
+                  ...newCategories,
+                  description: e.target.value,
+                })
+              }
+              fullWidth
+              sx={{ mt: 3 }}
+            />
+          </DialogContent>
+          <DialogActions sx={{ p: 2 }}>
+            <Button color="error" onClick={() => setOpenUpdateDialog(false)}>
+              Huỷ
+            </Button>
+
+            <Button variant="contained" onClick={handleUpdateCategories}>
+              Cập nhật
+            </Button>
           </DialogActions>
         </Dialog>
 
@@ -340,10 +400,10 @@ const CategoriesManagement = () => {
           open={openDeleteDialog}
           onClose={() => setOpenDeleteDialog(false)}
         >
-          <DialogTitle>Xác nhận xoá</DialogTitle>
+          <DialogTitle>Xác nhận xoá ?</DialogTitle>
           <DialogContent>
             <Typography>
-              Bạn có chắc chắn muốn xoá danh mục này không?
+              Bạn có chắc chắn muốn xoá danh mục này không ?
             </Typography>
           </DialogContent>
           <DialogActions>
@@ -364,10 +424,10 @@ const CategoriesManagement = () => {
           open={openRestoreDialog}
           onClose={() => setOpenRestoreDialog(false)}
         >
-          <DialogTitle>Xác nhận khôi phục</DialogTitle>
+          <DialogTitle>Xác nhận khôi phục ?</DialogTitle>
           <DialogContent>
             <Typography>
-              Bạn có chắc chắn muốn khôi phục danh mục này không?
+              Bạn có chắc chắn muốn khôi phục danh mục này không ?
             </Typography>
           </DialogContent>
           <DialogActions>
