@@ -131,14 +131,14 @@ const Login = () => {
           width={100}
           height={100}
           draggable="false"
-          style={{ margin: "40px 0" }}
+          style={{ margin: "30px 0" }}
         />
 
         <Box
           sx={{
             backgroundColor: "white",
             width: 500,
-            height: 650,
+            height: 600,
             borderRadius: 2,
             boxShadow: "0px 4px 30px 5px rgba(0, 0, 0, 0.3)",
           }}
