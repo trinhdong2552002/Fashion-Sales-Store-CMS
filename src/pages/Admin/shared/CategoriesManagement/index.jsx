@@ -23,6 +23,7 @@ import {
   useUpdateCategoriesMutation,
 } from "@/services/api/categories";
 import { Delete, Edit, Refresh, Restore } from "@mui/icons-material";
+import ErrorDisplay from "../../../../components/ErrorDisplay";
 
 const CategoriesManagement = () => {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
@@ -237,7 +238,19 @@ const CategoriesManagement = () => {
     }
   };
 
-  if (errorCategories) return <p>Error loading category.</p>;
+  if (errorCategories)
+    return (
+      <ErrorDisplay
+        error={
+          errorCategories
+            ? {
+                message:
+                  "Không tải được danh mục. Vui lòng kiểm tra kết nối của bạn và thử lại !",
+              }
+            : null
+        }
+      />
+    );
 
   return (
     <DashboardLayoutWrapper>
