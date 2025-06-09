@@ -44,7 +44,7 @@ export const categoriesApi = baseApi.injectEndpoints({
               if (draft) {
                 const category = draft.find((item) => item.id === id);
                 if (category) {
-                  category.status = "INACTIVE"; // Update status to INACTIVE
+                  category.status = "INACTIVE"; 
                 }
                 return draft;
               }
@@ -54,7 +54,7 @@ export const categoriesApi = baseApi.injectEndpoints({
         try {
           await queryFulfilled;
         } catch (error) {
-          patchResult.undo(); // Hoàn tác nếu có lỗi
+          patchResult.undo(); 
           console.log("Error deleting category:", error);
         }
       },
@@ -73,7 +73,7 @@ export const categoriesApi = baseApi.injectEndpoints({
               if (draft) {
                 const category = draft.find((item) => item.id === id);
                 if (category) {
-                  category.status = "ACTIVE"; // Update status to ACTIVE
+                  category.status = "ACTIVE"; 
                 }
                 return draft;
               }

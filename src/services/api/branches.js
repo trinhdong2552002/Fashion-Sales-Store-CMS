@@ -10,15 +10,19 @@ export const branchesApi = baseApi.injectEndpoints({
       }),
       providesTags: [TAG_KEYS.BRANCHES],
     }),
-    addBranch: builder.mutation({
+    addBranches: builder.mutation({
       query: (branch) => ({
         url: "/v1/branches",
         method: "POST",
-        data: branch,
+        data: {
+          name: branch.name,
+          location: branch.location,
+          phone: branch.phone,
+        },
       }),
       invalidatesTags: [TAG_KEYS.BRANCHES],
     }),
-    updateBranch: builder.mutation({
+    updateBranches: builder.mutation({
       query: ({ id, ...branch }) => ({
         url: `/v1/branches/${id}`,
         method: "PUT",
@@ -26,55 +30,61 @@ export const branchesApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [TAG_KEYS.BRANCHES],
     }),
-    deleteBranch: builder.mutation({
-      query: (id) => ({
+    deleteBranches: builder.mutation({
+      query: ({ id }) => ({
         url: `/v1/branches/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: [TAG_KEYS.BRANCHES],
-      async onQueryStarted(id, { dispatch, queryFulfilled }) {
+      async onQueryStarted({ id }, { dispatch, queryFulfilled }) {
+        // Optimistic Update
+        const patchResult = dispatch(
+          branchesApi.util.updateQueryData(
+            "listBranchesForAdmin",
+            undefined,
+            (draft) => {
+              if (draft) {
+                const branches = draft.find((item) => item.id === id);
+                if (branches) {
+                  branches.status = "INACTIVE";
+                }
+                return draft;
+              }
+            }
+          )
+        );
         try {
           await queryFulfilled;
-          dispatch(
-            branchesApi.util.updateQueryData(
-              "listBranches",
-              undefined,
-              (draft) => {
-                const index = draft.items.findIndex((item) => item.id === id);
-                if (index !== -1) {
-                  draft.items[index].status = "INACTIVE";
-                }
-              }
-            )
-          );
         } catch (error) {
-          console.log("Error deleting branch:", error);
+          patchResult.undo();
+          console.log("Error deleting branches:", error);
         }
       },
     }),
-    restoreBranch: builder.mutation({
+    restoreBranches: builder.mutation({
       query: ({ id }) => ({
         url: `/v1/branches/${id}/restore`,
         method: "PATCH",
       }),
       invalidatesTags: [TAG_KEYS.BRANCHES],
       async onQueryStarted({ id }, { dispatch, queryFulfilled }) {
+        const patchResult = dispatch(
+          branchesApi.util.updateQueryData(
+            "listBranches",
+            undefined,
+            (draft) => {
+              const index = draft.items.findIndex((item) => item.id === id);
+              if (index !== -1) {
+                draft.items[index].status = "ACTIVE";
+              }
+            }
+          )
+        );
         try {
           await queryFulfilled;
-          dispatch(
-            branchesApi.util.updateQueryData(
-              "listBranches",
-              undefined,
-              (draft) => {
-                const index = draft.items.findIndex((item) => item.id === id);
-                if (index !== -1) {
-                  draft.items[index].status = "ACTIVE";
-                }
-              }
-            )
-          );
         } catch (error) {
-          console.log("Error restoring branch:", error);
+          patchResult.undo();
+          console.log("Error restoring branches:", error);
         }
       },
     }),
@@ -83,8 +93,8 @@ export const branchesApi = baseApi.injectEndpoints({
 
 export const {
   useListBranchesForAdminQuery,
-  useAddBranchMutation,
-  useUpdateBranchMutation,
-  useDeleteBranchMutation,
-  useRestoreBranchMutation,
+  useAddBranchesMutation,
+  useUpdateBranchesMutation,
+  useDeleteBranchesMutation,
+  useRestoreBranchesMutation,
 } = branchesApi;
