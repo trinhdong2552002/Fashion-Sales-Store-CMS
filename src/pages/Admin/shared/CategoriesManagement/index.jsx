@@ -1,8 +1,7 @@
-import React, { useState, Fragment } from "react";
+import { useState, Fragment } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import {
   Typography,
-  Grid,
   Button,
   Box,
   IconButton,
@@ -22,7 +21,7 @@ import {
   useRestoreCategoriesMutation,
   useUpdateCategoriesMutation,
 } from "@/services/api/categories";
-import { Delete, Edit, Refresh, Restore } from "@mui/icons-material";
+import { Add, Delete, Edit, Refresh, Restore } from "@mui/icons-material";
 import ErrorDisplay from "../../../../components/ErrorDisplay";
 
 const CategoriesManagement = () => {
@@ -46,29 +45,6 @@ const CategoriesManagement = () => {
     message: "",
   });
 
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
-
-  const handleOpenDeleteDialog = (id) => {
-    setSelectedCategoriesId(id);
-    setOpenDeleteDialog(true);
-  };
-
-  const handleOpenRestoreDialog = (id) => {
-    setSelectedCategoriesId(id);
-    setOpenRestoreDialog(true);
-  };
-
-  const handleRefresh = () => {
-    refetch();
-    setSnackbar({
-      open: true,
-      message: "Danh mục đã được làm mới!",
-      severity: "info",
-    });
-  };
-
   // TODO: UseQuery with two parameters useQuery(arg, options)
   const {
     data: dataCategories,
@@ -84,8 +60,6 @@ const CategoriesManagement = () => {
       refetchOnMountOrArgChange: true,
     }
   );
-  console.log("dataCategories", dataCategories);
-
   const [addCategories] = useAddCategoriesMutation();
   const [updateCategories] = useUpdateCategoriesMutation();
   const [deleteCategories] = useDeleteCategoriesMutation();
@@ -125,6 +99,39 @@ const CategoriesManagement = () => {
       ),
     },
   ];
+
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
+  const handleOpenDeleteDialog = (id) => {
+    setSelectedCategoriesId(id);
+    setOpenDeleteDialog(true);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setSelectedCategoriesId(null);
+    setOpenDeleteDialog(false);
+  };
+
+  const handleOpenRestoreDialog = (id) => {
+    setSelectedCategoriesId(id);
+    setOpenRestoreDialog(true);
+  };
+
+  const handleCloseRestoreDialog = () => {
+    setSelectedCategoriesId(null);
+    setOpenRestoreDialog(false);
+  };
+
+  const handleRefresh = () => {
+    refetch();
+    setSnackbar({
+      open: true,
+      message: "Danh mục đã được làm mới!",
+      severity: "info",
+    });
+  };
 
   const handleDeleteCategories = async () => {
     try {
@@ -176,7 +183,6 @@ const CategoriesManagement = () => {
         name: data?.name,
         description: data?.description,
       }).unwrap();
-      console.log("Add categories", addCategories);
       setSnackbar({
         open: true,
         severity: "success",
@@ -196,7 +202,7 @@ const CategoriesManagement = () => {
     }
   };
 
-  const handleEditCategories = async (id) => {
+  const handleEditCategories = (id) => {
     const categoryToEdit = dataRowCategories.find((item) => item.id === id);
 
     if (categoryToEdit) {
@@ -215,8 +221,7 @@ const CategoriesManagement = () => {
     try {
       await updateCategories({
         id: selectedCategoriesId,
-        name: newCategories.name,
-        description: newCategories.description,
+        ...newCategories,
       }).unwrap();
       setSnackbar({
         open: true,
@@ -258,33 +263,32 @@ const CategoriesManagement = () => {
         <Typography variant="h5" gutterBottom>
           Quản lý Danh mục
         </Typography>
-        <Grid
-          container
+        <Box
           sx={{ mb: 2 }}
           display={"flex"}
           justifyContent={"space-between"}
           alignItems={"center"}
         >
-          <Grid size={{ xs: 12, sm: 3 }}>
-            <Button variant="outlined" onClick={handleRefresh}>
-              <Refresh />
-              Làm mới
-            </Button>
-          </Grid>
-          <Grid size={{ xs: 12, sm: 2 }}>
-            <Button
-              variant="contained"
-              color="primary"
-              fullWidth
-              onClick={() => {
-                setNewCategories({ name: "", description: "" });
-                setOpenAddDialog(true);
-              }}
-            >
-              Thêm danh mục
-            </Button>
-          </Grid>
-        </Grid>
+          <Button
+            variant="outlined"
+            onClick={handleRefresh}
+            startIcon={<Refresh />}
+          >
+            Làm mới
+          </Button>
+
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              setNewCategories({ name: "", description: "" });
+              setOpenAddDialog(true);
+            }}
+            startIcon={<Add />}
+          >
+            Thêm danh mục
+          </Button>
+        </Box>
 
         <Box height={500} width={"100%"}>
           <DataGrid
@@ -353,6 +357,7 @@ const CategoriesManagement = () => {
 
             <Button
               variant="contained"
+              color="primary"
               onClick={() => handleAddCategories(newCategories)}
             >
               Thêm
@@ -409,10 +414,7 @@ const CategoriesManagement = () => {
           </DialogActions>
         </Dialog>
 
-        <Dialog
-          open={openDeleteDialog}
-          onClose={() => setOpenDeleteDialog(false)}
-        >
+        <Dialog open={openDeleteDialog} onClose={handleCloseDeleteDialog}>
           <DialogTitle>Xác nhận xoá ?</DialogTitle>
           <DialogContent>
             <Typography>
@@ -420,7 +422,7 @@ const CategoriesManagement = () => {
             </Typography>
           </DialogContent>
           <DialogActions>
-            <Button color="error" onClick={() => setOpenDeleteDialog(false)}>
+            <Button color="error" onClick={handleCloseDeleteDialog}>
               Huỷ
             </Button>
             <Button
@@ -433,10 +435,7 @@ const CategoriesManagement = () => {
           </DialogActions>
         </Dialog>
 
-        <Dialog
-          open={openRestoreDialog}
-          onClose={() => setOpenRestoreDialog(false)}
-        >
+        <Dialog open={openRestoreDialog} onClose={handleCloseRestoreDialog}>
           <DialogTitle>Xác nhận khôi phục ?</DialogTitle>
           <DialogContent>
             <Typography>
@@ -444,7 +443,7 @@ const CategoriesManagement = () => {
             </Typography>
           </DialogContent>
           <DialogActions>
-            <Button color="error" onClick={() => setOpenRestoreDialog(false)}>
+            <Button color="error" onClick={handleCloseRestoreDialog}>
               Huỷ
             </Button>
             <Button
@@ -462,7 +461,7 @@ const CategoriesManagement = () => {
         open={snackbar.open}
         autoHideDuration={4000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        anchorOrigin={{ vertical: "right", horizontal: "right" }}
       >
         <Alert
           onClose={handleCloseSnackbar}
