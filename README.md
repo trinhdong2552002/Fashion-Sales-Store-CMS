@@ -48,3 +48,8 @@ npm run dev
 ```
 
 The build artifacts will be stored in the `dist/` directory.
+
+### Login to CMS
+
+Email: admin@gmail.com
+Password: 123456
