@@ -19,14 +19,6 @@ const userSlice = createSlice({
       state.dob = action.payload.dob;
       state.gender = action.payload.gender;
     },
-    updateUser: (state, action) => {
-      state.id = action.payload.id || state.id;
-      state.name = action.payload.name || state.name;
-      state.email = action.payload.email || state.email;
-      state.avatarUrl = action.payload.avatarUrl || state.avatarUrl;
-      state.dob = action.payload.dob || state.dob;
-      state.gender = action.payload.gender || state.gender;
-    },
     clearUser: (state) => {
       state.id = null;
       state.name = null;
@@ -38,8 +30,7 @@ const userSlice = createSlice({
   },
 });
 
-export const { setUser, updateUser, clearUser } = userSlice.actions;
+export const { setUser, clearUser } = userSlice.actions;
 export const selectUser = (state) => state.user;
-export const selectUserId = (state) => state.user.user?.id;
 
 export default userSlice.reducer;
