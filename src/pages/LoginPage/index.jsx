@@ -104,14 +104,14 @@ const Login = () => {
     <Fragment>
       <Snackbar
         open={snackbar.open}
-        autoHideDuration={3000}
+        autoHideDuration={4000}
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: "right", horizontal: "right" }}
       >
         <Alert
           onClose={handleCloseSnackbar}
           severity={snackbar.severity}
-          variant="filled"
+          variant="standard"
           sx={{ width: "100%", p: "10px 20px" }}
         >
           {snackbar.message}
