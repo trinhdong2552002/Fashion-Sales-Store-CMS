@@ -33,7 +33,7 @@ const CategoriesManagement = () => {
   const [submitted, setSubmitted] = useState(false);
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
-    pageSize: 5,
+    pageSize: 10,
   });
   const [newCategories, setNewCategories] = useState({
     name: "",
@@ -49,17 +49,19 @@ const CategoriesManagement = () => {
   const {
     data: dataCategories,
     isLoading: isLoadingCategories,
-    isError: errorCategories,
+    isError: isErrorCategories,
     refetch,
   } = useListCategoriesForAdminQuery(
     {
-      pageNo: paginationModel.page + 1,
-      pageSize: paginationModel.pageSize,
+      pageNo: paginationModel.page,
+      size: paginationModel.pageSize,
     },
     {
       refetchOnMountOrArgChange: true,
     }
   );
+  console.log("data categories", dataCategories);
+
   const [addCategories] = useAddCategoriesMutation();
   const [updateCategories] = useUpdateCategoriesMutation();
   const [deleteCategories] = useDeleteCategoriesMutation();
@@ -128,7 +130,7 @@ const CategoriesManagement = () => {
     refetch();
     setSnackbar({
       open: true,
-      message: "Danh mục đã được làm mới!",
+      message: "Danh sách danh mục đã được làm mới!",
       severity: "info",
     });
   };
@@ -243,219 +245,214 @@ const CategoriesManagement = () => {
     }
   };
 
-  if (errorCategories)
+  if (isErrorCategories)
     return (
       <ErrorDisplay
-        error={
-          errorCategories
-            ? {
-                message:
-                  "Không tải được danh mục. Vui lòng kiểm tra kết nối của bạn và thử lại !",
-              }
-            : null
-        }
+        error={{
+          message:
+            "Không tải được danh sách danh mục. Vui lòng kiểm tra kết nối của bạn và thử lại !",
+        }}
       />
     );
 
   return (
     <DashboardLayoutWrapper>
-      <Box sx={{ m: "0 10px" }}>
-        <Typography variant="h5" gutterBottom>
-          Quản lý Danh mục
-        </Typography>
-        <Box
-          sx={{ mb: 2 }}
-          display={"flex"}
-          justifyContent={"space-between"}
-          alignItems={"center"}
+      <Typography variant="h5" gutterBottom>
+        Quản lý Danh mục
+      </Typography>
+
+      <Box
+        sx={{ mb: 2 }}
+        display={"flex"}
+        justifyContent={"space-between"}
+        alignItems={"center"}
+      >
+        <Button
+          variant="outlined"
+          onClick={handleRefresh}
+          startIcon={<Refresh />}
         >
-          <Button
-            variant="outlined"
-            onClick={handleRefresh}
-            startIcon={<Refresh />}
-          >
-            Làm mới
+          Làm mới
+        </Button>
+
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => {
+            setNewCategories({ name: "", description: "" });
+            setOpenAddDialog(true);
+          }}
+          startIcon={<Add />}
+        >
+          Thêm danh mục
+        </Button>
+      </Box>
+
+      {/* TODO: Datagrid categories */}
+      <Box height={500} width={"100%"}>
+        <DataGrid
+          columns={columnsCategories}
+          rows={dataRowCategories}
+          loading={isLoadingCategories}
+          slotProps={{
+            loadingOverlay: {
+              variant: "linear-progress",
+              noRowsVariant: "linear-progress",
+            },
+          }}
+          localeText={{
+            noRowsLabel: "Không có dữ liệu",
+          }}
+          pagination
+          paginationMode="server"
+          sortingMode="server"
+          filterMode="server"
+          rowCount={totalRows}
+          paginationModel={paginationModel}
+          onPaginationModelChange={setPaginationModel}
+          pageSizeOptions={[10, 15, 20]}
+        />
+      </Box>
+
+      {/* TODO: Dialog add categories */}
+      <Dialog
+        open={openAddDialog}
+        onClose={() => {
+          setOpenAddDialog(false);
+          setSubmitted(false);
+        }}
+      >
+        <DialogTitle>Thêm danh mục</DialogTitle>
+        <DialogContent>
+          <TextField
+            label="Tên danh mục"
+            value={newCategories.name}
+            onChange={(e) =>
+              setNewCategories({ ...newCategories, name: e.target.value })
+            }
+            fullWidth
+            sx={{ mt: 2 }}
+            error={submitted && !newCategories.name}
+            helperText={
+              submitted && !newCategories.name ? "name không được để trống" : ""
+            }
+          />
+          <TextField
+            label="Mô tả danh mục"
+            value={newCategories.description}
+            onChange={(e) =>
+              setNewCategories({
+                ...newCategories,
+                description: e.target.value,
+              })
+            }
+            fullWidth
+            sx={{ mt: 3 }}
+          />
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button color="error" onClick={() => setOpenAddDialog(false)}>
+            Huỷ
           </Button>
 
           <Button
             variant="contained"
             color="primary"
-            onClick={() => {
-              setNewCategories({ name: "", description: "" });
-              setOpenAddDialog(true);
-            }}
-            startIcon={<Add />}
+            onClick={() => handleAddCategories(newCategories)}
           >
-            Thêm danh mục
+            Thêm
           </Button>
-        </Box>
+        </DialogActions>
+      </Dialog>
 
-        <Box height={500} width={"100%"}>
-          <DataGrid
-            columns={columnsCategories}
-            rows={dataRowCategories}
-            loading={isLoadingCategories}
-            slotProps={{
-              loadingOverlay: {
-                variant: "linear-progress",
-                noRowsVariant: "linear-progress",
-              },
-            }}
-            pagination
-            paginationMode="server"
-            sortingMode="server"
-            filterMode="server"
-            rowCount={totalRows}
-            paginationModel={paginationModel}
-            onPaginationModelChange={setPaginationModel}
-            pageSizeOptions={[5, 10, 15]}
+      {/* TODO: Dialog update categories */}
+      <Dialog
+        open={openUpdateDialog}
+        onClose={() => {
+          setOpenUpdateDialog(false);
+          setSubmitted(false);
+        }}
+      >
+        <DialogTitle>Cập nhật danh mục</DialogTitle>
+        <DialogContent>
+          <TextField
+            label="Tên danh mục"
+            value={newCategories.name}
+            onChange={(e) =>
+              setNewCategories({ ...newCategories, name: e.target.value })
+            }
+            fullWidth
+            sx={{ mt: 2 }}
+            error={submitted && !newCategories.name}
+            helperText={
+              submitted && !newCategories.name ? "name không được để trống" : ""
+            }
           />
-        </Box>
+          <TextField
+            label="Mô tả danh mục"
+            value={newCategories.description}
+            onChange={(e) =>
+              setNewCategories({
+                ...newCategories,
+                description: e.target.value,
+              })
+            }
+            fullWidth
+            sx={{ mt: 3 }}
+          />
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button color="error" onClick={() => setOpenUpdateDialog(false)}>
+            Huỷ
+          </Button>
 
-        {/* TODO: Dialog add categories */}
-        <Dialog
-          open={openAddDialog}
-          onClose={() => {
-            setOpenAddDialog(false);
-            setSubmitted(false);
-          }}
-        >
-          <DialogTitle>Thêm danh mục</DialogTitle>
-          <DialogContent>
-            <TextField
-              label="Tên danh mục"
-              value={newCategories.name}
-              onChange={(e) =>
-                setNewCategories({ ...newCategories, name: e.target.value })
-              }
-              fullWidth
-              sx={{ mt: 2 }}
-              error={submitted && !newCategories.name}
-              helperText={
-                submitted && !newCategories.name
-                  ? "name không được để trống"
-                  : ""
-              }
-            />
-            <TextField
-              label="Mô tả danh mục"
-              value={newCategories.description}
-              onChange={(e) =>
-                setNewCategories({
-                  ...newCategories,
-                  description: e.target.value,
-                })
-              }
-              fullWidth
-              sx={{ mt: 3 }}
-            />
-          </DialogContent>
-          <DialogActions sx={{ p: 2 }}>
-            <Button color="error" onClick={() => setOpenAddDialog(false)}>
-              Huỷ
-            </Button>
+          <Button variant="contained" onClick={handleUpdateCategories}>
+            Cập nhật
+          </Button>
+        </DialogActions>
+      </Dialog>
 
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => handleAddCategories(newCategories)}
-            >
-              Thêm
-            </Button>
-          </DialogActions>
-        </Dialog>
+      <Dialog open={openDeleteDialog} onClose={handleCloseDeleteDialog}>
+        <DialogTitle>Xác nhận xoá ?</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Bạn có chắc chắn muốn xoá danh mục này không ?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button color="error" onClick={handleCloseDeleteDialog}>
+            Huỷ
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={handleDeleteCategories}
+          >
+            Xoá
+          </Button>
+        </DialogActions>
+      </Dialog>
 
-        {/* TODO: Dialog update categories */}
-        <Dialog
-          open={openUpdateDialog}
-          onClose={() => {
-            setOpenUpdateDialog(false);
-            setSubmitted(false);
-          }}
-        >
-          <DialogTitle>Cập nhật danh mục</DialogTitle>
-          <DialogContent>
-            <TextField
-              label="Tên danh mục"
-              value={newCategories.name}
-              onChange={(e) =>
-                setNewCategories({ ...newCategories, name: e.target.value })
-              }
-              fullWidth
-              sx={{ mt: 2 }}
-              error={submitted && !newCategories.name}
-              helperText={
-                submitted && !newCategories.name
-                  ? "name không được để trống"
-                  : ""
-              }
-            />
-            <TextField
-              label="Mô tả danh mục"
-              value={newCategories.description}
-              onChange={(e) =>
-                setNewCategories({
-                  ...newCategories,
-                  description: e.target.value,
-                })
-              }
-              fullWidth
-              sx={{ mt: 3 }}
-            />
-          </DialogContent>
-          <DialogActions sx={{ p: 2 }}>
-            <Button color="error" onClick={() => setOpenUpdateDialog(false)}>
-              Huỷ
-            </Button>
-
-            <Button variant="contained" onClick={handleUpdateCategories}>
-              Cập nhật
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        <Dialog open={openDeleteDialog} onClose={handleCloseDeleteDialog}>
-          <DialogTitle>Xác nhận xoá ?</DialogTitle>
-          <DialogContent>
-            <Typography>
-              Bạn có chắc chắn muốn xoá danh mục này không ?
-            </Typography>
-          </DialogContent>
-          <DialogActions>
-            <Button color="error" onClick={handleCloseDeleteDialog}>
-              Huỷ
-            </Button>
-            <Button
-              variant="contained"
-              color="error"
-              onClick={handleDeleteCategories}
-            >
-              Xoá
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        <Dialog open={openRestoreDialog} onClose={handleCloseRestoreDialog}>
-          <DialogTitle>Xác nhận khôi phục ?</DialogTitle>
-          <DialogContent>
-            <Typography>
-              Bạn có chắc chắn muốn khôi phục danh mục này không ?
-            </Typography>
-          </DialogContent>
-          <DialogActions>
-            <Button color="error" onClick={handleCloseRestoreDialog}>
-              Huỷ
-            </Button>
-            <Button
-              variant="contained"
-              color="success"
-              onClick={handleRestoreCategories}
-            >
-              Khôi phục
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </Box>
+      <Dialog open={openRestoreDialog} onClose={handleCloseRestoreDialog}>
+        <DialogTitle>Xác nhận khôi phục ?</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Bạn có chắc chắn muốn khôi phục danh mục này không ?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button color="error" onClick={handleCloseRestoreDialog}>
+            Huỷ
+          </Button>
+          <Button
+            variant="contained"
+            color="success"
+            onClick={handleRestoreCategories}
+          >
+            Khôi phục
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Snackbar
         open={snackbar.open}
