@@ -32,6 +32,7 @@ import {
   Image,
   Inventory,
   LocalOffer,
+  Palette,
   Payment,
   People,
   Place,
@@ -136,7 +137,7 @@ const DashboardLayoutWrapper = ({ children }) => {
     {
       path: "/admin/colorsManagement",
       title: "Màu sắc",
-      icon: <Height />,
+      icon: <Palette />,
     },
     {
       path: "/admin/sizesManagement",
