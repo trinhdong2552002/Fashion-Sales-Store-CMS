@@ -1,45 +1,116 @@
-import React from "react";
+import React, { useState } from "react";
 import { DataGrid } from "@mui/x-data-grid";
-import { Typography } from "@mui/material";
+import { Alert, Box, Button, Snackbar, Typography } from "@mui/material";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import { useListProvincesQuery } from "@/services/api/province";
+import { Refresh } from "@mui/icons-material";
 
 const ProvincesManagement = () => {
-  const { data, isLoading, error } = useListProvincesQuery({
-    pageNo: 1,
-    pageSize: 60, // API trả về tối đa 60 items, nên đặt pageSize = 60
+  const [paginationModel, setPaginationModel] = useState({
+    page: 0,
+    pageSize: 10,
   });
 
-  const columns = [
-    { field: "id", headerName: "ID", width: 90 },
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    severity: "success",
+    message: "",
+  });
+
+  const {
+    data: dataProvinces,
+    isLoading: isLoadingProvinces,
+    isError: isErrorProvinces,
+    refetch,
+  } = useListProvincesQuery(
+    {
+      page: paginationModel.page,
+      size: paginationModel.pageSize,
+    },
+    {
+      refetchOnMountOrArgChange: true,
+    }
+  );
+
+  const dataRowProvinces = dataProvinces?.result?.items || [];
+  const totalRows = dataProvinces?.result?.totalItems || 0;
+
+  const columnsProvince = [
+    { field: "id", headerName: "ID", width: 150 },
     { field: "name", headerName: "Tên tỉnh / thành phố", width: 200 },
   ];
 
-  const rows = data?.items || [];
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
+  const handleRefresh = () => {
+    refetch();
+    setSnackbar({
+      open: true,
+      message: "Danh sách vai trò đã được làm mới !",
+      severity: "info",
+    });
+  };
 
   return (
     <DashboardLayoutWrapper>
       <Typography variant="h5" gutterBottom>
         Quản lý tỉnh / thành phố
       </Typography>
-      {error && (
+      <Button
+        sx={{ mb: 2 }}
+        variant="outlined"
+        onClick={handleRefresh}
+        startIcon={<Refresh />}
+      >
+        Làm mới
+      </Button>
+      {isErrorProvinces && (
         <Typography color="error" gutterBottom>
-          Lỗi khi tải dữ liệu: {error.data?.message || "Không thể kết nối đến server"}
+          Lỗi khi tải dữ liệu:{" "}
+          {isErrorProvinces.data?.message || "Không thể kết nối đến server"}
         </Typography>
       )}
-      <div style={{ height: 400, width: "100%" }}>
+      <Box height={500} width={"100%"}>
         <DataGrid
-          rows={rows}
-          columns={columns}
-          pageSize={5}
-          rowsPerPageOptions={[5, 10, 20]}
+          columns={columnsProvince}
+          rows={dataRowProvinces}
           disableSelectionOnClick
-          loading={isLoading}
+          loading={isLoadingProvinces}
+          slotProps={{
+            loadingOverlay: {
+              variant: "linear-progress",
+              noRowsVariant: "linear-progress",
+            },
+          }}
           localeText={{
             noRowsLabel: "Không có dữ liệu",
           }}
+          pagination
+          paginationMode="server"
+          rowCount={totalRows}
+          paginationModel={paginationModel}
+          onPaginationModelChange={setPaginationModel}
+          pageSizeOptions={[10, 15, 20]}
         />
-      </div>
+      </Box>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "right", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          variant="standard"
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </DashboardLayoutWrapper>
   );
 };
