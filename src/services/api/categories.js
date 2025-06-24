@@ -4,15 +4,15 @@ import { TAG_KEYS } from "@/constants/tagKeys";
 export const categoriesApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     listCategoriesForAdmin: builder.query({
-      query: ({ pageNo, pageSize }) => ({
-        url: "/v1/categories/admin",
-        params: { pageNo, pageSize },
+      query: ({ page, size }) => ({
+        url: "/v1/admin/categories",
+        params: { page, size },
       }),
       providesTags: [TAG_KEYS.CATEGORIES],
     }),
     addCategories: builder.mutation({
       query: (category) => ({
-        url: "/v1/categories",
+        url: "/v1/admin/categories",
         method: "POST",
         data: {
           name: category.name,
@@ -23,7 +23,7 @@ export const categoriesApi = baseApi.injectEndpoints({
     }),
     updateCategories: builder.mutation({
       query: ({ id, ...category }) => ({
-        url: `/v1/categories/${id}`,
+        url: `/v1/admin/categories/${id}`,
         method: "PUT",
         data: category,
       }),
@@ -31,7 +31,7 @@ export const categoriesApi = baseApi.injectEndpoints({
     }),
     deleteCategories: builder.mutation({
       query: ({ id }) => ({
-        url: `/v1/categories/${id}`,
+        url: `/v1/admin/categories/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: [TAG_KEYS.CATEGORIES],
@@ -44,7 +44,7 @@ export const categoriesApi = baseApi.injectEndpoints({
               if (draft) {
                 const category = draft.find((item) => item.id === id);
                 if (category) {
-                  category.status = "INACTIVE"; 
+                  category.status = "INACTIVE";
                 }
                 return draft;
               }
@@ -54,7 +54,7 @@ export const categoriesApi = baseApi.injectEndpoints({
         try {
           await queryFulfilled;
         } catch (error) {
-          patchResult.undo(); 
+          patchResult.undo();
           console.log("Error deleting category:", error);
         }
       },
@@ -73,7 +73,7 @@ export const categoriesApi = baseApi.injectEndpoints({
               if (draft) {
                 const category = draft.find((item) => item.id === id);
                 if (category) {
-                  category.status = "ACTIVE"; 
+                  category.status = "ACTIVE";
                 }
                 return draft;
               }

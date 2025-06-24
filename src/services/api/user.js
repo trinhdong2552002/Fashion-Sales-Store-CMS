@@ -5,15 +5,22 @@ export const userApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     createUserWithRole: builder.mutation({
       query: (userData) => ({
-        url: "/v1/users",
+        url: "/v1/admin/users",
         method: "POST",
         data: userData,
       }),
       invalidatesTags: [TAG_KEYS.USER],
     }),
+
     fetchAllUsersForAdmin: builder.query({
-      query: ({ pageNo = 1, pageSize = 10, sortBy = "name-asc", search = "", roles = "" } = {}) => ({
-        url: "/v1/users",
+      query: ({
+        pageNo = 1,
+        pageSize = 10,
+        sortBy = "name-asc",
+        search = "",
+        roles = "",
+      } = {}) => ({
+        url: "/v1/admin/users",
         method: "GET",
         params: { pageNo, pageSize, sortBy, search, roles },
       }),
@@ -26,6 +33,7 @@ export const userApi = baseApi.injectEndpoints({
         items: response.result.items,
       }),
     }),
+
     fetchUserById: builder.query({
       query: (id) => ({
         url: `/v1/users/${id}`,
@@ -33,16 +41,18 @@ export const userApi = baseApi.injectEndpoints({
       }),
       providesTags: [TAG_KEYS.USER],
     }),
+
     softDeleteUser: builder.mutation({
       query: (id) => ({
-        url: `/v1/users/${id}`,
+        url: `/v1/admin/users/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: [TAG_KEYS.USER],
     }),
+
     restoreUser: builder.mutation({
       query: (id) => ({
-        url: `/v1/users/${id}/restore`,
+        url: `/v1/admin/users/${id}/restore`,
         method: "PATCH",
       }),
       invalidatesTags: [TAG_KEYS.USER],

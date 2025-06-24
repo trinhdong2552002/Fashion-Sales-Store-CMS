@@ -8,7 +8,7 @@ export const authApi = baseApi.injectEndpoints({
     // Đăng nhập
     login: builder.mutation({
       query: (credentials) => ({
-        url: "/v1/auth/login",
+        url: "/v1/public/auth/login",
         method: "POST",
         data: {
           email: credentials.email,
@@ -48,7 +48,7 @@ export const authApi = baseApi.injectEndpoints({
     // Xác thực mật khẩu
     forgotPasswordVerify: builder.mutation({
       query: (credentials) => ({
-        url: "/v1/auth/forgot-password/verify-code",
+        url: "/v1/public/auth/forgot-password/verify-code",
         method: "POST",
         data: {
           email: credentials.email,
@@ -61,7 +61,7 @@ export const authApi = baseApi.injectEndpoints({
     // Đặt lại mật khẩu
     resetPassword: builder.mutation({
       query: (credentials) => ({
-        url: "/v1/auth/forgot-password/reset-password",
+        url: "/v1/public/auth/forgot-password/reset-password",
         method: "POST",
         data: {
           forgotPasswordToken: credentials.forgotPasswordToken,
@@ -80,7 +80,7 @@ export const authApi = baseApi.injectEndpoints({
         }
 
         return {
-          url: "/v1/auth/logout",
+          url: "/v1/private/auth/logout",
           method: "POST",
           data: {
             accessToken: credentials.accessToken,
@@ -93,10 +93,10 @@ export const authApi = baseApi.injectEndpoints({
     // refreshToken
     refreshToken: builder.mutation({
       query: (credentials) => ({
-        url: "/v1/auth/refresh-token",
+        url: "/v1/public/auth/refresh-token",
         method: "POST",
         data: {
-          refreshToken: credentials.refreshToken,
+          refreshToken: credentials.refreshToken, 
         },
       }),
       invalidatesTags: [TAG_KEYS.AUTH],
@@ -104,7 +104,7 @@ export const authApi = baseApi.injectEndpoints({
 
     getMyInfo: builder.query({
       query: () => ({
-        url: "/v1/auth/myInfo",
+        url: "/v1/private/auth/myInfo",
       }),
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
         try {

@@ -6,7 +6,7 @@ export const sizeApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     listSizes: builder.query({
       query: ({ pageNo = 1, pageSize = 10, sortBy = "name-asc" } = {}) => ({
-        url: `/v1/sizes`,
+        url: `/v1/public/sizes`,
         method: "GET",
         params: { pageNo, pageSize, sortBy },
       }),

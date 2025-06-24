@@ -4,25 +4,26 @@ import axios from "axios";
 export const axiosBaseQuery =
   () =>
   async ({ url, method, data, params, headers }) => {
-    console.log("Base query function called with params:", {
-      url,
-      method,
-      data,
-      params,
-      headers,
-    });
+    // console.log("Base query function called with params:", {
+    //   url,
+    //   method,
+    //   data,
+    //   params,
+    //   headers,
+    // });
 
     const publicEndpoints = [
-      "/v1/auth/login",
-      "/v1/auth/forgot-password",
-      "/v1/auth/forgot-password/verify-code",
-      "/v1/auth/forgot-password/reset-password",
+      "/v1/public/auth/login",
+      "/v1/public/auth/forgot-password",
+      "/v1/public/auth/forgot-password/verify-code",
+      "/v1/public/auth/forgot-password/reset-password",
+      "/v1/public/sizes"
     ];
 
     const token = localStorage.getItem("accessToken");
     const refreshToken = localStorage.getItem("refreshToken");
-    console.log(`Token before request (${url}):`, token);
-    console.log(`Refresh token before request (${url}):`, refreshToken);
+    // console.log(`Token before request (${url}):`, token);
+    // console.log(`Refresh token before request (${url}):`, refreshToken);
 
     if (!publicEndpoints.includes(url) && !token && !refreshToken) {
       console.log("No token found for non-public endpoint:", url);
@@ -46,7 +47,7 @@ export const axiosBaseQuery =
         },
         baseURL: import.meta.env.VITE_API_URL,
       });
-      console.log("Axios response received:", result);
+      // console.log("Axios response received:", result);
 
       if (result.status >= 400) {
         console.log("Server error response:", result.data);
@@ -58,7 +59,7 @@ export const axiosBaseQuery =
         };
       }
 
-      console.log("Axios response success:", result.data);
+      // console.log("Axios response success:", result.data);
       return { data: result.data };
     } catch (axiosError) {
       const error = {

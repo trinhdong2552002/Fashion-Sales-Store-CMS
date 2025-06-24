@@ -5,7 +5,7 @@ export const roleApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     listRoles: builder.query({
       query: ({ pageNo = 1, pageSize = 10, sortBy = "" } = {}) => ({
-        url: `/v1/roles`,
+        url: `/v1/admin/roles`,
         method: "GET",
         params: { pageNo, pageSize, sortBy },
       }),
@@ -21,7 +21,7 @@ export const roleApi = baseApi.injectEndpoints({
 
     getRoleById: builder.query({
       query: (id) => ({
-        url: `/v1/roles/${id}`,
+        url: `/v1/admin/roles/${id}`,
         method: "GET",
       }),
       providesTags: [TAG_KEYS.ROLE],
