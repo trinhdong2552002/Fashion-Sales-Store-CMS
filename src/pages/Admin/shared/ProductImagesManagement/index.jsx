@@ -1,9 +1,7 @@
-import React, { useState, useEffect, Component } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import {
   Typography,
   Button,
-  CircularProgress,
   Alert,
   Snackbar,
   Box,
@@ -13,15 +11,11 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
-  PaginationItem,
-  styled,
 } from "@mui/material";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import DeleteIcon from "@mui/icons-material/Delete";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import { useDispatch, useSelector } from "react-redux";
+
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import {
   useListImagesQuery,
@@ -29,64 +23,13 @@ import {
   useDeleteImageMutation,
 } from "@/services/api/productImage";
 import { useGetMyInfoQuery } from "@/services/api/auth";
-import {
-  setImages,
-  setLoading as setImageLoading,
-  setError as setImageError,
-  selectImages,
-} from "@/store/redux/productImage/reducer";
-
-// Tùy chỉnh nút Back và Forward
-const CustomPaginationItem = styled(PaginationItem)(({ theme }) => ({
-  "&.MuiPaginationItem-previousNext": {
-    backgroundColor: theme.palette.primary.main,
-    color: theme.palette.common.white,
-    "&:hover": {
-      backgroundColor: theme.palette.primary.dark,
-    },
-    "&.Mui-disabled": {
-      backgroundColor: theme.palette.action.disabledBackground,
-      color: theme.palette.action.disabled,
-    },
-    borderRadius: "4px",
-    margin: "0 5px",
-    padding: "8px",
-  },
-}));
-
-// ErrorBoundary component để bắt lỗi
-class ErrorBoundary extends Component {
-  state = { hasError: false };
-
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
-
-  componentDidUpdate(prevProps) {
-    if (prevProps.imagesData !== this.props.imagesData && this.state.hasError) {
-      this.setState({ hasError: false });
-    }
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <Alert severity="error">
-          Đã xảy ra lỗi khi hiển thị bảng hình ảnh.
-        </Alert>
-      );
-    }
-    return this.props.children;
-  }
-}
+import { useState } from "react";
 
 const ProductImagesManagement = () => {
-  const dispatch = useDispatch();
-  const images = useSelector(selectImages);
-
-  const [page, setPage] = useState(0); // Trang bắt đầu từ 0
-  const [pageSize, setPageSize] = useState(10); // Mỗi trang 10 hình ảnh
-  const [totalRows, setTotalRows] = useState(0); // Tổng số hình ảnh
+  const [paginationModel, setPaginationModel] = useState({
+    page: 0,
+    pageSize: 10,
+  });
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -97,42 +40,28 @@ const ProductImagesManagement = () => {
 
   const { isLoading: userLoading } = useGetMyInfoQuery();
   const {
-    data: imagesData,
-    isLoading: isFetchingImages,
-    error: fetchImagesError,
-    refetch: refetchImages,
-  } = useListImagesQuery({ pageNo: page + 1, pageSize }, { skip: userLoading });
+    data: dataImages,
+    isLoading: isLoadingImages,
+    isError: isErrorImages,
+    refetch,
+  } = useListImagesQuery(
+    {
+      page: paginationModel.page,
+      size: paginationModel.pageSize,
+      fileType: "PRODUCT_IMAGE",
+    },
+    { skip: userLoading },
+    { refetchOnMountOrArgChange: true }
+  );
+  console.log("dataImages", dataImages);
 
   const [uploadImage] = useUploadImageMutation();
   const [deleteImage] = useDeleteImageMutation();
 
-  useEffect(() => {
-    dispatch(setImageLoading(isFetchingImages));
-    if (fetchImagesError) {
-      const errorMessage =
-        fetchImagesError?.data?.message || "Lỗi khi tải danh sách hình ảnh";
-      dispatch(setImageError(errorMessage));
-      setSnackbar({
-        open: true,
-        message: errorMessage,
-        severity: "error",
-      });
-    } else if (imagesData && imagesData.items) {
-      const validImages = imagesData.items.filter(
-        (image) => image && image.id && image.fileName && image.imageUrl
-      );
-      dispatch(setImages(validImages));
-      dispatch(setImageError(null));
-      setTotalRows(imagesData.totalItems || 0);
-      console.log("Images in state after filtering:", validImages);
-      console.log("Total rows:", imagesData.totalItems);
-    } else {
-      dispatch(setImages([]));
-      setTotalRows(0);
-    }
-  }, [imagesData, isFetchingImages, fetchImagesError, dispatch]);
+  const dataRowImages = dataImages?.result?.items || [];
+  const totalRows = dataImages?.result?.totalItems || 0;
 
-  const columns = [
+  const columnsImage = [
     { field: "id", headerName: "ID", width: 90 },
     { field: "fileName", headerName: "Tên file", width: 150 },
     {
@@ -191,28 +120,7 @@ const ProductImagesManagement = () => {
       return;
     }
 
-    console.log("Selected file:", {
-      name: file.name,
-      size: file.size,
-      type: file.type,
-    });
-
-    let fileName = file.name;
     let fileToUpload = file;
-
-    const existingImage = images.find((image) => image.fileName === fileName);
-    if (existingImage) {
-      const fileNameParts = fileName.split(".");
-      const baseName = fileNameParts.slice(0, -1).join(".");
-      const extension = fileNameParts[fileNameParts.length - 1];
-      fileName = `${baseName}_${Date.now()}.${extension}`;
-      fileToUpload = new File([file], fileName, { type: file.type });
-      setSnackbar({
-        open: true,
-        message: `Tên file "${file.name}" đã tồn tại. Đã đổi thành "${fileName}".`,
-        severity: "info",
-      });
-    }
 
     try {
       console.log("Uploading file:", fileToUpload);
@@ -223,7 +131,7 @@ const ProductImagesManagement = () => {
         message: "Tải lên hình ảnh thành công!",
         severity: "success",
       });
-      refetchImages();
+      refetch();
     } catch (error) {
       console.error("Upload error:", {
         status: error.error?.status,
@@ -252,7 +160,7 @@ const ProductImagesManagement = () => {
         message: "Xóa hình ảnh thành công!",
         severity: "success",
       });
-      refetchImages();
+      refetch();
     } catch (error) {
       const errorMessage = error.data?.message || "Lỗi khi xóa hình ảnh";
       setSnackbar({
@@ -272,7 +180,7 @@ const ProductImagesManagement = () => {
   };
 
   const handleRefresh = () => {
-    refetchImages();
+    refetch();
     setSnackbar({
       open: true,
       message: "Đã làm mới dữ liệu hình ảnh!",
@@ -284,9 +192,15 @@ const ProductImagesManagement = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
-  if (userLoading || isFetchingImages) {
-    return <CircularProgress />;
-  }
+  if (isErrorImages)
+    return (
+      <ErrorDisplay
+        error={{
+          message:
+            "Không tải được danh sách hình ảnh sản phẩm. Vui lòng kiểm tra kết nối của bạn và thử lại !",
+        }}
+      />
+    );
 
   return (
     <DashboardLayoutWrapper>
@@ -294,6 +208,14 @@ const ProductImagesManagement = () => {
         Quản lý Hình ảnh Sản phẩm
       </Typography>
       <Box sx={{ mb: 2, display: "flex", gap: 2 }}>
+        <Button
+          variant="outlined"
+          color="primary"
+          startIcon={<RefreshIcon />}
+          onClick={handleRefresh}
+        >
+          Làm mới
+        </Button>
         <Button
           variant="contained"
           color="primary"
@@ -308,79 +230,35 @@ const ProductImagesManagement = () => {
             onChange={handleUploadImage}
           />
         </Button>
-        <Button
-          variant="outlined"
-          color="primary"
-          startIcon={<RefreshIcon />}
-          onClick={handleRefresh}
-        >
-          Làm mới
-        </Button>
       </Box>
 
-      {fetchImagesError ? (
-        <Alert severity="error">
-          {fetchImagesError?.data?.message || "Lỗi khi tải hình ảnh"}
-        </Alert>
-      ) : images.length === 0 ? (
-        <Alert severity="info">Hiện tại không có hình ảnh nào.</Alert>
-      ) : (
-        <ErrorBoundary imagesData={imagesData}>
-          <div style={{ height: 400, width: "100%" }}>
-            <DataGrid
-              rows={images}
-              columns={columns}
-              paginationMode="server" // Phân trang phía server
-              rowCount={totalRows} // Tổng số hình ảnh
-              page={page}
-              pageSize={pageSize}
-              onPageChange={(newPage) => setPage(newPage)} // Cập nhật trang
-              onPageSizeChange={(newPageSize) => {
-                setPageSize(newPageSize);
-                setPage(0); // Reset về trang đầu khi đổi pageSize
-              }}
-              rowsPerPageOptions={[10, 20, 50]} // Tùy chọn số hàng mỗi trang
-              getRowId={(row) => row.id}
-              disableSelectionOnClick
-              aria-label="Bảng hình ảnh sản phẩm"
-              localeText={{
-                noRowsLabel: "Không có dữ liệu",
-              }}
-              slots={{
-                pagination: () => (
-                  <Box
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="space-between"
-                    p={2}
-                  >
-                    <Typography variant="body2">
-                      Tổng số hình ảnh: {totalRows}
-                    </Typography>
-                    <Box display="flex" alignItems="center">
-                      <CustomPaginationItem
-                        type="previous"
-                        component={Button}
-                        disabled={page === 0}
-                        onClick={() => setPage(page - 1)}
-                      />
-                      <Typography variant="body2" mx={2}>
-                        Trang {page + 1} / {Math.ceil(totalRows / pageSize)}
-                      </Typography>
-                      <CustomPaginationItem
-                        type="next"
-                        component={Button}
-                        disabled={page >= Math.ceil(totalRows / pageSize) - 1}
-                        onClick={() => setPage(page + 1)}
-                      />
-                    </Box>
-                  </Box>
-                ),
-              }}
-            />
-          </div>
-        </ErrorBoundary>
-      )}
+      <Box height={500} width={"100%"}>
+        <DataGrid
+          columns={columnsImage}
+          rows={dataRowImages}
+          rowsPerPageOptions={[10, 20, 50]}
+          rowCount={totalRows}
+          loading={isLoadingImages}
+          disableSelectionOnClick
+          slotProps={{
+            loadingOverlay: {
+              variant: "linear-progress",
+              noRowsVariant: "linear-progress",
+            },
+          }}
+          aria-label="Bảng hình ảnh sản phẩm"
+          localeText={{
+            noRowsLabel: "Không có dữ liệu",
+          }}
+          pagination
+          paginationMode="server"
+          sortingMode="server"
+          filterMode="server"
+          paginationModel={paginationModel}
+          onPaginationModelChange={setPaginationModel}
+          pageSizeOptions={[10, 15, 20]}
+        />
+      </Box>
 
       <Dialog
         open={openDeleteDialog}
@@ -389,12 +267,11 @@ const ProductImagesManagement = () => {
         aria-describedby="delete-dialog-description"
       >
         <DialogTitle id="delete-dialog-title">
-          Xác nhận xóa hình ảnh
+          Xác nhận xóa hình ảnh ?
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="delete-dialog-description">
-            Bạn có chắc chắn muốn xóa hình ảnh này không? Hành động này không
-            thể hoàn tác.
+            Bạn có chắc chắn muốn xóa hình ảnh này không ?
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -411,6 +288,7 @@ const ProductImagesManagement = () => {
         open={snackbar.open}
         autoHideDuration={6000}
         onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "right", horizontal: "right" }}
       >
         <Alert
           onClose={handleCloseSnackbar}
