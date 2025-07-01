@@ -18,8 +18,8 @@ import {
   Box,
   PaginationItem,
   styled,
+  IconButton,
 } from "@mui/material";
-import RefreshIcon from "@mui/icons-material/Refresh";
 import {
   useFetchAllUsersForAdminQuery,
   useCreateUserWithRoleMutation,
@@ -27,10 +27,11 @@ import {
   useRestoreUserMutation,
 } from "@/services/api/user";
 import { useGetMyInfoQuery } from "@/services/api/auth";
-import { useGetAddressesQuery } from "@/services/api/address";
+
 import { useListRolesQuery } from "@/services/api/role";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import { useNavigate } from "react-router-dom";
+import { Add, Delete, Refresh, Restore } from "@mui/icons-material";
 
 // Tùy chỉnh nút Back và Forward
 const CustomPaginationItem = styled(PaginationItem)(({ theme }) => ({
@@ -56,7 +57,9 @@ const UsersManagement = () => {
   const [filterRoles, setFilterRoles] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [openRestoreDialog, setOpenRestoreDialog] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
+  const [userToRestore, setUserToRestore] = useState(null);
   const [page, setPage] = useState(0); // Trang bắt đầu từ 0
   const [pageSize, setPageSize] = useState(10); // Mỗi trang 10 người dùng
   const [totalRows, setTotalRows] = useState(0); // Tổng số người dùng
@@ -91,11 +94,6 @@ const UsersManagement = () => {
     roles: filterRoles.length ? filterRoles.join(",") : undefined,
   });
   const { data: rolesData } = useListRolesQuery({ pageNo: 1, pageSize: 100 });
-  const { data: addressesData, refetch: refetchAddresses } =
-    useGetAddressesQuery({
-      pageNo: 1,
-      pageSize: 100,
-    });
 
   const [createUserWithRole] = useCreateUserWithRoleMutation();
   const [softDeleteUser] = useSoftDeleteUserMutation();
@@ -131,8 +129,7 @@ const UsersManagement = () => {
 
   useEffect(() => {
     refetchUsers();
-    refetchAddresses();
-  }, [searchUser, filterRoles, page, pageSize, refetchUsers, refetchAddresses]);
+  }, [searchUser, filterRoles, page, pageSize, refetchUsers]);
 
   useEffect(() => {
     if (usersData) {
@@ -163,7 +160,6 @@ const UsersManagement = () => {
         severity: "success",
       });
       refetchUsers();
-      refetchAddresses();
     } catch (error) {
       const errorMessage = error.data?.message || "Lỗi khi thêm người dùng";
       setSnackbar({
@@ -185,7 +181,6 @@ const UsersManagement = () => {
         severity: "success",
       });
       refetchUsers();
-      refetchAddresses();
     } catch (error) {
       const errorMessage = error.data?.message || "Lỗi khi xóa người dùng";
       setSnackbar({
@@ -196,16 +191,17 @@ const UsersManagement = () => {
     }
   };
 
-  const handleRestoreUser = async (id) => {
+  const handleRestoreUser = async () => {
     try {
-      await restoreUser(id).unwrap();
+      await restoreUser(userToRestore).unwrap();
       setSnackbar({
         open: true,
         message: "Khôi phục người dùng thành công!",
         severity: "success",
       });
+      setOpenRestoreDialog(false);
+      setUserToRestore(null);
       refetchUsers();
-      refetchAddresses();
     } catch (error) {
       setSnackbar({
         open: true,
@@ -218,6 +214,21 @@ const UsersManagement = () => {
   const handleOpenDeleteDialog = (id) => {
     setUserToDelete(id);
     setOpenDeleteDialog(true);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setOpenDeleteDialog(false);
+    setUserToDelete(null);
+  };
+
+  const handleOpenRestoreDialog = (id) => {
+    setUserToRestore(id);
+    setOpenRestoreDialog(true);
+  };
+
+  const handleCloseRestoreDialog = () => {
+    setUserToRestore(null);
+    setOpenRestoreDialog(false);
   };
 
   const handleCloseSnackbar = () => {
@@ -235,35 +246,11 @@ const UsersManagement = () => {
   };
 
   const columns = [
-    { field: "id", headerName: "ID", width: 90 },
-    { field: "name", headerName: "Tên", width: 150 },
+    { field: "id", headerName: "ID", width: 100 },
+    { field: "name", headerName: "Tên", width: 200 },
     { field: "email", headerName: "Email", width: 200 },
-    { field: "phone", headerName: "Sđt", width: 150 },
-    { field: "status", headerName: "Trạng thái", width: 120 },
-    {
-      field: "address",
-      headerName: "Địa chỉ",
-      width: 200,
-      valueGetter: (params) => {
-        if (
-          !params?.row ||
-          !addressesData?.items ||
-          !Array.isArray(addressesData.items)
-        )
-          return "N/A";
-        const userAddress = addressesData.items.find(
-          (addr) => addr.userName === params.row.email
-        );
-        if (userAddress) {
-          return (
-            `${userAddress.street || ""}, ${userAddress.wardName || ""}, ${
-              userAddress.districtName || ""
-            }, ${userAddress.provinceName || ""}`.trim() || "N/A"
-          );
-        }
-        return "N/A";
-      },
-    },
+    { field: "status", headerName: "Trạng thái", width: 150 },
+
     {
       field: "createdBy",
       headerName: "Người tạo",
@@ -308,19 +295,19 @@ const UsersManagement = () => {
       renderCell: (params) => (
         <>
           {params.row?.status === "INACTIVE" ? (
-            <Button
-              onClick={() => handleRestoreUser(params.row.id)}
+            <IconButton
+              onClick={() => handleOpenRestoreDialog(params.row.id)}
               color="success"
             >
-              Khôi phục
-            </Button>
+              <Restore />
+            </IconButton>
           ) : (
-            <Button
+            <IconButton
               onClick={() => handleOpenDeleteDialog(params.row.id)}
               color="error"
             >
-              Xóa
-            </Button>
+              <Delete />
+            </IconButton>
           )}
         </>
       ),
@@ -347,14 +334,29 @@ const UsersManagement = () => {
       <Typography variant="h5" gutterBottom>
         Quản lý Người dùng
       </Typography>
+
+      <Box
+        sx={{ mb: 2 }}
+        display={"flex"}
+        justifyContent={"space-between"}
+        alignItems={"center"}
+      >
+        <Button variant="outlined" onClick={handleRefresh}>
+          <Refresh sx={{ mr: 1 }} />
+          Làm mới
+        </Button>
+
+        <Button
+          variant="contained"
+          startIcon={<Add />}
+          onClick={() => setOpenDialog(true)}
+        >
+          Thêm người dùng
+        </Button>
+      </Box>
+
       <Grid container spacing={2} sx={{ mb: 2 }}>
-        <Grid item xs={12} sm={9}>
-          <Button variant="outlined" onClick={handleRefresh}>
-            <RefreshIcon sx={{ mr: 1 }} />
-            Làm mới
-          </Button>
-        </Grid>
-        <Grid item xs={12} sm={6}>
+        <Grid size={{ xs: 12, sm: 6 }}>
           <TextField
             label="Tìm kiếm theo tên"
             value={searchUser}
@@ -362,7 +364,7 @@ const UsersManagement = () => {
             fullWidth
           />
         </Grid>
-        <Grid item xs={12} sm={3}>
+        <Grid size={{ xs: 12, sm: 3 }}>
           <FormControl fullWidth>
             <InputLabel>Vai trò</InputLabel>
             <Select
@@ -380,17 +382,8 @@ const UsersManagement = () => {
             </Select>
           </FormControl>
         </Grid>
-        <Grid item xs={12} sm={3}>
-          <Button
-            variant="contained"
-            onClick={() => setOpenDialog(true)}
-            fullWidth
-          >
-            Thêm người dùng
-          </Button>
-        </Grid>
       </Grid>
-      <div style={{ height: 500, width: "100%" }}>
+      <Box height={500} width={"100%"}>
         <DataGrid
           rows={filteredRows}
           columns={columns}
@@ -446,7 +439,7 @@ const UsersManagement = () => {
             ),
           }}
         />
-      </div>
+      </Box>
 
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
         <DialogTitle>Thêm người dùng</DialogTitle>
@@ -520,16 +513,39 @@ const UsersManagement = () => {
         open={openDeleteDialog}
         onClose={() => setOpenDeleteDialog(false)}
       >
-        <DialogTitle>Xác nhận xóa</DialogTitle>
+        <DialogTitle>Xác nhận xóa ?</DialogTitle>
         <DialogContent>
           <Typography>
-            Bạn có chắc chắn muốn xóa người dùng này không?
+            Bạn có chắc chắn muốn xóa người dùng này không ?
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenDeleteDialog(false)}>Hủy</Button>
+          <Button color="error" onClick={handleCloseDeleteDialog}>
+            Hủy
+          </Button>
           <Button onClick={handleDeleteUser} color="error" variant="contained">
             Xóa
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={openRestoreDialog} onClose={handleCloseRestoreDialog}>
+        <DialogTitle>Xác nhận khôi phục ?</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Bạn có chắc chắn muốn khôi phục người dùng này không?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button color="error" onClick={handleCloseRestoreDialog}>
+            Hủy
+          </Button>
+          <Button
+            onClick={handleRestoreUser}
+            color="success"
+            variant="contained"
+          >
+            Khôi phục
           </Button>
         </DialogActions>
       </Dialog>
@@ -538,6 +554,7 @@ const UsersManagement = () => {
         open={snackbar.open}
         autoHideDuration={6000}
         onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "right", horizontal: "right" }}
       >
         <Alert
           onClose={handleCloseSnackbar}
