@@ -53,14 +53,13 @@ const CategoriesManagement = () => {
     refetch,
   } = useListCategoriesForAdminQuery(
     {
-      pageNo: paginationModel.page,
+      page: paginationModel.page,
       size: paginationModel.pageSize,
     },
     {
       refetchOnMountOrArgChange: true,
     }
   );
-  console.log("data categories", dataCategories);
 
   const [addCategories] = useAddCategoriesMutation();
   const [updateCategories] = useUpdateCategoriesMutation();
@@ -294,6 +293,7 @@ const CategoriesManagement = () => {
           columns={columnsCategories}
           rows={dataRowCategories}
           loading={isLoadingCategories}
+          disableSelectionOnClick
           slotProps={{
             loadingOverlay: {
               variant: "linear-progress",

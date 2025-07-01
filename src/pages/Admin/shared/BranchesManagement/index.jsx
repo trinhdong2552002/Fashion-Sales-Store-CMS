@@ -35,7 +35,7 @@ const BranchesManagement = () => {
   const [submitted, setSubmitted] = useState(false);
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
-    pageSize: 5,
+    pageSize: 10,
   });
   const [newBranches, setNewBranches] = useState({
     name: "",
@@ -54,7 +54,7 @@ const BranchesManagement = () => {
     error: errorBranches,
     refetch,
   } = useListBranchesForAdminQuery(
-    { pageNo: paginationModel.page + 1, pageSize: paginationModel.pageSize },
+    { page: paginationModel.page, size: paginationModel.pageSize },
     {
       refetchOnMountOrArgChange: true,
     }
@@ -285,7 +285,6 @@ const BranchesManagement = () => {
             color="primary"
             onClick={() => {
               setOpenAddDialog(true);
-              setNewBranches({ name: "", location: "", phone: "" });
             }}
             startIcon={<Add />}
           >
@@ -298,11 +297,15 @@ const BranchesManagement = () => {
             columns={columnsBranches}
             rows={dataRowBranches}
             loading={isLoadingBranches}
+            disableSelectionOnClick
             slotProps={{
               loadingOverlay: {
                 variant: "linear-progress",
                 noRowsVariant: "linear-progress",
               },
+            }}
+            localeText={{
+              noRowsLabel: "Không có dữ liệu",
             }}
             pagination
             paginationMode="server"
@@ -311,7 +314,7 @@ const BranchesManagement = () => {
             rowCount={totalRows}
             paginationModel={paginationModel}
             onPaginationModelChange={setPaginationModel}
-            pageSizeOptions={[5, 10, 15]}
+            pageSizeOptions={[10, 15, 20]}
           />
         </Box>
 
@@ -321,6 +324,7 @@ const BranchesManagement = () => {
           onClose={() => {
             setOpenAddDialog(false);
             setSubmitted(false);
+            setNewBranches({ name: "", location: "", phone: "" });
           }}
         >
           <DialogTitle>Thêm chi nhánh</DialogTitle>

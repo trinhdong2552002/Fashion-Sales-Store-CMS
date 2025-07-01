@@ -4,15 +4,15 @@ import { TAG_KEYS } from "@/constants/tagKeys";
 export const branchesApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     listBranchesForAdmin: builder.query({
-      query: ({ pageNo, pageSize }) => ({
-        url: "/v1/branches/admin",
-        params: { pageNo, pageSize },
+      query: ({ page, size }) => ({
+        url: "/v1/admin/branches",
+        params: { page, size },
       }),
       providesTags: [TAG_KEYS.BRANCHES],
     }),
     addBranches: builder.mutation({
       query: (branch) => ({
-        url: "/v1/branches",
+        url: "/v1/admin/branches",
         method: "POST",
         data: {
           name: branch.name,
@@ -24,7 +24,7 @@ export const branchesApi = baseApi.injectEndpoints({
     }),
     updateBranches: builder.mutation({
       query: ({ id, ...branch }) => ({
-        url: `/v1/branches/${id}`,
+        url: `/v1/admin/branches/${id}`,
         method: "PUT",
         data: branch,
       }),
@@ -32,7 +32,7 @@ export const branchesApi = baseApi.injectEndpoints({
     }),
     deleteBranches: builder.mutation({
       query: ({ id }) => ({
-        url: `/v1/branches/${id}`,
+        url: `/v1/admin/branches/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: [TAG_KEYS.BRANCHES],
@@ -63,7 +63,7 @@ export const branchesApi = baseApi.injectEndpoints({
     }),
     restoreBranches: builder.mutation({
       query: ({ id }) => ({
-        url: `/v1/branches/${id}/restore`,
+        url: `/v1/admin/branches/${id}/restore`,
         method: "PATCH",
       }),
       invalidatesTags: [TAG_KEYS.BRANCHES],

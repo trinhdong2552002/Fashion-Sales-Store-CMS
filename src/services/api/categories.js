@@ -61,7 +61,7 @@ export const categoriesApi = baseApi.injectEndpoints({
     }),
     restoreCategories: builder.mutation({
       query: ({ id }) => ({
-        url: `/v1/categories/${id}/restore`,
+        url: `/v1/admin/categories/${id}/restore`,
         method: "PATCH",
       }),
       invalidatesTags: [TAG_KEYS.CATEGORIES],
