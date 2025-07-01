@@ -9,7 +9,6 @@ import authReducer from "@/store/redux/auth/reducer";
 import userReducer from "@/store/redux/user/reducer";
 import productReducer from "@/store/redux/product/reducer";
 import productVariantReducer from "@/store/redux/productVariant/reducer";
-import productImageReducer from "@/store/redux/productImage/reducer";
 import colorReducer from "@/store/redux/color/reducer";
 
 export const RESET_STATE = "RESET_STATE";
@@ -25,7 +24,6 @@ const appReducer = combineReducers({
   user: userReducer,
   product: productReducer,
   productVariant: productVariantReducer,
-  productImage: productImageReducer,
   color: colorReducer,
 });
 

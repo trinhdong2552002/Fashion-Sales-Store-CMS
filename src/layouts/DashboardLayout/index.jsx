@@ -125,14 +125,14 @@ const DashboardLayoutWrapper = ({ children }) => {
       icon: <Inventory />,
     },
     {
-      path: "/admin/productImagesManagement",
-      title: "Hình ảnh sản phẩm",
-      icon: <Image />,
-    },
-    {
       path: "/admin/productVariantsManagement",
       title: "Biến thể sản phẩm",
       icon: <Inventory />,
+    },
+    {
+      path: "/admin/productImagesManagement",
+      title: "Hình ảnh sản phẩm",
+      icon: <Image />,
     },
     {
       path: "/admin/colorsManagement",
@@ -287,7 +287,7 @@ const DashboardLayoutWrapper = ({ children }) => {
                 }}
               >
                 <MenuItem onClick={handleLogout}>
-                  <LogoutIcon color="action" sx={{mr: 1}}/>
+                  <LogoutIcon color="action" sx={{ mr: 1 }} />
                   Đăng xuất
                 </MenuItem>
               </Menu>
@@ -299,7 +299,13 @@ const DashboardLayoutWrapper = ({ children }) => {
   );
 
   return (
-    <Box sx={{ display: "flex", backgroundColor: "var(--color-bg)", height: "100vh" }}>
+    <Box
+      sx={{
+        display: "flex",
+        backgroundColor: "var(--color-bg)",
+        height: "100vh",
+      }}
+    >
       <AppBar
         position="fixed"
         sx={{
@@ -319,9 +325,7 @@ const DashboardLayoutWrapper = ({ children }) => {
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
             Admin Dashboard
           </Typography>
-          <Stack direction="row" alignItems="center" spacing={2}>
-            
-          </Stack>
+          <Stack direction="row" alignItems="center" spacing={2}></Stack>
         </Toolbar>
       </AppBar>
       <Box
