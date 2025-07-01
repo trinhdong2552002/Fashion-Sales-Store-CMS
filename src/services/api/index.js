@@ -17,7 +17,8 @@ export const axiosBaseQuery =
       "/v1/public/auth/forgot-password",
       "/v1/public/auth/forgot-password/verify-code",
       "/v1/public/auth/forgot-password/reset-password",
-      "/v1/public/sizes"
+      "/v1/public/sizes",
+      "/v1/public/colors",
     ];
 
     const token = localStorage.getItem("accessToken");
