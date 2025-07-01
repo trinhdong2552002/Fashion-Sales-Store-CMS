@@ -53,6 +53,16 @@ const ProvincesManagement = () => {
     });
   };
 
+  if (isErrorProvinces)
+    return (
+      <ErrorDisplay
+        error={{
+          message:
+            "Không tải được tỉnh/thành phố. Vui lòng kiểm tra kết nối của bạn và thử lại !",
+        }}
+      />
+    );
+
   return (
     <DashboardLayoutWrapper>
       <Typography variant="h5" gutterBottom>
@@ -66,12 +76,7 @@ const ProvincesManagement = () => {
       >
         Làm mới
       </Button>
-      {isErrorProvinces && (
-        <Typography color="error" gutterBottom>
-          Lỗi khi tải dữ liệu:{" "}
-          {isErrorProvinces.data?.message || "Không thể kết nối đến server"}
-        </Typography>
-      )}
+
       <Box height={500} width={"100%"}>
         <DataGrid
           columns={columnsProvince}
