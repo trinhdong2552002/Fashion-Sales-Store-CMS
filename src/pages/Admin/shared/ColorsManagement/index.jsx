@@ -8,9 +8,10 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Grid,
   Snackbar,
   Alert,
+  IconButton,
+  Box,
 } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
@@ -20,179 +21,255 @@ import {
   useUpdateColorMutation,
   useDeleteColorMutation,
 } from "@/services/api/color";
+import { Add, Delete, Edit } from "@mui/icons-material";
+import ErrorDisplay from "../../../../components/ErrorDisplay";
 
 const ColorsManagement = () => {
-  const { data, isLoading, error, refetch } = useListColorsQuery(); // Thêm refetch
-  const [addColor] = useAddColorMutation();
-  const [updateColor] = useUpdateColorMutation();
-  const [deleteColor] = useDeleteColorMutation();
-
-  const [newColor, setNewColor] = useState({ name: "" });
-  const [editColor, setEditColor] = useState(null);
-  const [openDialog, setOpenDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-  const [colorToDelete, setColorToDelete] = useState(null);
+  const [openAddDialog, setOpenAddDialog] = useState(false);
+  const [openUpdateDialog, setOpenUpdateDialog] = useState(false);
+  const [selectedColorId, setSelectedColorId] = useState(null);
+  const [submitted, setSubmitted] = useState(false);
+  const [paginationModel, setPaginationModel] = useState({
+    page: 0,
+    pageSize: 10,
+  });
+  const [newColor, setNewColor] = useState({ name: "" });
   const [snackbar, setSnackbar] = useState({
     open: false,
     severity: "success",
     message: "",
   });
 
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
+  const {
+    data: dataColor,
+    isLoading: isLoadingColor,
+    isError: isErrorColor,
+    refetch,
+  } = useListColorsQuery(
+    {
+      page: paginationModel.page,
+      size: paginationModel.pageSize,
+    },
+    {
+      refetchOnMountOrArgChange: true,
+    }
+  );
+  const [addColor] = useAddColorMutation();
+  const [updateColor] = useUpdateColorMutation();
+  const [deleteColor] = useDeleteColorMutation();
 
-  const handleRefresh = () => {
-    console.log("Refetching data...", data);
-    
-    refetch(); // Gọi lại query để làm mới dữ liệu
-    setSnackbar({
-      open: true,
-      severity: "info",
-      message: "Dữ liệu đã được làm mới!",
-    });
-  };
+  const dataRowColors = dataColor?.result?.items || [];
+  const totalRows = dataColor?.result?.totalItems || 0;
 
-  const columns = [
-    { field: "id", headerName: "ID", width: 90 },
-    { field: "name", headerName: "Tên màu sắc", width: 150 },
+  const columnsColor = [
+    { field: "id", headerName: "ID", width: 100 },
+    { field: "name", headerName: "Tên màu sắc", width: 200 },
     {
       field: "actions",
       headerName: "Hành động",
-      width: 150,
+      width: 200,
       renderCell: (params) => (
         <>
-          <Button onClick={() => handleEditColor(params.row)}>Sửa</Button>
-          <Button
+          <IconButton onClick={() => handleEditColor(params.row.id)}>
+            <Edit color="primary" />
+          </IconButton>
+          <IconButton
             onClick={() => handleOpenDeleteDialog(params.row.id)}
             color="error"
           >
-            Xóa
-          </Button>
+            <Delete />
+          </IconButton>
         </>
       ),
     },
   ];
 
-  const handleAddColor = async () => {
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
+  const handleOpenDeleteDialog = (id) => {
+    setSelectedColorId(id);
+    setOpenDeleteDialog(true);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setSelectedColorId(null);
+    setOpenDeleteDialog(false);
+  };
+
+  const handleRefresh = () => {
+    refetch();
+    setSnackbar({
+      open: true,
+      severity: "info",
+      message: "Danh sách màu sắc đã được làm mới!",
+    });
+  };
+
+  const handleAddColor = async (data) => {
+    setSubmitted(true);
+
     try {
-      await addColor(newColor).unwrap();
-      setNewColor({ name: "" });
-      setOpenDialog(false);
+      await addColor({
+        name: data?.name,
+      }).unwrap();
       setSnackbar({
         open: true,
-        severity: "success",
         message: "Thêm màu sắc thành công!",
+        severity: "success",
       });
+      setNewColor({ name: "" });
+      setOpenAddDialog(false);
+      setSubmitted(false);
+      refetch();
     } catch (error) {
+      const errorMessage = error?.data?.message;
       setSnackbar({
         open: true,
         severity: "error",
-        message:
-          "Lỗi khi thêm màu sắc: " + (error.data?.message || error.message),
+        message: errorMessage,
       });
     }
   };
 
-  const handleEditColor = (color) => {
-    setEditColor(color);
-    setNewColor({ name: color.name });
-    setOpenDialog(true);
+  const handleEditColor = (id) => {
+    const colorsEdit = dataRowColors.find((item) => item.id === id);
+    console.log("colorEdit", colorsEdit);
+
+    if (colorsEdit) {
+      setNewColor({
+        name: colorsEdit.name,
+      });
+    }
+    setSelectedColorId(id);
+    setOpenUpdateDialog(true);
   };
 
   const handleUpdateColor = async () => {
+    setSubmitted(true);
+
     try {
-      await updateColor({ id: editColor.id, ...newColor }).unwrap();
-      setEditColor(null);
-      setNewColor({ name: "" });
-      setOpenDialog(false);
+      console.log("Selected Color ID:", selectedColorId);
+      await updateColor({
+        id: selectedColorId,
+        ...newColor,
+      }).unwrap();
       setSnackbar({
         open: true,
         severity: "success",
         message: "Cập nhật màu sắc thành công!",
       });
+      setNewColor({ name: "" });
+      setOpenUpdateDialog(false);
+      setSubmitted(false);
+      setSelectedColorId(null);
+      refetch();
     } catch (error) {
+      const errorMessage = error?.data?.message;
       setSnackbar({
         open: true,
         severity: "error",
-        message:
-          "Lỗi khi cập nhật màu sắc: " + (error.data?.message || error.message),
+        message: errorMessage,
       });
     }
   };
 
-  const handleOpenDeleteDialog = (id) => {
-    setColorToDelete(id);
-    setOpenDeleteDialog(true);
-  };
-
   const handleDeleteColor = async () => {
     try {
-      await deleteColor(colorToDelete).unwrap();
-      setOpenDeleteDialog(false);
-      setColorToDelete(null);
+      await deleteColor({ id: selectedColorId }).unwrap();
       setSnackbar({
         open: true,
         severity: "success",
         message: "Xóa màu sắc thành công!",
       });
+      setOpenDeleteDialog(false);
+      setSelectedColorId(null);
+      refetch();
     } catch (error) {
+      const errorMessage = error?.data?.message;
       setSnackbar({
         open: true,
+        message: errorMessage,
         severity: "error",
-        message:
-          "Lỗi khi xóa màu sắc: " + (error.data?.message || error.message),
       });
     }
   };
 
-  const rows = data?.items || [];
+  if (isErrorColor)
+    return (
+      <ErrorDisplay
+        error={{
+          message:
+            "Không tải được danh sách màu sắc. Vui lòng kiểm tra kết nối của bạn và thử lại !",
+        }}
+      />
+    );
 
   return (
     <DashboardLayoutWrapper>
       <Typography variant="h5" gutterBottom>
         Quản lý màu sắc
       </Typography>
-      <Grid container spacing={2} sx={{ mb: 2 }}>
-         <Grid item xs={12} sm={9}>
-          <Button variant="outlined" color="primary" onClick={handleRefresh}>
-            <RefreshIcon sx={{ mr: 1 }} />
-            Làm mới
-          </Button>
-        </Grid>
-        <Grid item xs={12} sm={3}>
-          <Button
-            variant="contained"
-            onClick={() => setOpenDialog(true)}
-            fullWidth
-          >
-            Thêm màu sắc
-          </Button>
-        </Grid>
-      </Grid>
-      {error && (
-        <Typography color="error" gutterBottom>
-          Lỗi khi tải dữ liệu:{" "}
-          {error.data?.message || "Không thể kết nối đến server"}
-        </Typography>
-      )}
-      <div style={{ height: 400, width: "100%" }}>
+
+      <Box
+        sx={{ mb: 2 }}
+        display={"flex"}
+        justifyContent={"space-between"}
+        alignItems={"center"}
+      >
+        <Button variant="outlined" color="primary" onClick={handleRefresh}>
+          <RefreshIcon sx={{ mr: 1 }} />
+          Làm mới
+        </Button>
+
+        <Button
+          variant="contained"
+          startIcon={<Add />}
+          onClick={() => setOpenAddDialog(true)}
+        >
+          Thêm màu sắc
+        </Button>
+      </Box>
+
+      <Box height={500} width={"100%"}>
         <DataGrid
-          rows={rows}
-          columns={columns}
-          pageSize={5}
-          rowsPerPageOptions={[5]}
+          columns={columnsColor}
+          rows={dataRowColors}
+          loading={isLoadingColor}
           disableSelectionOnClick
-          loading={isLoading}
+          slotProps={{
+            loadingOverlay: {
+              variant: "linear-progress",
+              noRowsVariant: "linear-progress",
+            },
+          }}
           localeText={{
             noRowsLabel: "Không có dữ liệu",
           }}
+          pagination
+          paginationMode="server"
+          sortingMode="server"
+          filterMode="server"
+          rowCount={totalRows}  
+          paginationModel={paginationModel}
+          onPaginationModelChange={setPaginationModel}
+          pageSizeOptions={[10, 15, 20]}
         />
-      </div>
+      </Box>
 
-      {/* Dialog thêm/sửa màu sắc */}
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
-        <DialogTitle>{editColor ? "Sửa màu sắc" : "Thêm màu sắc"}</DialogTitle>
+      {/* TODO: Dialog add color */}
+      <Dialog
+        fullWidth
+        open={openAddDialog}
+        onClose={() => {
+          setOpenAddDialog(false);
+          setSubmitted(false);
+          setNewColor({ name: "" });
+        }}
+      >
+        <DialogTitle>Thêm màu sắc</DialogTitle>
         <DialogContent>
           <TextField
             label="Tên màu sắc"
@@ -200,31 +277,66 @@ const ColorsManagement = () => {
             onChange={(e) => setNewColor({ ...newColor, name: e.target.value })}
             fullWidth
             sx={{ mt: 2 }}
+            error={submitted && !newColor.name}
+            helperText={
+              submitted && !newColor.name ? "name không được để trống" : ""
+            }
           />
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenDialog(false)}>Hủy</Button>
-          <Button
-            onClick={editColor ? handleUpdateColor : handleAddColor}
-            variant="contained"
-          >
-            {editColor ? "Cập nhật" : "Thêm"}
+        <DialogActions sx={{ p: 2 }}>
+          <Button color="error" onClick={() => setOpenAddDialog(false)}>
+            Hủy
+          </Button>
+          <Button onClick={() => handleAddColor(newColor)} variant="contained">
+            Thêm
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Dialog xác nhận xóa */}
+      {/* TODO: Dialog update color */}
       <Dialog
-        open={openDeleteDialog}
-        onClose={() => setOpenDeleteDialog(false)}
+        fullWidth
+        open={openUpdateDialog}
+        onClose={() => {
+          setOpenUpdateDialog(false);
+          setSubmitted(false);
+        }}
       >
-        <DialogTitle>Xác nhận xóa</DialogTitle>
+        <DialogTitle>Cập nhật màu sắc</DialogTitle>
         <DialogContent>
-          <Typography>Bạn có chắc chắn muốn xóa màu sắc không?</Typography>
+          <TextField
+            label="Tên màu sắc"
+            value={newColor.name}
+            onChange={(e) => setNewColor({ ...newColor, name: e.target.value })}
+            fullWidth
+            sx={{ mt: 2 }}
+            error={submitted && !newColor.name}
+            helperText={
+              submitted && !newColor.name ? "name không được để trống" : ""
+            }
+          />
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button color="error" onClick={() => setOpenUpdateDialog(false)}>
+            Hủy
+          </Button>
+          <Button variant="contained" onClick={handleUpdateColor}>
+            Cập nhật
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* TODO: Dialog delete color */}
+      <Dialog open={openDeleteDialog} onClose={handleOpenDeleteDialog}>
+        <DialogTitle>Xác nhận xóa ?</DialogTitle>
+        <DialogContent>
+          <Typography>Bạn có chắc chắn muốn xóa màu sắc này không ?</Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenDeleteDialog(false)}>Hủy</Button>
-          <Button onClick={handleDeleteColor} color="error" variant="contained">
+          <Button color="error" onClick={handleCloseDeleteDialog}>
+            Hủy
+          </Button>
+          <Button color="error" variant="contained" onClick={handleDeleteColor}>
             Xóa
           </Button>
         </DialogActions>
@@ -234,6 +346,7 @@ const ColorsManagement = () => {
         open={snackbar.open}
         autoHideDuration={6000}
         onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "right", horizontal: "right" }}
       >
         <Alert
           onClose={handleCloseSnackbar}
