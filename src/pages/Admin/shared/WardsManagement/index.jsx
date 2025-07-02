@@ -1,115 +1,126 @@
 import React, { useState } from "react";
 import { DataGrid } from "@mui/x-data-grid";
-import { Typography, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
+import { Typography, Box, Button, Snackbar, Alert } from "@mui/material";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
-import { useListDistrictsQuery, useListWardsByDistrictQuery } from "@/services/api/district"; // Import useListWardsByDistrictQuery from district.js
+
 import { useListWardsQuery } from "@/services/api/ward";
+import { Refresh } from "@mui/icons-material";
 
 const WardsManagement = () => {
-  const [selectedDistrict, setSelectedDistrict] = useState("");
-
-  // Lấy danh sách quận/huyện
-  const { data: districtsData, isLoading: districtsLoading, error: districtsError } = useListDistrictsQuery({
-    pageNo: 1,
-    pageSize: 1000,
-    sortBy: "",
+  const [paginationModel, setPaginationModel] = useState({
+    page: 0,
+    pageSize: 10,
+  });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    severity: "success",
+    message: "",
   });
 
-  // Lấy danh sách phường/xã (tất cả)
   const {
-    data: allWardsData,
-    isLoading: allWardsLoading,
-    error: allWardsError,
+    data: dataWards,
+    isLoading: isLoadingWards,
+    isError: isErrorWards,
+    refetch,
   } = useListWardsQuery(
     {
-      pageNo: 1,
-      pageSize: 10,
-      sortBy: "",
+      page: paginationModel.page,
+      size: paginationModel.pageSize,
     },
-    { skip: !!selectedDistrict }
-  );
-
-  // Lấy danh sách phường/xã theo quận/huyện
-  const {
-    data: wardsByDistrictData,
-    isLoading: wardsByDistrictLoading,
-    error: wardsByDistrictError,
-  } = useListWardsByDistrictQuery(
     {
-      districtId: selectedDistrict,
-      pageNo: 1,
-      pageSize: 10,
-      sortBy: "",
-    },
-    { skip: !selectedDistrict }
+      refetchOnMountOrArgChange: true,
+    }
   );
 
-  const columns = [
-    { field: "code", headerName: "ID", width: 90 },
+  const dataRowWards =
+    dataWards?.result?.items?.map((item) => ({ ...item, id: item.code })) || [];
+  const totalRows = dataWards?.result?.totalItems || 0;
+
+  const columnsWards = [
+    { field: "code", headerName: "Code", width: 150 },
     { field: "name", headerName: "Tên phường / xã", width: 200 },
   ];
 
-  const wardsData = selectedDistrict ? wardsByDistrictData : allWardsData;
-  const wardsLoading = selectedDistrict ? wardsByDistrictLoading : allWardsLoading;
-  const wardsError = selectedDistrict ? wardsByDistrictError : allWardsError;
-
-  const rows = wardsData?.items || [];
-  const districts = districtsData?.items || [];
-
-  const handleDistrictChange = (event) => {
-    setSelectedDistrict(event.target.value);
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
   };
+
+  const handleRefresh = () => {
+    refetch();
+    setSnackbar({
+      open: true,
+      message: "Danh sách tỉnh/thành phố đã được làm mới !",
+      severity: "info",
+    });
+  };
+
+  if (isErrorWards) {
+    return (
+      <ErrorDisplay
+        error={{
+          message:
+            "Không tải được danh sách phường/xã. Vui lòng kiểm tra kết nối của bạn và thử lại !",
+        }}
+      />
+    );
+  }
 
   return (
     <DashboardLayoutWrapper>
       <Typography variant="h5" gutterBottom>
         Quản lý phường / xã
       </Typography>
-      <FormControl fullWidth sx={{ mb: 2, maxWidth: 300 }}>
-        <InputLabel id="district-select-label">Chọn quận/huyện</InputLabel>
-        <Select
-          labelId="district-select-label"
-          value={selectedDistrict}
-          label="Chọn quận/huyện"
-          onChange={handleDistrictChange}
-        >
-          <MenuItem value="">Tất cả</MenuItem>
-          {districts.map((district) => (
-            <MenuItem key={district.id} value={district.id}>
-              {district.name}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-      {districtsError && (
-        <Typography color="error" gutterBottom>
-          Lỗi khi tải danh sách quận/huyện: {districtsError.data?.message || "Không thể kết nối đến server"}
-        </Typography>
-      )}
-      {wardsError && (
-        <Typography color="error" gutterBottom>
-          Lỗi khi tải danh sách phường/xã: {wardsError.data?.message || "Không thể kết nối đến server"}
-        </Typography>
-      )}
-      {selectedDistrict && wardsData?.totalItems === 0 && !wardsLoading && !wardsError && (
-        <Typography color="warning" gutterBottom>
-          Không có dữ liệu phường/xã thuộc quận/huyện ID: {selectedDistrict}
-        </Typography>
-      )}
-      <div style={{ height: 400, width: "100%" }}>
+
+      <Button
+        variant="outlined"
+        onClick={handleRefresh}
+        startIcon={<Refresh />}
+        sx={{ mb: 2 }}
+      >
+        Làm mới
+      </Button>
+
+      <Box height={500} width={"100%"}>
         <DataGrid
-          rows={rows}
-          columns={columns}
-          getRowId={(row) => row.code}
-          pageSize={5}
-          rowsPerPageOptions={[5, 10, 20]}
+          columns={columnsWards}
+          rows={dataRowWards}
+          loading={isLoadingWards}
           disableSelectionOnClick
-          loading={districtsLoading || wardsLoading}
+          slotProps={{
+            loadingOverlay: {
+              variant: "linear-progress",
+              noRowsVariant: "linear-progress",
+            },
+          }}
           localeText={{
             noRowsLabel: "Không có dữ liệu",
           }}
+          pagination
+          paginationMode="server"
+          sortingMode="server"
+          filterMode="server"
+          rowCount={totalRows}
+          paginationModel={paginationModel}
+          onPaginationModelChange={setPaginationModel}
+          pageSizeOptions={[10, 15, 20]}
         />
-      </div>
+      </Box>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "right", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          variant="standard"
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </DashboardLayoutWrapper>
   );
 };
