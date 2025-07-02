@@ -6,7 +6,6 @@ export const wardApi = baseApi.injectEndpoints({
     listWards: builder.query({
       query: ({ page, size }) => ({
         url: `/v1/private/wards`,
-        method: "GET",
         params: { page, size },
       }),
       providesTags: [TAG_KEYS.WARD],

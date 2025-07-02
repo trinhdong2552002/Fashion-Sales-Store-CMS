@@ -5,20 +5,15 @@ import { TAG_KEYS } from "/src/constants/tagKeys.js";
 export const promotionApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     listPromotions: builder.query({
-      query: () => ({
-        url: `/v1/promotions`,
-        method: "GET",
+      query: ({ page, size }) => ({
+        url: `/v1/admin/promotions`,
+        params: { page, size },
       }),
       providesTags: [TAG_KEYS.PROMOTION],
-      transformResponse: (response) => ({
-        items: Array.isArray(response.result?.items)
-          ? response.result.items
-          : response.result || [],
-      }),
     }),
     addPromotion: builder.mutation({
       query: (promotion) => ({
-        url: `/v1/promotions`,
+        url: `/v1/admin/promotions`,
         method: "POST",
         data: promotion,
       }),
@@ -26,7 +21,7 @@ export const promotionApi = baseApi.injectEndpoints({
     }),
     updatePromotion: builder.mutation({
       query: ({ id, ...promotion }) => ({
-        url: `/v1/promotions/${id}`,
+        url: `/v1/admin/promotions/${id}`,
         method: "PUT",
         data: promotion,
       }),
@@ -34,7 +29,7 @@ export const promotionApi = baseApi.injectEndpoints({
     }),
     deletePromotion: builder.mutation({
       query: (id) => ({
-        url: `/v1/promotions/${id}`,
+        url: `/v1/admin/promotions/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: [TAG_KEYS.PROMOTION],

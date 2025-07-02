@@ -9,7 +9,7 @@ export const productApi = baseApi.injectEndpoints({
         if (categoryId) params.categoryId = categoryId;
         if (status) params.status = status;
         return {
-          url: `/v1/products/admin`,
+          url: `/v1/admin/products`,
           method: "GET",
           params,
         };
@@ -34,22 +34,6 @@ export const productApi = baseApi.injectEndpoints({
       refetchOnMountOrArgChange: true,
     }),
 
-    // listProductsForUser: builder.query({
-    //   query: () => ({
-    //     url: `/v1/products`,
-    //     method: "GET",
-    //     params: { status: "ACTIVE" },
-    //   }),
-    //   providesTags: [TAG_KEYS.PRODUCT],
-    //   transformResponse: (response) => ({
-    //     items: Array.isArray(response.result?.items)
-    //       ? response.result.items
-    //       : [],
-    //   }),
-    //   keepUnusedDataFor: 60,
-    //   refetchOnMountOrArgChange: true,
-    // }),
-
     listProductsByCategoryForUser: builder.query({
       query: (categoryId) => {
         if (!categoryId) throw new Error("Category ID is required");
@@ -60,13 +44,6 @@ export const productApi = baseApi.injectEndpoints({
         };
       },
       providesTags: [TAG_KEYS.PRODUCT],
-      transformResponse: (response) => ({
-        items: Array.isArray(response.result?.items)
-          ? response.result.items
-          : [],
-      }),
-      keepUnusedDataFor: 60,
-      refetchOnMountOrArgChange: true,
     }),
 
     listProductsByCategoryForAdmin: builder.query({
@@ -74,19 +51,12 @@ export const productApi = baseApi.injectEndpoints({
         const params = { categoryId };
         if (status) params.status = status;
         return {
-          url: `/v1/products/admin`,
+          url: `/v1/admin/products`,
           method: "GET",
           params,
         };
       },
       providesTags: [TAG_KEYS.PRODUCT],
-      transformResponse: (response) => ({
-        items: Array.isArray(response.result?.items)
-          ? response.result.items
-          : [],
-      }),
-      keepUnusedDataFor: 60,
-      refetchOnMountOrArgChange: true,
     }),
 
     searchProducts: builder.query({
