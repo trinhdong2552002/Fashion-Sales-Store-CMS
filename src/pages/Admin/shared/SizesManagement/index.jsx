@@ -1,42 +1,123 @@
-import React from "react";
+import { useState } from "react";
 import { DataGrid } from "@mui/x-data-grid";
-import { Typography } from "@mui/material";
+import { Alert, Box, Button, Snackbar, Typography } from "@mui/material";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import { useListSizesQuery } from "@/services/api/size";
+import { Refresh } from "@mui/icons-material";
+import ErrorDisplay from "../../../../components/ErrorDisplay";
 
 const SizesManagement = () => {
-  const { data, isLoading, error } = useListSizesQuery({ pageNo: 1, pageSize: 10 });
+  const [paginationModel, setPaginationModel] = useState({
+    page: 0,
+    pageSize: 10,
+  });
 
-  const columns = [
-    { field: "id", headerName: "ID", width: 90 },
-    { field: "name", headerName: "Tên kích thước", width: 150 },
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    severity: "success",
+    message: "",
+  });
+
+  const {
+    data: dataSizes,
+    isLoading: isLoadingSizes,
+    isError: isErrorSizes,
+    refetch,
+  } = useListSizesQuery(
+    {
+      page: paginationModel.page,
+      size: paginationModel.pageSize,
+    },
+    {
+      refetchOnMountOrArgChange: true,
+    }
+  );
+
+  const dataRowSizes = dataSizes?.result?.items || [];
+  const totalRows = dataSizes?.result?.totalItems || 0;
+
+  const columnsSize = [
+    { field: "id", headerName: "ID", width: 150 },
+    { field: "name", headerName: "Tên kích thước", width: 200 },
   ];
 
-  const rows = data?.items || [];
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
+  const handleRefresh = () => {
+    refetch();
+    setSnackbar({
+      open: true,
+      message: "Danh sách vai trò đã được làm mới !",
+      severity: "info",
+    });
+  };
+
+  if (isErrorSizes)
+    return (
+      <ErrorDisplay
+        error={{
+          message:
+            "Không tải được danh sách kích thước. Vui lòng kiểm tra kết nối của bạn và thử lại !",
+        }}
+      />
+    );
 
   return (
     <DashboardLayoutWrapper>
       <Typography variant="h5" gutterBottom>
         Quản lý kích thước
       </Typography>
-      {error && (
-        <Typography color="error" gutterBottom>
-          Lỗi khi tải dữ liệu: {error.data?.message || "Không thể kết nối đến server"}
-        </Typography>
-      )}
-      <div style={{ height: 400, width: "100%" }}>
+
+      <Button
+        sx={{ mb: 2 }}
+        variant="outlined"
+        onClick={handleRefresh}
+        startIcon={<Refresh />}
+      >
+        Làm mới
+      </Button>
+
+      <Box height={500} width={"100%"}>
         <DataGrid
-          rows={rows}
-          columns={columns}
-          pageSize={5}
-          rowsPerPageOptions={[5]}
+          columns={columnsSize}
+          rows={dataRowSizes}
           disableSelectionOnClick
-          loading={isLoading}
+          loading={isLoadingSizes}
+          slotProps={{
+            loadingOverlay: {
+              variant: "linear-progress",
+              noRowsVariant: "linear-progress",
+            },
+          }}
           localeText={{
             noRowsLabel: "Không có dữ liệu",
           }}
+          pagination
+          paginationMode="server"
+          rowCount={totalRows}
+          paginationModel={paginationModel}
+          onPaginationModelChange={setPaginationModel}
+          pageSizeOptions={[10, 15, 20]}
         />
-      </div>
+      </Box>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "right", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          variant="standard"
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </DashboardLayoutWrapper>
   );
 };

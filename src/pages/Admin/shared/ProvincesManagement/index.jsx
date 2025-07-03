@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import { Alert, Box, Button, Snackbar, Typography } from "@mui/material";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import { useListProvincesQuery } from "@/services/api/province";
 import { Refresh } from "@mui/icons-material";
+import ErrorDisplay from "../../../../components/ErrorDisplay";
 
 const ProvincesManagement = () => {
   const [paginationModel, setPaginationModel] = useState({
