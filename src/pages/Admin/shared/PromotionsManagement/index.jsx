@@ -8,13 +8,11 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Grid,
   Snackbar,
   Alert,
+  IconButton,
+  Box,
 } from "@mui/material";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import {
@@ -23,13 +21,13 @@ import {
   useUpdatePromotionMutation,
   useDeletePromotionMutation,
 } from "@/services/api/promotion";
+import { Add, Delete, Edit, Refresh } from "@mui/icons-material";
+import ErrorDisplay from "../../../../components/ErrorDisplay";
 
 const PromotionsManagement = () => {
-  const { data, isLoading, error } = useListPromotionsQuery();
   const [addPromotion] = useAddPromotionMutation();
   const [updatePromotion] = useUpdatePromotionMutation();
   const [deletePromotion] = useDeletePromotionMutation();
-
   const [newPromotion, setNewPromotion] = useState({
     code: "",
     description: "",
@@ -37,6 +35,11 @@ const PromotionsManagement = () => {
     startDate: "",
     endDate: "",
   });
+  const [paginationModel, setPaginationModel] = useState({
+    page: 0,
+    pageSize: 10,
+  });
+
   const [editPromotion, setEditPromotion] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
@@ -47,34 +50,68 @@ const PromotionsManagement = () => {
     message: "",
   });
 
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
+  const {
+    data: dataPromotions,
+    isLoading: isLoadingPromotions,
+    isError: isErrorPromotions,
+    refetch,
+  } = useListPromotionsQuery(
+    {
+      page: paginationModel.page,
+      size: paginationModel.pageSize,
+    },
+    {
+      refetchOnMountOrArgChange: true,
+    }
+  );
 
-  const columns = [
-    { field: "id", headerName: "ID", width: 90 },
-    { field: "code", headerName: "Mã khuyến mãi", width: 150 },
+  const dataRowPromotions = dataPromotions?.result?.items || [];
+  const totalRows = dataPromotions?.result?.totalItems || 0;
+
+  const columnsPromotion = [
+    { field: "id", headerName: "ID", width: 150 },
+    { field: "code", headerName: "Mã khuyến mãi", width: 200 },
     { field: "description", headerName: "Mô tả", width: 200 },
-    { field: "discountPercent", headerName: "Giảm giá (%)", width: 120 },
-    { field: "startDate", headerName: "Ngày bắt đầu", width: 150 },
-    { field: "endDate", headerName: "Ngày kết thúc", width: 150 },
+    { field: "discountPercent", headerName: "Giảm giá (%)", width: 150 },
+    { field: "startDate", headerName: "Ngày bắt đầu", width: 200 },
+    { field: "endDate", headerName: "Ngày kết thúc", width: 200 },
     {
       field: "actions",
       headerName: "Hành động",
       width: 150,
       renderCell: (params) => (
         <>
-          <Button onClick={() => handleEditPromotion(params.row)}>Sửa</Button>
-          <Button
+          <IconButton onClick={() => handleEditPromotion(params.row)}>
+            <Edit color="primary" />
+          </IconButton>
+          <IconButton
             onClick={() => handleOpenDeleteDialog(params.row.id)}
             color="error"
           >
-            Xóa
-          </Button>
+            <Delete />
+          </IconButton>
         </>
       ),
     },
   ];
+
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
+  const handleRefresh = () => {
+    refetch();
+    setSnackbar({
+      open: true,
+      message: "Danh sách khuyến mãi đã được làm mới!",
+      severity: "info",
+    });
+  };
+
+  const handleOpenDeleteDialog = (id) => {
+    setPromotionToDelete(id);
+    setOpenDeleteDialog(true);
+  };
 
   const handleAddPromotion = async () => {
     try {
@@ -153,11 +190,6 @@ const PromotionsManagement = () => {
     }
   };
 
-  const handleOpenDeleteDialog = (id) => {
-    setPromotionToDelete(id);
-    setOpenDeleteDialog(true);
-  };
-
   const handleDeletePromotion = async () => {
     try {
       await deletePromotion(promotionToDelete).unwrap();
@@ -178,44 +210,69 @@ const PromotionsManagement = () => {
     }
   };
 
-  const rows = data?.items || [];
+  if (isErrorPromotions)
+    return (
+      <ErrorDisplay
+        error={{
+          message:
+            "Không tải được danh sách khuyến mãi. Vui lòng kiểm tra kết nối của bạn và thử lại !",
+        }}
+      />
+    );
 
   return (
     <DashboardLayoutWrapper>
       <Typography variant="h5" gutterBottom>
         Quản lý khuyến mãi
       </Typography>
-      <Grid container spacing={2} sx={{ mb: 2 }}>
-        <Grid item xs={12} sm={9}></Grid>
-        <Grid item xs={12} sm={3}>
-          <Button
-            variant="contained"
-            onClick={() => setOpenDialog(true)}
-            fullWidth
-          >
-            Thêm khuyến mãi
-          </Button>
-        </Grid>
-      </Grid>
-      {error && (
-        <Typography color="error" gutterBottom>
-          Lỗi khi tải dữ liệu:{" "}
-          {error.data?.message || "Không thể kết nối đến server"}
-        </Typography>
-      )}
-      <div style={{ height: 400, width: "100%" }}>
+
+      <Box
+        sx={{ mb: 2 }}
+        display={"flex"}
+        justifyContent={"space-between"}
+        alignItems={"center"}
+      >
+        <Button
+          variant="outlined"
+          onClick={handleRefresh}
+          startIcon={<Refresh />}
+        >
+          Làm mới
+        </Button>
+        <Button
+          variant="contained"
+          startIcon={<Add />}
+          onClick={() => setOpenDialog(true)}
+        >
+          Thêm khuyến mãi
+        </Button>
+      </Box>
+
+      <Box height={500} width={"100%"}>
         <DataGrid
-          rows={rows}
-          columns={columns}
-          pageSize={5}
-          rowsPerPageOptions={[5, 10, 20]}
+          columns={columnsPromotion}
+          rows={dataRowPromotions}
+          loading={isLoadingPromotions}
           disableSelectionOnClick
-          loading={isLoading}
+          slotProps={{
+            loadingOverlay: {
+              variant: "linear-progress",
+              noRowsVariant: "linear-progress",
+            },
+          }}
           localeText={{
             noRowsLabel: "Không có dữ liệu",
           }}
+          pagination
+          paginationMode="server"
+          sortingMode="server"
+          filterMode="server"
+          rowCount={totalRows}
+          paginationModel={paginationModel}
+          onPaginationModelChange={setPaginationModel}
+          pageSizeOptions={[10, 15, 20]}
         />
-      </div>
+      </Box>
 
       {/* Dialog thêm/sửa khuyến mãi */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
@@ -278,7 +335,9 @@ const PromotionsManagement = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenDialog(false)}>Hủy</Button>
+          <Button color="error" onClick={() => setOpenDialog(false)}>
+            Hủy
+          </Button>
           <Button
             onClick={editPromotion ? handleUpdatePromotion : handleAddPromotion}
             variant="contained"
@@ -293,14 +352,16 @@ const PromotionsManagement = () => {
         open={openDeleteDialog}
         onClose={() => setOpenDeleteDialog(false)}
       >
-        <DialogTitle>Xác nhận xóa</DialogTitle>
+        <DialogTitle>Xác nhận xóa ?</DialogTitle>
         <DialogContent>
           <Typography>
-            Bạn có chắc chắn muốn xóa khuyến mãi này không?
+            Bạn có chắc chắn muốn xóa khuyến mãi này không ?
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenDeleteDialog(false)}>Hủy</Button>
+          <Button color="error" onClick={() => setOpenDeleteDialog(false)}>
+            Hủy
+          </Button>
           <Button
             onClick={handleDeletePromotion}
             color="error"
@@ -315,6 +376,7 @@ const PromotionsManagement = () => {
         open={snackbar.open}
         autoHideDuration={6000}
         onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "right", horizontal: "right" }}
       >
         <Alert
           onClose={handleCloseSnackbar}
