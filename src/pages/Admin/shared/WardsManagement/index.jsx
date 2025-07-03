@@ -9,7 +9,7 @@ import { Refresh } from "@mui/icons-material";
 const WardsManagement = () => {
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
-    pageSize: 10,
+    pageSize: 20,
   });
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -102,7 +102,7 @@ const WardsManagement = () => {
           rowCount={totalRows}
           paginationModel={paginationModel}
           onPaginationModelChange={setPaginationModel}
-          pageSizeOptions={[10, 15, 20]}
+          pageSizeOptions={[20, 50, 100]}
         />
       </Box>
 

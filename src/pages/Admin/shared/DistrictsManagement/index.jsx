@@ -1,109 +1,123 @@
-import React, { useState } from "react";
 import { DataGrid } from "@mui/x-data-grid";
-import { Typography, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
+import { Typography, Box, Snackbar, Alert, Button } from "@mui/material";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
-import { useListProvincesQuery } from "@/services/api/province";
-import { useListDistrictsByProvinceQuery, useListDistrictsQuery } from "@/services/api/district";
+import { useListDistrictsQuery } from "@/services/api/district";
+import { Refresh } from "@mui/icons-material";
+import { useState } from "react";
 
 const DistrictsManagement = () => {
-  const [selectedProvince, setSelectedProvince] = useState("");
-
-  // Lấy danh sách tỉnh/thành phố
-  const { data: provincesData, isLoading: provincesLoading, error: provincesError } = useListProvincesQuery({
-    pageNo: 1,
-    pageSize: 60,
+  const [paginationModel, setPaginationModel] = useState({
+    page: 0,
+    pageSize: 20,
+  });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    severity: "success",
+    message: "",
   });
 
-  // Lấy danh sách quận/huyện (tất cả)
   const {
-    data: allDistrictsData,
-    isLoading: allDistrictsLoading,
-    error: allDistrictsError,
-  } = useListDistrictsQuery(
-    {
-      pageNo: 1,
-      pageSize: 10,
-      sortBy: "",
-    },
-    { skip: !!selectedProvince } // Chỉ chạy khi không có tỉnh/thành phố được chọn
-  );
+    data: dataDistricts,
+    isLoading: isLoadingDistricts,
+    isError: isErrorDistricts,
+    refetch,
+  } = useListDistrictsQuery({
+    page: paginationModel.page,
+    size: paginationModel.pageSize,
+  });
 
-  // Lấy danh sách quận/huyện theo tỉnh/thành phố
-  const {
-    data: districtsByProvinceData,
-    isLoading: districtsByProvinceLoading,
-    error: districtsByProvinceError,
-  } = useListDistrictsByProvinceQuery(
-    {
-      provinceId: selectedProvince,
-      pageNo: 1,
-      pageSize: 10,
-      sortBy: "",
-    },
-    { skip: !selectedProvince } // Chỉ chạy khi có tỉnh/thành phố được chọn
-  );
-
-  const columns = [
-    { field: "id", headerName: "ID", width: 90 },
+  const columnsDistrict = [
+    { field: "id", headerName: "ID", width: 150 },
     { field: "name", headerName: "Tên quận / huyện", width: 200 },
   ];
 
-  // Dữ liệu hiển thị: Nếu có tỉnh/thành phố được chọn, dùng districtsByProvinceData, ngược lại dùng allDistrictsData
-  const districtsData = selectedProvince ? districtsByProvinceData : allDistrictsData;
-  const districtsLoading = selectedProvince ? districtsByProvinceLoading : allDistrictsLoading;
-  const districtsError = selectedProvince ? districtsByProvinceError : allDistrictsError;
+  const dataRowDistricts = dataDistricts?.result?.items || [];
+  const totalRows = dataDistricts?.result?.totalItems || 0;
 
-  const rows = districtsData?.items || [];
-  const provinces = provincesData?.items || [];
-
-  const handleProvinceChange = (event) => {
-    setSelectedProvince(event.target.value);
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
   };
+
+  const handleRefresh = () => {
+    refetch();
+    setSnackbar({
+      open: true,
+      message: "Danh sách đã được làm mới !",
+      severity: "info",
+    });
+  };
+
+  if (isErrorDistricts) {
+    return (
+      <ErrorDisplay
+        error={{
+          message:
+            "Không tải được danh sách quận/huyện. Vui lòng kiểm tra kết nối của bạn và thử lại !",
+        }}
+      />
+    );
+  }
 
   return (
     <DashboardLayoutWrapper>
       <Typography variant="h5" gutterBottom>
         Quản lý quận / huyện
       </Typography>
-      <FormControl fullWidth sx={{ mb: 2, maxWidth: 300 }}>
-        <InputLabel id="province-select-label">Chọn tỉnh/thành phố</InputLabel>
-        <Select
-          labelId="province-select-label"
-          value={selectedProvince}
-          label="Chọn tỉnh/thành phố"
-          onChange={handleProvinceChange}
+
+      <Box
+        sx={{ mb: 2 }}
+        display={"flex"}
+        justifyContent={"space-between"}
+        alignItems={"center"}
+      >
+        <Button
+          variant="outlined"
+          onClick={handleRefresh}
+          startIcon={<Refresh />}
         >
-          <MenuItem value="">Tất cả</MenuItem>
-          {provinces.map((province) => (
-            <MenuItem key={province.id} value={province.id}>
-              {province.name}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-      {provincesError && (
-        <Typography color="error" gutterBottom>
-          Lỗi khi tải danh sách tỉnh/thành phố: {provincesError.data?.message || "Không thể kết nối đến server"}
-        </Typography>
-      )}
-      {districtsError && (
-        <Typography color="error" gutterBottom>
-          Lỗi khi tải danh sách quận/huyện: {districtsError.data?.message || "Không thể kết nối đến server"}
-        </Typography>
-      )}
-      <div style={{ height: 400, width: "100%" }}>
+          Làm mới
+        </Button>
+      </Box>
+
+      <Box height={500} width={"100%"}>
         <DataGrid
-          rows={rows}
-          columns={columns}
-          pageSize={5}
-          rowsPerPageOptions={[5, 10, 20]}
+          columns={columnsDistrict}
+          rows={dataRowDistricts}
+          loading={isLoadingDistricts}
           disableSelectionOnClick
-          loading={provincesLoading || districtsLoading}
+          slotProps={{
+            loadingOverlay: {
+              variant: "linear-progress",
+              noRowsVariant: "linear-progress",
+            },
+          }}
           localeText={{
             noRowsLabel: "Không có dữ liệu",
           }}
+          pagination
+          paginationMode="server"
+          rowCount={totalRows}
+          paginationModel={paginationModel}
+          onPaginationModelChange={setPaginationModel}
+          pageSizeOptions={[20, 50, 100]}
         />
-      </div>
+      </Box>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "right", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          variant="standard"
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </DashboardLayoutWrapper>
   );
 };

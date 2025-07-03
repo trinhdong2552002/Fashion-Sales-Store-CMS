@@ -6,32 +6,22 @@ export const districtApi = baseApi.injectEndpoints({
     listDistricts: builder.query({
       query: ({ page, size }) => ({
         url: `/v1/private/districts`,
-        method: "GET",
-        params: { page, size },
-      }),
-      providesTags: [TAG_KEYS.DISTRICT],
-    }),
-    listDistrictsByProvince: builder.query({
-      query: ({ provinceId, page, size }) => ({
-        url: `/v1/private/provinces/${provinceId}/districts`,
-        method: "GET",
         params: { page, size },
       }),
       providesTags: [TAG_KEYS.DISTRICT],
     }),
     listWardsByDistrict: builder.query({
-      query: ({ districtId, page, size }) => ({
-        url: `/v1/private/districts/${districtId}/wards`,
-        method: "GET",
+      query: ({ id, page, size }) => ({
+        url: `/v1/private/districts/${id}/wards`,
         params: { page, size },
       }),
-      providesTags: [TAG_KEYS.WARD],
+      providesTags: [TAG_KEYS.DISTRICT],
     }),
+   
   }),
 });
 
 export const {
   useListDistrictsQuery,
-  useListDistrictsByProvinceQuery,
   useListWardsByDistrictQuery,
 } = districtApi;
