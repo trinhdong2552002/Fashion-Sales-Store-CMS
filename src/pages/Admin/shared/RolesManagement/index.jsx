@@ -1,42 +1,124 @@
 import { DataGrid } from "@mui/x-data-grid";
-import { Typography } from "@mui/material";
+import { Alert, Box, Button, Snackbar, Typography } from "@mui/material";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import { useListRolesQuery } from "@/services/api/role";
+import { useState } from "react";
+import { Refresh } from "@mui/icons-material";
 
 const RolesManagement = () => {
-  const { data, isLoading, error } = useListRolesQuery({ pageNo: 1, pageSize: 10 });
+  const [paginationModel, setPaginationModel] = useState({
+    page: 0,
+    pageSize: 10,
+  });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    severity: "success",
+    message: "",
+  });
 
-  const columns = [
-    { field: "id", headerName: "ID", width: 90 },
-    { field: "name", headerName: "Tên", width: 150 },
-    { field: "description", headerName: "Mô tả", width: 200 },
+  const {
+    data: dataRoles,
+    isLoading: isLoadingRoles,
+    isError: isErrorRoles,
+    refetch,
+  } = useListRolesQuery(
+    {
+      page: paginationModel.page,
+      size: paginationModel.pageSize,
+    },
+    {
+      refetchOnMountOrArgChange: true,
+    }
+  );
+
+  const dataRowRoles = dataRoles?.result?.items || [];
+  const totalRows = dataRoles?.result?.totalItems || 0;
+
+  const columnsRoles = [
+    { field: "id", headerName: "ID", width: 150 },
+    { field: "name", headerName: "Tên vai trò", width: 150 },
+    { field: "description", headerName: "Mô tả vai trò", width: 200 },
   ];
 
-  const rows = data?.items || [];
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
+  const handleRefresh = () => {
+    refetch();
+    setSnackbar({
+      open: true,
+      message: "Danh sách danh mục đã được làm mới!",
+      severity: "info",
+    });
+  };
+
+  if (isErrorRoles)
+    return (
+      <ErrorDisplay
+        error={{
+          message:
+            "Không tải được danh sách vai trò. Vui lòng kiểm tra kết nối của bạn và thử lại !",
+        }}
+      />
+    );
 
   return (
     <DashboardLayoutWrapper>
       <Typography variant="h5" gutterBottom>
         Quản lý Vai trò
       </Typography>
-      {error && (
-        <Typography color="error" gutterBottom>
-          Lỗi khi tải dữ liệu: {error.data?.message || "Không thể kết nối đến server"}
-        </Typography>
-      )}
-      <div style={{ height: 400, width: "100%" }}>
+
+      <Button
+        sx={{ mb: 2 }}
+        variant="outlined"
+        startIcon={<Refresh />}
+        onClick={handleRefresh}
+      >
+        Làm mới
+      </Button>
+
+      <Box height={500} width={"100%"}>
         <DataGrid
-          rows={rows}
-          columns={columns}
-          pageSize={5}
-          rowsPerPageOptions={[5]}
+          columns={columnsRoles}
+          rows={dataRowRoles}
+          loading={isLoadingRoles}
           disableSelectionOnClick
-          loading={isLoading}
+          slotProps={{
+            loadingOverlay: {
+              variant: "linear-progress",
+              noRowsVariant: "linear-progress",
+            },
+          }}
           localeText={{
             noRowsLabel: "Không có dữ liệu",
           }}
+          pagination
+          paginationMode="server"
+          sortingMode="server"
+          filterMode="server"
+          rowCount={totalRows}
+          paginationModel={paginationModel}
+          onPaginationModelChange={setPaginationModel}
+          pageSizeOptions={[10, 15, 20]}
         />
-      </div>
+      </Box>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "right", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          variant="standard"
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </DashboardLayoutWrapper>
   );
 };
