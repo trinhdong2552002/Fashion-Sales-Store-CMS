@@ -48,7 +48,7 @@ const RolesManagement = () => {
     refetch();
     setSnackbar({
       open: true,
-      message: "Danh sách danh mục đã được làm mới!",
+      message: "Danh sách vai trò đã được làm mới!",
       severity: "info",
     });
   };
