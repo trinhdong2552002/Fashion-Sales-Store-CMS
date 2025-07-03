@@ -19,8 +19,6 @@ import {
   Chip,
   Box,
   FormHelperText,
-  PaginationItem,
-  styled,
 } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { useNavigate } from "react-router-dom";
@@ -32,32 +30,15 @@ import {
   useDeleteProductMutation,
   useRestoreProductMutation,
 } from "@/services/api/product";
-import { useListCategoriesQuery } from "@/services/api/categories";
+import { useListCategoriesForAdminQuery } from "@/services/api/categories";
 import { useListColorsQuery } from "@/services/api/color";
 import { useListSizesQuery } from "@/services/api/size";
 import {
-  useListAllImagesQuery,
+  useListImagesQuery,
   useLazyListImagesQuery,
 } from "@/services/api/productImage";
 import { useGetMyInfoQuery } from "@/services/api/auth";
-
-// Tùy chỉnh nút Back và Forward
-const CustomPaginationItem = styled(PaginationItem)(({ theme }) => ({
-  "&.MuiPaginationItem-previousNext": {
-    backgroundColor: theme.palette.primary.main,
-    color: theme.palette.common.white,
-    "&:hover": {
-      backgroundColor: theme.palette.primary.dark,
-    },
-    "&.Mui-disabled": {
-      backgroundColor: theme.palette.action.disabledBackground,
-      color: theme.palette.action.disabled,
-    },
-    borderRadius: "4px",
-    margin: "0 5px",
-    padding: "8px",
-  },
-}));
+import CustomPaginationItem from "../../../../components/CustomerPaginationItem";
 
 const ProductsManagement = () => {
   const navigate = useNavigate();
@@ -88,14 +69,17 @@ const ProductsManagement = () => {
   const [formErrors, setFormErrors] = useState({});
   const [allImages, setAllImages] = useState([]);
 
-  // Fetch user info
+  const [addProduct] = useAddProductMutation();
+  const [updateProduct] = useUpdateProductMutation();
+  const [deleteProduct] = useDeleteProductMutation();
+  const [restoreProduct] = useRestoreProductMutation();
+
   const {
     data: userInfo,
     error: userError,
     isLoading: userLoading,
   } = useGetMyInfoQuery();
 
-  // Fetch data from API với phân trang
   const {
     data: productsData,
     isLoading: isFetchingProducts,
@@ -112,10 +96,11 @@ const ProductsManagement = () => {
   );
 
   const {
-    data: categoriesData,
-    isLoading: isFetchingCategories,
-    error: fetchCategoriesError,
-  } = useListCategoriesQuery({ pageNo, pageSize });
+    data: categoryData,
+    isLoading: isFetchingCategory,
+    error: fetchCategoryError,
+  } = useListCategoriesForAdminQuery({ pageNo, pageSize });
+  console.log("Category data", categoryData);
 
   const {
     data: colorsData,
@@ -133,7 +118,7 @@ const ProductsManagement = () => {
     data: initialAllImagesData,
     isLoading: isFetchingAllImages,
     error: fetchAllImagesError,
-  } = useListAllImagesQuery();
+  } = useListImagesQuery();
 
   const [fetchImages] = useLazyListImagesQuery();
 
@@ -149,7 +134,7 @@ const ProductsManagement = () => {
       const totalPages = initialAllImagesData.totalPages || 1;
 
       // Lấy dữ liệu từ các trang còn lại
-      for (let page = 2; page <= totalPages; page++) {
+      for (let page = 1; page <= totalPages; page++) {
         try {
           const { data: nextPageData } = await fetchImages({
             pageNo: page,
@@ -169,11 +154,281 @@ const ProductsManagement = () => {
     fetchAllImages();
   }, [initialAllImagesData, fetchImages]);
 
-  // Sử dụng RTK Query mutations
-  const [addProduct] = useAddProductMutation();
-  const [updateProduct] = useUpdateProductMutation();
-  const [deleteProduct] = useDeleteProductMutation();
-  const [restoreProduct] = useRestoreProductMutation();
+  const handleEditProduct = (product) => {
+    setEditProduct(product);
+    setNewProduct({
+      name: product.name || "",
+      description: product.description || "",
+      price: product.price?.toString() || "",
+      quantity: product.quantity?.toString() || "",
+      categoryId: product.category?.id || "",
+      colors: product.colors?.map((color) => color.id) || [],
+      sizeIds: product.sizes?.map((size) => size.id) || [],
+      imageIds: product.images?.map((image) => image.id) || [],
+    });
+    setOpenDialog(true);
+  };
+
+  const handleOpenAddProductDialog = () => {
+    setEditProduct(null);
+    setNewProduct({
+      name: "",
+      description: "",
+      price: "",
+      quantity: "",
+      categoryId: "",
+      colors: [],
+      sizeIds: [],
+      imageIds: [],
+    });
+    setFormErrors({});
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setEditProduct(null);
+    setNewProduct({
+      name: "",
+      description: "",
+      price: "",
+      quantity: "",
+      categoryId: "",
+      colors: [],
+      sizeIds: [],
+      imageIds: [],
+    });
+    setFormErrors({});
+  };
+
+  const validateProductData = (product) => {
+    const errors = {};
+    if (!product.name.trim()) errors.name = "Tên sản phẩm không được để trống";
+    if (!product.description.trim())
+      errors.description = "Mô tả sản phẩm không được để trống";
+    if (!product.price || isNaN(parseFloat(product.price)))
+      errors.price = "Giá không hợp lệ";
+    if (!product.quantity || isNaN(parseInt(product.quantity)))
+      errors.quantity = "Số lượng không hợp lệ";
+    if (!product.categoryId) errors.categoryId = "Danh mục không được để trống";
+    if (!product.colors || product.colors.length === 0)
+      errors.colors = "Phải chọn ít nhất một màu sắc";
+    if (!product.sizeIds || product.sizeIds.length === 0)
+      errors.sizeIds = "Phải chọn ít nhất một kích thước";
+    if (!product.imageIds || product.imageIds.length === 0)
+      errors.imageIds = "Phải chọn ít nhất một hình ảnh";
+    return errors;
+  };
+
+  const checkImageUsage = (imageIds, currentProductId = null) => {
+    const products = productsData?.items || [];
+    const usedImageIds = [];
+
+    products.forEach((product) => {
+      if (currentProductId && product.id === currentProductId) return;
+      const productImageIds = (product.images || []).map((img) => img.id);
+      productImageIds.forEach((id) => {
+        if (imageIds.includes(id) && !usedImageIds.includes(id)) {
+          usedImageIds.push(id);
+        }
+      });
+    });
+
+    return usedImageIds;
+  };
+
+  const handleAddProduct = async () => {
+    const errors = validateProductData(newProduct);
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      setSnackbar({
+        open: true,
+        message: Object.values(errors).join(". "),
+        severity: "error",
+      });
+      return;
+    }
+
+    const usedImageIds = checkImageUsage(newProduct.imageIds);
+    if (usedImageIds.length > 0) {
+      const usedImageNames = usedImageIds
+        .map((id) => {
+          const image = allImages.find((img) => img.id === id);
+          return image?.fileName || `ID: ${id}`;
+        })
+        .join(", ");
+      setSnackbar({
+        open: true,
+        message: `Hình ảnh "${usedImageNames}" đã được sử dụng bởi sản phẩm khác. Vui lòng tải lên hình ảnh mới hoặc chọn hình ảnh khác.`,
+        severity: "warning",
+      });
+      return;
+    }
+
+    try {
+      await addProduct({
+        name: newProduct.name,
+        description: newProduct.description,
+        price: parseFloat(newProduct.price),
+        quantity: parseInt(newProduct.quantity),
+        categoryId: parseInt(newProduct.categoryId),
+        colorIds: newProduct.colors.map((colorId) => parseInt(colorId)),
+        sizeIds: newProduct.sizeIds.map((sizeId) => parseInt(sizeId)),
+        imageIds: newProduct.imageIds.map((imageId) => parseInt(imageId)),
+        imagesData: allImages || [],
+        colorsData,
+        sizesData,
+        categoryData,
+      }).unwrap();
+      console.log("add product of categories", categoryData);
+
+      handleCloseDialog();
+      setSnackbar({
+        open: true,
+        message: "Thêm sản phẩm thành công!",
+        severity: "success",
+      });
+      refetchProducts();
+    } catch (error) {
+      const errorMessage = Array.isArray(error.data?.errors)
+        ? error.data.errors.join(". ")
+        : error.data?.message || "Lỗi khi thêm sản phẩm";
+      setSnackbar({
+        open: true,
+        message: errorMessage,
+        severity: "error",
+      });
+    }
+  };
+
+  const handleUpdateProduct = async () => {
+    const errors = validateProductData(newProduct);
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      setSnackbar({
+        open: true,
+        message: Object.values(errors).join(". "),
+        severity: "error",
+      });
+      return;
+    }
+
+    const usedImageIds = checkImageUsage(newProduct.imageIds, editProduct?.id);
+    if (usedImageIds.length > 0) {
+      const usedImageNames = usedImageIds
+        .map((id) => {
+          const image = allImages.find((img) => img.id === id);
+          return image?.fileName || `ID: ${id}`;
+        })
+        .join(", ");
+      setSnackbar({
+        open: true,
+        message: `Hình ảnh "${usedImageNames}" đã được sử dụng bởi sản phẩm khác. Vui lòng tải lên hình ảnh mới hoặc chọn hình ảnh khác.`,
+        severity: "warning",
+      });
+      return;
+    }
+
+    try {
+      const payload = {
+        id: editProduct.id,
+        name: newProduct.name,
+        description: newProduct.description,
+        price: parseFloat(newProduct.price),
+        quantity: parseInt(newProduct.quantity),
+        categoryId: parseInt(newProduct.categoryId),
+        colorIds: newProduct.colors.map((colorId) => parseInt(colorId)),
+        sizeIds: newProduct.sizeIds.map((sizeId) => parseInt(sizeId)),
+        imageIds: newProduct.imageIds.map((imageId) => parseInt(imageId)),
+      };
+      await updateProduct(payload).unwrap();
+      setSnackbar({
+        open: true,
+        message: "Cập nhật sản phẩm thành công!",
+        severity: "success",
+      });
+      handleCloseDialog();
+      refetchProducts();
+    } catch (error) {
+      const errorMessage =
+        error.status === 400
+          ? "Dữ liệu gửi lên không hợp lệ. Vui lòng kiểm tra lại các trường bắt buộc!"
+          : error.status === 404
+          ? "Backend không có endpoint PUT /adamstore/v1/products/:id. Vui lòng liên hệ team backend!"
+          : error.status === 405
+          ? "Backend không hỗ trợ phương thức PUT. Vui lòng liên hệ team backend!"
+          : Array.isArray(error.data?.errors)
+          ? error.data.errors.join(". ")
+          : error.data?.message || "Lỗi khi cập nhật sản phẩm";
+      setSnackbar({
+        open: true,
+        message: errorMessage,
+        severity: "error",
+      });
+    }
+  };
+
+  const handleOpenDeleteDialog = (id) => {
+    setProductToDelete(id);
+    setOpenDeleteDialog(true);
+  };
+
+  const handleDeleteProduct = async () => {
+    try {
+      await deleteProduct(productToDelete).unwrap();
+      setOpenDeleteDialog(false);
+      setProductToDelete(null);
+      setSnackbar({
+        open: true,
+        message: "Xóa sản phẩm thành công!",
+        severity: "success",
+      });
+      refetchProducts();
+    } catch (error) {
+      const errorMessage = Array.isArray(error.data?.errors)
+        ? error.data.errors.join(". ")
+        : error.data?.message || "Lỗi khi xóa sản phẩm";
+      setSnackbar({
+        open: true,
+        message: errorMessage,
+        severity: "error",
+      });
+    }
+  };
+
+  const handleRestoreProduct = async (id) => {
+    try {
+      await restoreProduct(id).unwrap();
+      setSnackbar({
+        open: true,
+        message: "Khôi phục sản phẩm thành công!",
+        severity: "success",
+      });
+      refetchProducts();
+    } catch (error) {
+      const errorMessage = Array.isArray(error.data?.errors)
+        ? error.data.errors.join(". ")
+        : error.data?.message || "Lỗi khi khôi phục sản phẩm";
+      setSnackbar({
+        open: true,
+        message: errorMessage,
+        severity: "error",
+      });
+    }
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
+  const handleRefresh = () => {
+    refetchProducts();
+    setSnackbar({
+      open: true,
+      message: "Danh sách sản phẩm đã được làm mới!",
+      severity: "info",
+    });
+  };
 
   // Check user permissions
   useEffect(() => {
@@ -206,12 +461,12 @@ const ProductsManagement = () => {
 
   // Handle errors for categories, colors, sizes, and images
   useEffect(() => {
-    if (fetchCategoriesError) {
+    if (fetchCategoryError) {
       setSnackbar({
         open: true,
         message:
           "Lỗi khi tải danh mục: " +
-          (fetchCategoriesError?.data?.message || "Không xác định"),
+          (fetchCategoryError?.data?.message || "Không xác định"),
         severity: "error",
       });
     }
@@ -243,7 +498,7 @@ const ProductsManagement = () => {
       });
     }
   }, [
-    fetchCategoriesError,
+    fetchCategoryError,
     fetchColorsError,
     fetchSizesError,
     fetchAllImagesError,
@@ -423,287 +678,10 @@ const ProductsManagement = () => {
     },
   ];
 
-  const handleEditProduct = (product) => {
-    setEditProduct(product);
-    setNewProduct({
-      name: product.name || "",
-      description: product.description || "",
-      price: product.price?.toString() || "",
-      quantity: product.quantity?.toString() || "",
-      categoryId: product.category?.id || "",
-      colors: product.colors?.map((color) => color.id) || [],
-      sizeIds: product.sizes?.map((size) => size.id) || [],
-      imageIds: product.images?.map((image) => image.id) || [],
-    });
-    setOpenDialog(true);
-  };
-
-  const handleOpenAddProductDialog = () => {
-    setEditProduct(null);
-    setNewProduct({
-      name: "",
-      description: "",
-      price: "",
-      quantity: "",
-      categoryId: "",
-      colors: [],
-      sizeIds: [],
-      imageIds: [],
-    });
-    setFormErrors({});
-    setOpenDialog(true);
-  };
-
-  const handleCloseDialog = () => {
-    setOpenDialog(false);
-    setEditProduct(null);
-    setNewProduct({
-      name: "",
-      description: "",
-      price: "",
-      quantity: "",
-      categoryId: "",
-      colors: [],
-      sizeIds: [],
-      imageIds: [],
-    });
-    setFormErrors({});
-  };
-
-  const validateProductData = (product) => {
-    const errors = {};
-    if (!product.name.trim()) errors.name = "Tên sản phẩm không được để trống";
-    if (!product.description.trim())
-      errors.description = "Mô tả sản phẩm không được để trống";
-    if (!product.price || isNaN(parseFloat(product.price)))
-      errors.price = "Giá không hợp lệ";
-    if (!product.quantity || isNaN(parseInt(product.quantity)))
-      errors.quantity = "Số lượng không hợp lệ";
-    if (!product.categoryId) errors.categoryId = "Danh mục không được để trống";
-    if (!product.colors || product.colors.length === 0)
-      errors.colors = "Phải chọn ít nhất một màu sắc";
-    if (!product.sizeIds || product.sizeIds.length === 0)
-      errors.sizeIds = "Phải chọn ít nhất một kích thước";
-    if (!product.imageIds || product.imageIds.length === 0)
-      errors.imageIds = "Phải chọn ít nhất một hình ảnh";
-    return errors;
-  };
-
-  const checkImageUsage = (imageIds, currentProductId = null) => {
-    const products = productsData?.items || [];
-    const usedImageIds = [];
-
-    products.forEach((product) => {
-      if (currentProductId && product.id === currentProductId) return;
-      const productImageIds = (product.images || []).map(
-        (img) => img.id
-      );
-      productImageIds.forEach((id) => {
-        if (imageIds.includes(id) && !usedImageIds.includes(id)) {
-          usedImageIds.push(id);
-        }
-      });
-    });
-
-    return usedImageIds;
-  };
-
-  const handleAddProduct = async () => {
-    const errors = validateProductData(newProduct);
-    if (Object.keys(errors).length > 0) {
-      setFormErrors(errors);
-      setSnackbar({
-        open: true,
-        message: Object.values(errors).join(". "),
-        severity: "error",
-      });
-      return;
-    }
-
-    const usedImageIds = checkImageUsage(newProduct.imageIds);
-    if (usedImageIds.length > 0) {
-      const usedImageNames = usedImageIds
-        .map((id) => {
-          const image = allImages.find((img) => img.id === id);
-          return image?.fileName || `ID: ${id}`;
-        })
-        .join(", ");
-      setSnackbar({
-        open: true,
-        message: `Hình ảnh "${usedImageNames}" đã được sử dụng bởi sản phẩm khác. Vui lòng tải lên hình ảnh mới hoặc chọn hình ảnh khác.`,
-        severity: "warning",
-      });
-      return;
-    }
-
-    try {
-      await addProduct({
-        name: newProduct.name,
-        description: newProduct.description,
-        price: parseFloat(newProduct.price),
-        quantity: parseInt(newProduct.quantity),
-        categoryId: parseInt(newProduct.categoryId),
-        colorIds: newProduct.colors.map((colorId) => parseInt(colorId)),
-        sizeIds: newProduct.sizeIds.map((sizeId) => parseInt(sizeId)),
-        imageIds: newProduct.imageIds.map((imageId) => parseInt(imageId)),
-        imagesData: allImages || [],
-        colorsData,
-        sizesData,
-        categoriesData,
-      }).unwrap();
-      handleCloseDialog();
-      setSnackbar({
-        open: true,
-        message: "Thêm sản phẩm thành công!",
-        severity: "success",
-      });
-      refetchProducts();
-    } catch (error) {
-      const errorMessage = Array.isArray(error.data?.errors)
-        ? error.data.errors.join(". ")
-        : error.data?.message || "Lỗi khi thêm sản phẩm";
-      setSnackbar({
-        open: true,
-        message: errorMessage,
-        severity: "error",
-      });
-    }
-  };
-
-  const handleUpdateProduct = async () => {
-    const errors = validateProductData(newProduct);
-    if (Object.keys(errors).length > 0) {
-      setFormErrors(errors);
-      setSnackbar({
-        open: true,
-        message: Object.values(errors).join(". "),
-        severity: "error",
-      });
-      return;
-    }
-
-    const usedImageIds = checkImageUsage(newProduct.imageIds, editProduct?.id);
-    if (usedImageIds.length > 0) {
-      const usedImageNames = usedImageIds
-        .map((id) => {
-          const image = allImages.find((img) => img.id === id);
-          return image?.fileName || `ID: ${id}`;
-        })
-        .join(", ");
-      setSnackbar({
-        open: true,
-        message: `Hình ảnh "${usedImageNames}" đã được sử dụng bởi sản phẩm khác. Vui lòng tải lên hình ảnh mới hoặc chọn hình ảnh khác.`,
-        severity: "warning",
-      });
-      return;
-    }
-
-    try {
-      const payload = {
-        id: editProduct.id,
-        name: newProduct.name,
-        description: newProduct.description,
-        price: parseFloat(newProduct.price),
-        quantity: parseInt(newProduct.quantity),
-        categoryId: parseInt(newProduct.categoryId),
-        colorIds: newProduct.colors.map((colorId) => parseInt(colorId)),
-        sizeIds: newProduct.sizeIds.map((sizeId) => parseInt(sizeId)),
-        imageIds: newProduct.imageIds.map((imageId) => parseInt(imageId)),
-        
-      };
-      await updateProduct(payload).unwrap();
-      setSnackbar({
-        open: true,
-        message: "Cập nhật sản phẩm thành công!",
-        severity: "success",
-      });
-      handleCloseDialog();
-      refetchProducts();
-    } catch (error) {
-      const errorMessage =
-        error.status === 400
-          ? "Dữ liệu gửi lên không hợp lệ. Vui lòng kiểm tra lại các trường bắt buộc!"
-          : error.status === 404
-          ? "Backend không có endpoint PUT /adamstore/v1/products/:id. Vui lòng liên hệ team backend!"
-          : error.status === 405
-          ? "Backend không hỗ trợ phương thức PUT. Vui lòng liên hệ team backend!"
-          : Array.isArray(error.data?.errors)
-          ? error.data.errors.join(". ")
-          : error.data?.message || "Lỗi khi cập nhật sản phẩm";
-      setSnackbar({
-        open: true,
-        message: errorMessage,
-        severity: "error",
-      });
-    }
-  };
-
-  const handleOpenDeleteDialog = (id) => {
-    setProductToDelete(id);
-    setOpenDeleteDialog(true);
-  };
-
-  const handleDeleteProduct = async () => {
-    try {
-      await deleteProduct(productToDelete).unwrap();
-      setOpenDeleteDialog(false);
-      setProductToDelete(null);
-      setSnackbar({
-        open: true,
-        message: "Xóa sản phẩm thành công!",
-        severity: "success",
-      });
-      refetchProducts();
-    } catch (error) {
-      const errorMessage = Array.isArray(error.data?.errors)
-        ? error.data.errors.join(". ")
-        : error.data?.message || "Lỗi khi xóa sản phẩm";
-      setSnackbar({
-        open: true,
-        message: errorMessage,
-        severity: "error",
-      });
-    }
-  };
-
-  const handleRestoreProduct = async (id) => {
-    try {
-      await restoreProduct(id).unwrap();
-      setSnackbar({
-        open: true,
-        message: "Khôi phục sản phẩm thành công!",
-        severity: "success",
-      });
-      refetchProducts();
-    } catch (error) {
-      const errorMessage = Array.isArray(error.data?.errors)
-        ? error.data.errors.join(". ")
-        : error.data?.message || "Lỗi khi khôi phục sản phẩm";
-      setSnackbar({
-        open: true,
-        message: errorMessage,
-        severity: "error",
-      });
-    }
-  };
-
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
-
-  const handleRefresh = () => {
-    refetchProducts();
-    setSnackbar({
-      open: true,
-      message: "Danh sách sản phẩm đã được làm mới!",
-      severity: "info",
-    });
-  };
-
   if (
     userLoading ||
     isFetchingProducts ||
-    isFetchingCategories ||
+    isFetchingCategory ||
     isFetchingColors ||
     isFetchingSizes ||
     isFetchingAllImages
@@ -719,8 +697,15 @@ const ProductsManagement = () => {
       <Typography variant="h5" gutterBottom>
         Quản lý Sản phẩm
       </Typography>
-      <Grid container spacing={2} sx={{ mb: 2 }}>
-        <Grid item xs={12} sm={3}>
+      <Grid
+        container
+        spacing={2}
+        sx={{ mb: 4 }}
+        direction={"row"}
+        justifyContent={"flext-start"}
+        alignItems={"center"}
+      >
+        <Grid size={{ xs: 12, sm: 3 }}>
           <FormControl fullWidth>
             <InputLabel>Danh mục</InputLabel>
             <Select
@@ -731,7 +716,7 @@ const ProductsManagement = () => {
               label="Danh mục"
             >
               <MenuItem value="">Tất cả</MenuItem>
-              {categoriesData?.items?.map((cat) => (
+              {categoryData?.items?.map((cat) => (
                 <MenuItem key={cat.id} value={cat.id}>
                   {cat.name}
                 </MenuItem>
@@ -739,7 +724,7 @@ const ProductsManagement = () => {
             </Select>
           </FormControl>
         </Grid>
-        <Grid item xs={12} sm={3}>
+        <Grid size={{ xs: 12, sm: 3 }}>
           <FormControl fullWidth>
             <InputLabel>Trạng thái</InputLabel>
             <Select
@@ -912,7 +897,7 @@ const ProductsManagement = () => {
               label="Danh mục"
               error={!!formErrors.categoryId}
             >
-              {categoriesData?.items?.map((cat) => (
+              {categoryData?.items?.map((cat) => (
                 <MenuItem key={cat.id} value={cat.id}>
                   {cat.name}
                 </MenuItem>
@@ -1008,16 +993,16 @@ const ProductsManagement = () => {
             >
               {allImages.map((image) => (
                 <MenuItem key={image.id} value={image.id}>
-                <img
-                src={image.imageUrl}
-                alt={image.fileName}
-                style={{
-                  width: 30,
-                  height: 30,
-                  objectFit: "cover",
-                  marginRight: 5,
-                }}
-              />
+                  <img
+                    src={image.imageUrl}
+                    alt={image.fileName}
+                    style={{
+                      width: 30,
+                      height: 30,
+                      objectFit: "cover",
+                      marginRight: 5,
+                    }}
+                  />
                   {image.fileName}
                 </MenuItem>
               ))}
