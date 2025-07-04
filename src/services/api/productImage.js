@@ -1,3 +1,4 @@
+import axios from "axios";
 import { baseApi } from "./index";
 import { TAG_KEYS } from "/src/constants/tagKeys.js";
 
@@ -26,33 +27,36 @@ export const productImageApi = baseApi.injectEndpoints({
       retryMax: 2,
     }),
 
-    uploadImage: builder.mutation({
-      query: (file) => {
+    uploadImages: builder.mutation({
+      async queryFn(files) {
         const formData = new FormData();
-        formData.append("fileImage", file);
+        for (let file of files) {
+          formData.append("files", file);
+        }
 
-        console.log("FormData:", formData);
-
-        return {
-          url: "/v1/admin/files/upload/images",
-          method: "POST",
-          body: formData,
-        };
-      },
-      invalidatesTags: [TAG_KEYS.PRODUCT_IMAGE],
-      onQueryStarted: async (arg, { queryFulfilled }) => {
         try {
-          const { data } = await queryFulfilled;
-          console.log("Upload image success:", data);
+          const token = localStorage.getItem("accessToken");
+          const response = await axios.post(
+            `${import.meta.env.VITE_API_URL}/v1/admin/files/upload/images`,
+            formData,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+
+          return { data: response.data };
         } catch (error) {
-          console.error("Upload image error:", {
-            status: error.error?.status,
-            data: error.error?.data,
-            message: error.error?.data?.message || error.error?.data?.error,
-            originalError: error,
-          });
+          return {
+            error: {
+              status: error.response?.status || 500,
+              data: error.response?.data || error.message,
+            },
+          };
         }
       },
+      invalidatesTags: [TAG_KEYS.PRODUCT_IMAGE],
     }),
 
     deleteImage: builder.mutation({
@@ -66,8 +70,8 @@ export const productImageApi = baseApi.injectEndpoints({
 });
 
 export const {
-  useUploadImageMutation,
   useListImagesQuery,
+  useUploadImagesMutation,
   useLazyListImagesQuery,
   useDeleteImageMutation,
 } = productImageApi;

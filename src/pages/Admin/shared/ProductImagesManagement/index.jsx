@@ -19,16 +19,17 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import {
   useListImagesQuery,
-  useUploadImageMutation,
+  useUploadImagesMutation,
   useDeleteImageMutation,
 } from "@/services/api/productImage";
 import { useGetMyInfoQuery } from "@/services/api/auth";
 import { useState } from "react";
 
 const ProductImagesManagement = () => {
+  const [previewImage, setPreviewImage] = useState(null);
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
-    pageSize: 10,
+    pageSize: 15,
   });
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -55,15 +56,15 @@ const ProductImagesManagement = () => {
   );
   console.log("dataImages", dataImages);
 
-  const [uploadImage] = useUploadImageMutation();
+  const [uploadImage] = useUploadImagesMutation();
   const [deleteImage] = useDeleteImageMutation();
 
   const dataRowImages = dataImages?.result?.items || [];
   const totalRows = dataImages?.result?.totalItems || 0;
 
   const columnsImage = [
-    { field: "id", headerName: "ID", width: 90 },
-    { field: "fileName", headerName: "Tên file", width: 150 },
+    { field: "id", headerName: "ID", width: 150 },
+    { field: "fileName", headerName: "Tên file", width: 200 },
     {
       field: "imageUrl",
       headerName: "Hình ảnh",
@@ -72,14 +73,20 @@ const ProductImagesManagement = () => {
         <img
           src={params.row.imageUrl}
           alt={params.row.fileName}
-          style={{ width: 50, height: 50, objectFit: "cover" }}
+          style={{
+            width: 50,
+            height: 50,
+            objectFit: "cover",
+            cursor: "pointer",
+          }}
+          onClick={() => setPreviewImage(params.value)}
         />
       ),
     },
     {
       field: "imageUrlShort",
       headerName: "Mã hình ảnh",
-      width: 150,
+      width: 200,
       renderCell: (params) => {
         if (!params.row || !params.row.imageUrl) {
           return "N/A";
@@ -91,7 +98,7 @@ const ProductImagesManagement = () => {
     {
       field: "actions",
       headerName: "Hành động",
-      width: 150,
+      width: 200,
       renderCell: (params) => (
         <IconButton
           color="error"
@@ -106,49 +113,25 @@ const ProductImagesManagement = () => {
     },
   ];
 
-  const handleUploadImage = async (event) => {
-    const file = event.target.files[0];
-    console.log("Selected file:", file);
-
-    if (!file) {
-      console.log("No file selected");
-      setSnackbar({
-        open: true,
-        message: "Vui lòng chọn một file để tải lên!",
-        severity: "warning",
-      });
-      return;
-    }
-
-    let fileToUpload = file;
+  const handleUploadImage = async (e) => {
+    const files = e.target.files;
+    if (!files.length) return;
 
     try {
-      console.log("Uploading file:", fileToUpload);
-      const response = await uploadImage(fileToUpload).unwrap();
-      console.log("Upload response:", response);
+      await uploadImage(files).unwrap();
       setSnackbar({
         open: true,
-        message: "Tải lên hình ảnh thành công!",
+        message: "Upload hình ảnh thành công!",
         severity: "success",
       });
       refetch();
     } catch (error) {
-      console.error("Upload error:", {
-        status: error.error?.status,
-        data: error.error?.data,
-        originalError: error,
-      });
-      const errorMessage =
-        error.error?.data?.message ||
-        error.error?.data?.error ||
-        `Lỗi khi tải lên hình ảnh (Status: ${error.error?.status}, Error: ${
-          error.error?.data?.error || "Unknown"
-        })`;
       setSnackbar({
         open: true,
-        message: errorMessage,
+        message: "Upload hình ảnh thành thất bại!",
         severity: "error",
       });
+      console.error("Lỗi upload:", error);
     }
   };
 
@@ -160,6 +143,8 @@ const ProductImagesManagement = () => {
         message: "Xóa hình ảnh thành công!",
         severity: "success",
       });
+      setOpenDeleteDialog(false);
+      setImageIdToDelete(null);
       refetch();
     } catch (error) {
       const errorMessage = error.data?.message || "Lỗi khi xóa hình ảnh";
@@ -168,9 +153,6 @@ const ProductImagesManagement = () => {
         message: errorMessage,
         severity: "error",
       });
-    } finally {
-      setOpenDeleteDialog(false);
-      setImageIdToDelete(null);
     }
   };
 
@@ -226,6 +208,7 @@ const ProductImagesManagement = () => {
           <input
             type="file"
             accept="image/*"
+            multiple
             hidden
             onChange={handleUploadImage}
           />
@@ -234,6 +217,14 @@ const ProductImagesManagement = () => {
 
       <Box height={500} width={"100%"}>
         <DataGrid
+          sx={{
+            boxShadow: 2,
+            border: 2,
+            borderColor: "primary.light",
+            "& .MuiDataGrid-cell:hover": {
+              color: "primary.main",
+            },
+          }}
           columns={columnsImage}
           rows={dataRowImages}
           rowsPerPageOptions={[10, 20, 50]}
@@ -256,7 +247,7 @@ const ProductImagesManagement = () => {
           filterMode="server"
           paginationModel={paginationModel}
           onPaginationModelChange={setPaginationModel}
-          pageSizeOptions={[10, 15, 20]}
+          pageSizeOptions={[15, 20, 30]}
         />
       </Box>
 
@@ -275,13 +266,35 @@ const ProductImagesManagement = () => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDeleteDialog} color="primary">
+          <Button onClick={handleCloseDeleteDialog} color="error">
             Hủy
           </Button>
-          <Button onClick={handleDeleteImage} color="error" autoFocus>
+          <Button
+            onClick={handleDeleteImage}
+            color="error"
+            variant="contained"
+            autoFocus
+          >
             Xóa
           </Button>
         </DialogActions>
+      </Dialog>
+
+      <Dialog
+        aria-hidden="false"
+        open={previewImage}
+        onClose={() => setPreviewImage(null)}
+        fullWidth
+      >
+        <DialogTitle>Xem ảnh</DialogTitle>
+        <DialogContent>
+          <Box
+            component="img"
+            src={previewImage}
+            alt="Preview"
+            sx={{ width: "100%", objectFit: "contain", borderRadius: 2 }}
+          />
+        </DialogContent>
       </Dialog>
 
       <Snackbar
