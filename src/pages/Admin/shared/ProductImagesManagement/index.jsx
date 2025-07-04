@@ -12,9 +12,6 @@ import {
   DialogContentText,
   DialogActions,
 } from "@mui/material";
-import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
-import RefreshIcon from "@mui/icons-material/Refresh";
-import DeleteIcon from "@mui/icons-material/Delete";
 
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import {
@@ -24,9 +21,11 @@ import {
 } from "@/services/api/productImage";
 import { useGetMyInfoQuery } from "@/services/api/auth";
 import { useState } from "react";
+import { AddPhotoAlternate, Delete, Refresh } from "@mui/icons-material";
 
 const ProductImagesManagement = () => {
   const [previewImage, setPreviewImage] = useState(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 15,
@@ -107,7 +106,7 @@ const ProductImagesManagement = () => {
             setOpenDeleteDialog(true);
           }}
         >
-          <DeleteIcon />
+          <Delete />
         </IconButton>
       ),
     },
@@ -117,6 +116,7 @@ const ProductImagesManagement = () => {
     const files = e.target.files;
     if (!files.length) return;
 
+    setIsUploadingImage(true);
     try {
       await uploadImage(files).unwrap();
       setSnackbar({
@@ -128,10 +128,12 @@ const ProductImagesManagement = () => {
     } catch (error) {
       setSnackbar({
         open: true,
-        message: "Upload hình ảnh thành thất bại!",
+        message: "Upload hình ảnh thất bại!",
         severity: "error",
       });
       console.error("Lỗi upload:", error);
+    } finally {
+      setIsUploadingImage(false);
     }
   };
 
@@ -193,7 +195,7 @@ const ProductImagesManagement = () => {
         <Button
           variant="outlined"
           color="primary"
-          startIcon={<RefreshIcon />}
+          startIcon={<Refresh />}
           onClick={handleRefresh}
         >
           Làm mới
@@ -202,9 +204,10 @@ const ProductImagesManagement = () => {
           variant="contained"
           color="primary"
           component="label"
-          startIcon={<AddPhotoAlternateIcon />}
+          startIcon={<AddPhotoAlternate />}
+          disabled={isUploadingImage}
         >
-          Tải lên hình ảnh
+          {isUploadingImage ? "Đang tải..." : "Tải lên hình ảnh"}
           <input
             type="file"
             accept="image/*"
