@@ -16,6 +16,7 @@ import {
   Alert,
   Snackbar,
   Grid,
+  Box,
 } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { useDispatch, useSelector } from "react-redux";
@@ -355,8 +356,16 @@ const ProductVariantsManagement = () => {
       ) : productVariants.length === 0 ? (
         <Alert severity="info">Sản phẩm này không có biến thể nào.</Alert>
       ) : (
-        <div style={{ height: 400, width: "100%" }}>
+        <Box height={500} width={"100%"}>
           <DataGrid
+            sx={{
+              boxShadow: 2,
+              border: 2,
+              borderColor: "primary.light",
+              "& .MuiDataGrid-cell:hover": {
+                color: "primary.main",
+              },
+            }}
             rows={productVariants}
             columns={columns}
             rowCount={totalRows}
@@ -376,7 +385,7 @@ const ProductVariantsManagement = () => {
               noRowsLabel: "Không có dữ liệu",
             }}
           />
-        </div>
+        </Box>
       )}
 
       <Dialog

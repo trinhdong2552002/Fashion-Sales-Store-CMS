@@ -772,8 +772,16 @@ const ProductsManagement = () => {
           Hiện tại không có sản phẩm nào phù hợp với bộ lọc.
         </Alert>
       ) : (
-        <div style={{ height: 550, width: "100%" }}>
+        <Box height={500} width={"100%"}>
           <DataGrid
+            sx={{
+              boxShadow: 2,
+              border: 2,
+              borderColor: "primary.light",
+              "& .MuiDataGrid-cell:hover": {
+                color: "primary.main",
+              },
+            }}
             rows={rows}
             columns={columns}
             rowCount={totalElements}
@@ -824,7 +832,7 @@ const ProductsManagement = () => {
               ),
             }}
           />
-        </div>
+        </Box>
       )}
 
       <Dialog

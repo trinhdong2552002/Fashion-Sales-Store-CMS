@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import {
   Typography,
@@ -16,8 +16,6 @@ import {
   Snackbar,
   Alert,
   Box,
-  PaginationItem,
-  styled,
   IconButton,
 } from "@mui/material";
 import {
@@ -27,29 +25,10 @@ import {
   useRestoreUserMutation,
 } from "@/services/api/user";
 import { useGetMyInfoQuery } from "@/services/api/auth";
-
 import { useListRolesQuery } from "@/services/api/role";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import { useNavigate } from "react-router-dom";
 import { Add, Delete, Refresh, Restore } from "@mui/icons-material";
-
-// Tùy chỉnh nút Back và Forward
-const CustomPaginationItem = styled(PaginationItem)(({ theme }) => ({
-  "&.MuiPaginationItem-previousNext": {
-    backgroundColor: theme.palette.primary.main,
-    color: theme.palette.common.white,
-    "&:hover": {
-      backgroundColor: theme.palette.primary.dark,
-    },
-    "&.Mui-disabled": {
-      backgroundColor: theme.palette.action.disabledBackground,
-      color: theme.palette.action.disabled,
-    },
-    borderRadius: "4px",
-    margin: "0 5px",
-    padding: "8px",
-  },
-}));
 
 const UsersManagement = () => {
   const navigate = useNavigate();
@@ -60,9 +39,9 @@ const UsersManagement = () => {
   const [openRestoreDialog, setOpenRestoreDialog] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
   const [userToRestore, setUserToRestore] = useState(null);
-  const [page, setPage] = useState(0); // Trang bắt đầu từ 0
-  const [pageSize, setPageSize] = useState(10); // Mỗi trang 10 người dùng
-  const [totalRows, setTotalRows] = useState(0); // Tổng số người dùng
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalRows, setTotalRows] = useState(0);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -87,7 +66,7 @@ const UsersManagement = () => {
     refetch: refetchUsers,
     isLoading: isFetchingUsers,
   } = useFetchAllUsersForAdminQuery({
-    pageNo: page + 1, // API bắt đầu từ trang 1
+    pageNo: page + 1,
     pageSize,
     search: searchUser,
     sortBy: "name-asc",
@@ -314,14 +293,11 @@ const UsersManagement = () => {
     },
   ];
 
-  // Lọc dữ liệu thủ công trên frontend
   const filteredRows = (usersData?.items || []).filter((user) => {
-    // Lọc theo vai trò
     const matchesRoles = filterRoles.length
       ? user.roles?.some((role) => filterRoles.includes(role.name))
       : true;
 
-    // Lọc theo tên (searchUser)
     const matchesSearch = searchUser
       ? user.name?.toLowerCase().includes(searchUser.toLowerCase())
       : true;
@@ -385,10 +361,18 @@ const UsersManagement = () => {
       </Grid>
       <Box height={500} width={"100%"}>
         <DataGrid
+          sx={{
+            boxShadow: 2,
+            border: 2,
+            borderColor: "primary.light",
+            "& .MuiDataGrid-cell:hover": {
+              color: "primary.main",
+            },
+          }}
           rows={filteredRows}
           columns={columns}
-          paginationMode="server" // Phân trang phía server
-          rowCount={totalRows} // Tổng số người dùng từ API (không thay đổi)
+          paginationMode="server"
+          rowCount={totalRows}
           page={page}
           pageSize={pageSize}
           onPageChange={(newPage) => {
@@ -398,45 +382,20 @@ const UsersManagement = () => {
           onPageSizeChange={(newPageSize) => {
             console.log("Page size changed to:", newPageSize);
             setPageSize(newPageSize);
-            setPage(0); // Reset về trang đầu khi đổi pageSize
+            setPage(0);
           }}
-          rowsPerPageOptions={[10, 20, 50]} // Tùy chọn số hàng mỗi trang
+          rowsPerPageOptions={[10, 20, 50]}
           getRowId={(row) => row.id}
           disableSelectionOnClick
           loading={isFetchingUsers}
+          slotProps={{
+            loadingOverlay: {
+              variant: "linear-progress",
+              noRowsVariant: "linear-progress",
+            },
+          }}
           localeText={{
             noRowsLabel: "Hiện tại không có người dùng nào",
-          }}
-          slots={{
-            pagination: () => (
-              <Box
-                display="flex"
-                alignItems="center"
-                justifyContent="space-between"
-                p={2}
-              >
-                <Typography variant="body2">
-                  Tổng số người dùng: {totalRows}
-                </Typography>
-                <Box display="flex" alignItems="center">
-                  <CustomPaginationItem
-                    type="previous"
-                    component={Button}
-                    disabled={page === 0}
-                    onClick={() => setPage(page - 1)}
-                  />
-                  <Typography variant="body2" mx={2}>
-                    Trang {page + 1} / {Math.ceil(totalRows / pageSize)}
-                  </Typography>
-                  <CustomPaginationItem
-                    type="next"
-                    component={Button}
-                    disabled={page >= Math.ceil(totalRows / pageSize) - 1}
-                    onClick={() => setPage(page + 1)}
-                  />
-                </Box>
-              </Box>
-            ),
           }}
         />
       </Box>

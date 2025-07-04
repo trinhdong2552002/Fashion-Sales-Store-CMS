@@ -235,6 +235,14 @@ const ColorsManagement = () => {
 
       <Box height={500} width={"100%"}>
         <DataGrid
+          sx={{
+            boxShadow: 2,
+            border: 2,
+            borderColor: "primary.light",
+            "& .MuiDataGrid-cell:hover": {
+              color: "primary.main",
+            },
+          }}
           columns={columnsColor}
           rows={dataRowColors}
           loading={isLoadingColor}
@@ -252,7 +260,7 @@ const ColorsManagement = () => {
           paginationMode="server"
           sortingMode="server"
           filterMode="server"
-          rowCount={totalRows}  
+          rowCount={totalRows}
           paginationModel={paginationModel}
           onPaginationModelChange={setPaginationModel}
           pageSizeOptions={[10, 15, 20]}
