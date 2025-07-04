@@ -1,4 +1,3 @@
-// layouts/DashboardLayout/index.jsx
 import { Fragment, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
@@ -19,24 +18,25 @@ import {
   Grid,
   MenuItem,
   Menu,
+  Badge,
 } from "@mui/material";
-import Badge from "@mui/material/Badge";
-import MenuIcon from "@mui/icons-material/Menu";
-import DashboardIcon from "@mui/icons-material/Dashboard";
-import CategoryIcon from "@mui/icons-material/Category";
-import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import LogoutIcon from "@mui/icons-material/Logout";
+
 import {
+  Category,
+  Checkroom,
+  Dashboard,
   Height,
   Image,
-  Inventory,
   LocalOffer,
+  Logout,
+  MoreVert,
   Palette,
   Payment,
   People,
   Place,
+  Receipt,
   Store,
+  Tune,
 } from "@mui/icons-material";
 import { useDispatch, useSelector } from "react-redux";
 import { clearUser, selectUser } from "../../store/redux/user/reducer";
@@ -118,16 +118,16 @@ const DashboardLayoutWrapper = ({ children }) => {
   };
 
   const navigationItems = [
-    { path: "/admin/dashboard", title: "Tổng quan", icon: <DashboardIcon /> },
+    { path: "/admin/dashboard", title: "Tổng quan", icon: <Dashboard /> },
     {
       path: "/admin/productsManagement",
       title: "Sản phẩm",
-      icon: <Inventory />,
+      icon: <Checkroom />,
     },
     {
       path: "/admin/productVariantsManagement",
       title: "Biến thể sản phẩm",
-      icon: <Inventory />,
+      icon: <Tune />,
     },
     {
       path: "/admin/productImagesManagement",
@@ -147,7 +147,7 @@ const DashboardLayoutWrapper = ({ children }) => {
     {
       path: "/admin/categoriesManagement",
       title: "Danh mục",
-      icon: <CategoryIcon />,
+      icon: <Category />,
     },
     {
       path: "/admin/usersManagement",
@@ -172,7 +172,7 @@ const DashboardLayoutWrapper = ({ children }) => {
     {
       path: "/admin/ordersManagement",
       title: "Đơn hàng",
-      icon: <ShoppingCartIcon />,
+      icon: <Receipt />,
     },
     {
       path: "/admin/rolesManagement",
@@ -255,7 +255,7 @@ const DashboardLayoutWrapper = ({ children }) => {
               />
 
               <IconButton onClick={handleMenuOpen}>
-                <MoreVertIcon color="action" />
+                <MoreVert color="action" />
               </IconButton>
 
               <Menu
@@ -287,7 +287,7 @@ const DashboardLayoutWrapper = ({ children }) => {
                 }}
               >
                 <MenuItem onClick={handleLogout}>
-                  <LogoutIcon color="action" sx={{ mr: 1 }} />
+                  <Logout color="action" sx={{ mr: 1 }} />
                   Đăng xuất
                 </MenuItem>
               </Menu>
@@ -320,7 +320,7 @@ const DashboardLayoutWrapper = ({ children }) => {
             onClick={handleDrawerToggle}
             sx={{ mr: 2, display: { sm: "none" } }}
           >
-            <MenuIcon />
+            <Menu />
           </IconButton>
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
             Admin Dashboard
