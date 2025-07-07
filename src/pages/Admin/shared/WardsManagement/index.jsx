@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import { Typography, Box, Button, Snackbar, Alert } from "@mui/material";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 
 import { useListWardsQuery } from "@/services/api/ward";
 import { Refresh } from "@mui/icons-material";
+import ErrorDisplay from "@/components/ErrorDisplay";
 
 const WardsManagement = () => {
   const [paginationModel, setPaginationModel] = useState({
@@ -49,7 +50,7 @@ const WardsManagement = () => {
     refetch();
     setSnackbar({
       open: true,
-      message: "Danh sách tỉnh/thành phố đã được làm mới !",
+      message: "Danh sách phường / xã đã được làm mới !",
       severity: "info",
     });
   };
@@ -59,7 +60,7 @@ const WardsManagement = () => {
       <ErrorDisplay
         error={{
           message:
-            "Không tải được danh sách phường/xã. Vui lòng kiểm tra kết nối của bạn và thử lại !",
+            "Không tải được danh sách phường / xã. Vui lòng kiểm tra kết nối của bạn và thử lại !",
         }}
       />
     );

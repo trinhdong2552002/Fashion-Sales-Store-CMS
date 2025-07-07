@@ -24,7 +24,7 @@ import {
   useRestoreBranchesMutation,
 } from "@/services/api/branches";
 import { Add, Delete, Edit, Refresh, Restore } from "@mui/icons-material";
-import ErrorDisplay from "../../../../components/ErrorDisplay";
+import ErrorDisplay from "@/components/ErrorDisplay";
 
 const BranchesManagement = () => {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
@@ -252,7 +252,7 @@ const BranchesManagement = () => {
           errorBranches
             ? {
                 message:
-                  "Không tải được danh mục. Vui lòng kiểm tra kết nối của bạn và thử lại !",
+                  "Không tải được danh sách chi nhánh. Vui lòng kiểm tra kết nối của bạn và thử lại !",
               }
             : null
         }
@@ -327,14 +327,7 @@ const BranchesManagement = () => {
         </Box>
 
         {/* TODO: Dialog add branches */}
-        <Dialog
-          open={openAddDialog}
-          onClose={() => {
-            setOpenAddDialog(false);
-            setSubmitted(false);
-            setNewBranches({ name: "", location: "", phone: "" });
-          }}
-        >
+        <Dialog fullWidth open={openAddDialog}>
           <DialogTitle>Thêm chi nhánh</DialogTitle>
           <DialogContent>
             <TextField
@@ -396,13 +389,7 @@ const BranchesManagement = () => {
         </Dialog>
 
         {/* TODO: Dialog update branches */}
-        <Dialog
-          open={openUpdateDialog}
-          onClose={() => {
-            setOpenUpdateDialog(false);
-            setSubmitted(false);
-          }}
-        >
+        <Dialog fullWidth open={openUpdateDialog}>
           <DialogTitle>Cập nhật chi nhánh</DialogTitle>
           <DialogContent>
             <TextField
@@ -459,7 +446,7 @@ const BranchesManagement = () => {
           </DialogActions>
         </Dialog>
 
-        <Dialog open={openDeleteDialog} onClose={handleCloseDeleteDialog}>
+        <Dialog open={openDeleteDialog}>
           <DialogTitle>Xác nhận xóa ?</DialogTitle>
           <DialogContent>
             <DialogContentText id="delete-dialog-description">
@@ -481,7 +468,7 @@ const BranchesManagement = () => {
           </DialogActions>
         </Dialog>
 
-        <Dialog open={openRestoreDialog} onClose={handleCloseRestoreDialog}>
+        <Dialog open={openRestoreDialog}>
           <DialogTitle>Xác nhận khôi phục ?</DialogTitle>
           <DialogContent>
             <Typography>

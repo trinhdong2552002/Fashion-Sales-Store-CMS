@@ -400,7 +400,7 @@ const UsersManagement = () => {
         />
       </Box>
 
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+      <Dialog fullWidth open={openDialog}>
         <DialogTitle>Thêm người dùng</DialogTitle>
         <DialogContent>
           <TextField
@@ -461,17 +461,14 @@ const UsersManagement = () => {
           </FormControl>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenDialog(false)}>Hủy</Button>
-          <Button onClick={handleAddUser} variant="contained">
+          <Button color="error" onClick={() => setOpenDialog(false)}>Hủy</Button>
+          <Button variant="contained" onClick={handleAddUser}>
             Thêm
           </Button>
         </DialogActions>
       </Dialog>
 
-      <Dialog
-        open={openDeleteDialog}
-        onClose={() => setOpenDeleteDialog(false)}
-      >
+      <Dialog open={openDeleteDialog}>
         <DialogTitle>Xác nhận xóa ?</DialogTitle>
         <DialogContent>
           <Typography>

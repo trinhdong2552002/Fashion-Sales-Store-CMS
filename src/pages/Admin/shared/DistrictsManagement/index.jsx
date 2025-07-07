@@ -4,6 +4,7 @@ import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import { useListDistrictsQuery } from "@/services/api/district";
 import { Refresh } from "@mui/icons-material";
 import { useState } from "react";
+import ErrorDisplay from "@/components/ErrorDisplay";
 
 const DistrictsManagement = () => {
   const [paginationModel, setPaginationModel] = useState({
@@ -42,7 +43,7 @@ const DistrictsManagement = () => {
     refetch();
     setSnackbar({
       open: true,
-      message: "Danh sách đã được làm mới !",
+      message: "Danh sách quận / huyện đã được làm mới !",
       severity: "info",
     });
   };
@@ -52,7 +53,7 @@ const DistrictsManagement = () => {
       <ErrorDisplay
         error={{
           message:
-            "Không tải được danh sách quận/huyện. Vui lòng kiểm tra kết nối của bạn và thử lại !",
+            "Không tải được danh sách quận / huyện. Vui lòng kiểm tra kết nối của bạn và thử lại !",
         }}
       />
     );

@@ -4,6 +4,7 @@ import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import { useListRolesQuery } from "@/services/api/role";
 import { useState } from "react";
 import { Refresh } from "@mui/icons-material";
+import ErrorDisplay from "@/components/ErrorDisplay";
 
 const RolesManagement = () => {
   const [paginationModel, setPaginationModel] = useState({

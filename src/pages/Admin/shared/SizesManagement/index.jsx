@@ -4,7 +4,7 @@ import { Alert, Box, Button, Snackbar, Typography } from "@mui/material";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import { useListSizesQuery } from "@/services/api/size";
 import { Refresh } from "@mui/icons-material";
-import ErrorDisplay from "../../../../components/ErrorDisplay";
+import ErrorDisplay from "@/components/ErrorDisplay";
 
 const SizesManagement = () => {
   const [paginationModel, setPaginationModel] = useState({
@@ -49,7 +49,7 @@ const SizesManagement = () => {
     refetch();
     setSnackbar({
       open: true,
-      message: "Danh sách vai trò đã được làm mới !",
+      message: "Danh sách kích thước đã được làm mới !",
       severity: "info",
     });
   };

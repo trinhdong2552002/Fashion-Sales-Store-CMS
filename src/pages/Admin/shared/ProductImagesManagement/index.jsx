@@ -22,6 +22,7 @@ import {
 import { useGetMyInfoQuery } from "@/services/api/auth";
 import { useState } from "react";
 import { AddPhotoAlternate, Delete, Refresh } from "@mui/icons-material";
+import ErrorDisplay from "@/components/ErrorDisplay";
 
 const ProductImagesManagement = () => {
   const [previewImage, setPreviewImage] = useState(null);
@@ -97,7 +98,7 @@ const ProductImagesManagement = () => {
     {
       field: "actions",
       headerName: "Hành động",
-      width: 200,
+      width: 150,
       renderCell: (params) => (
         <IconButton
           color="error"
@@ -167,7 +168,7 @@ const ProductImagesManagement = () => {
     refetch();
     setSnackbar({
       open: true,
-      message: "Đã làm mới dữ liệu hình ảnh!",
+      message: "Danh sách hình ảnh sản phẩm đã được làm mới!",
       severity: "info",
     });
   };
@@ -254,12 +255,7 @@ const ProductImagesManagement = () => {
         />
       </Box>
 
-      <Dialog
-        open={openDeleteDialog}
-        onClose={handleCloseDeleteDialog}
-        aria-labelledby="delete-dialog-title"
-        aria-describedby="delete-dialog-description"
-      >
+      <Dialog open={openDeleteDialog}>
         <DialogTitle id="delete-dialog-title">
           Xác nhận xóa hình ảnh ?
         </DialogTitle>

@@ -10,8 +10,8 @@ import {
   Chip,
 } from "@mui/material";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
-import { useListOrdersForAdminQuery } from "../../../../services/api/order";
-import ErrorDisplay from "../../../../components/ErrorDisplay";
+import { useListOrdersForAdminQuery } from "@/services/api/order";
+import ErrorDisplay from "@/components/ErrorDisplay";
 import {
   Cancel,
   CheckCircle,
@@ -141,7 +141,7 @@ const OrdersManagement = () => {
       <ErrorDisplay
         error={{
           message:
-            "Không tải được danh sách màu sắc. Vui lòng kiểm tra kết nối của bạn và thử lại !",
+            "Không tải được danh sách đơn hàng. Vui lòng kiểm tra kết nối của bạn và thử lại !",
         }}
       />
     );

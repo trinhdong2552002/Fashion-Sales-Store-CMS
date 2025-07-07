@@ -22,7 +22,7 @@ import {
   useDeleteColorMutation,
 } from "@/services/api/color";
 import { Add, Delete, Edit } from "@mui/icons-material";
-import ErrorDisplay from "../../../../components/ErrorDisplay";
+import ErrorDisplay from "@/components/ErrorDisplay";
 
 const ColorsManagement = () => {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
@@ -268,15 +268,7 @@ const ColorsManagement = () => {
       </Box>
 
       {/* TODO: Dialog add color */}
-      <Dialog
-        fullWidth
-        open={openAddDialog}
-        onClose={() => {
-          setOpenAddDialog(false);
-          setSubmitted(false);
-          setNewColor({ name: "" });
-        }}
-      >
+      <Dialog fullWidth open={openAddDialog}>
         <DialogTitle>Thêm màu sắc</DialogTitle>
         <DialogContent>
           <TextField
@@ -302,14 +294,7 @@ const ColorsManagement = () => {
       </Dialog>
 
       {/* TODO: Dialog update color */}
-      <Dialog
-        fullWidth
-        open={openUpdateDialog}
-        onClose={() => {
-          setOpenUpdateDialog(false);
-          setSubmitted(false);
-        }}
-      >
+      <Dialog fullWidth open={openUpdateDialog}>
         <DialogTitle>Cập nhật màu sắc</DialogTitle>
         <DialogContent>
           <TextField
@@ -335,7 +320,7 @@ const ColorsManagement = () => {
       </Dialog>
 
       {/* TODO: Dialog delete color */}
-      <Dialog open={openDeleteDialog} onClose={handleOpenDeleteDialog}>
+      <Dialog open={openDeleteDialog}>
         <DialogTitle>Xác nhận xóa ?</DialogTitle>
         <DialogContent>
           <Typography>Bạn có chắc chắn muốn xóa màu sắc này không ?</Typography>

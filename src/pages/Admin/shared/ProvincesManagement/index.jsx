@@ -4,7 +4,7 @@ import { Alert, Box, Button, Snackbar, Typography } from "@mui/material";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import { useListProvincesQuery } from "@/services/api/province";
 import { Refresh } from "@mui/icons-material";
-import ErrorDisplay from "../../../../components/ErrorDisplay";
+import ErrorDisplay from "@/components/ErrorDisplay";
 
 const ProvincesManagement = () => {
   const [paginationModel, setPaginationModel] = useState({
@@ -49,7 +49,7 @@ const ProvincesManagement = () => {
     refetch();
     setSnackbar({
       open: true,
-      message: "Danh sách vai trò đã được làm mới !",
+      message: "Danh sách tỉnh / thành phố đã được làm mới !",
       severity: "info",
     });
   };
@@ -59,7 +59,7 @@ const ProvincesManagement = () => {
       <ErrorDisplay
         error={{
           message:
-            "Không tải được tỉnh/thành phố. Vui lòng kiểm tra kết nối của bạn và thử lại !",
+            "Không tải được danh sách tỉnh / thành phố. Vui lòng kiểm tra kết nối của bạn và thử lại !",
         }}
       />
     );
