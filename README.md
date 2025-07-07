@@ -81,7 +81,7 @@ http://localhost:8080/adamstore/swagger-ui/index.html
 http://localhost:8080/adamstore/v3/api-docs/backend-service
 ```
 
-4. Sample VNPAY Payment Information (Test):**
+**4. Sample VNPAY Payment Information (Test):**
 | Bank                  | NCB                      |
 |-----------------------|--------------------------|
 | Card Number           | 9704198526191432198      |
