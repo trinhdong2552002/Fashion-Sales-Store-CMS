@@ -227,7 +227,12 @@ const ColorsManagement = () => {
         <Button
           variant="contained"
           startIcon={<Add />}
-          onClick={() => setOpenAddDialog(true)}
+          onClick={() => {
+            setOpenAddDialog(true);
+            setNewColor({
+              name: "",
+            });
+          }}
         >
           Thêm màu sắc
         </Button>

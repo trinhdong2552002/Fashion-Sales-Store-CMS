@@ -285,6 +285,11 @@ const BranchesManagement = () => {
             color="primary"
             onClick={() => {
               setOpenAddDialog(true);
+              setNewBranches({
+                name: "",
+                location: "",
+                phone: "",
+              });
             }}
             startIcon={<Add />}
           >
