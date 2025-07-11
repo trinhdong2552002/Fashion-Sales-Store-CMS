@@ -1,21 +1,17 @@
 .forgotPassword {
     color: black;
+    font-size: 1.2rem;
     text-decoration: none;
 }
 
-.createAccount {
-    margin-left: 8px;
-}
-
-.backToHome {
-    margin-top: 10px;
-}
 
 .forgotPassword:hover {
     text-decoration: underline;
+    transition: s ease;
 }
 
-.errorMessage {
-    color: red;
-    margin-top: 10px;
+@media screen and (max-width: 600px) {
+    .forgotPassword {
+        font-size: 1rem;
+    }
 }

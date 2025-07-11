@@ -9,14 +9,14 @@ import {
   Stack,
   TextField,
   ThemeProvider,
+  Typography,
   useTheme,
 } from "@mui/material";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useState } from "react";
 import { useForm } from "react-hook-form";
 import customTheme from "@/components/CustemTheme";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useResetPasswordMutation } from "@/services/api/auth";
-import styles from "./index.module.css";
 
 const ResetPassword = () => {
   const outerTheme = useTheme();
@@ -61,17 +61,6 @@ const ResetPassword = () => {
     event.preventDefault();
   };
 
-  useEffect(() => {
-    if (location.state?.message) {
-      setSnackbar({
-        open: true,
-        message: location.state.message || "",
-        severity: location.state.severity || "success",
-      });
-    }
-    window.history.replaceState({}, document.title);
-  }, [location]);
-
   const handleShowSnackbar = (success) => {
     if (success) {
       setSnackbar({
@@ -92,7 +81,7 @@ const ResetPassword = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
-  const onSubmit = async (data) => {
+  const handleResetPassword = async (data) => {
     try {
       const response = await resetPassword({
         forgotPasswordToken: forgotPasswordToken,
@@ -101,12 +90,10 @@ const ResetPassword = () => {
       }).unwrap();
 
       if (response) {
-        navigate("/", {
-          state: {
-            message: "Đặt lại mật khẩu thành công !",
-            severity: "success",
-          },
-        });
+        handleShowSnackbar(true);
+        setTimeout(() => {
+          navigate("/");
+        }, 1000);
       }
     } catch (error) {
       handleShowSnackbar(false);
@@ -116,22 +103,6 @@ const ResetPassword = () => {
 
   return (
     <Fragment>
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={3000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "right", horizontal: "right" }}
-      >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity={snackbar.severity}
-          variant="filled"
-          sx={{ width: "100%", p: "10px 20px" }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-
       <Stack
         alignItems={"center"}
         sx={{
@@ -151,27 +122,51 @@ const ResetPassword = () => {
         <Box
           sx={{
             backgroundColor: "white",
-            width: 500,
-            height: 550,
+            width: {
+              xs: "90vw",
+              sm: 500,
+              md: 500,
+            },
+            height: 540,
             borderRadius: 2,
             boxShadow: "0px 4px 30px 5px rgba(0, 0, 0, 0.3)",
           }}
         >
           <Box sx={{ p: "40px 40px 0 40px" }}>
-            <h1
-              style={{
+            <Typography
+              variant="h1"
+              align="center"
+              sx={{
                 fontWeight: "500",
-                textAlign: "center",
-                margin: "20px 0 40px"
+                fontSize: {
+                  md: "2.2rem",
+                  sm: "2.2rem",
+                  xs: "1.8rem",
+                },
+                m: 4,
               }}
             >
-              ĐẶT LẠI MẬT KHẨU
-            </h1>
+              Đặt lại mật khẩu
+            </Typography>
 
-            <form
-              sx={{ padding: "0px 36px" }}
-              onSubmit={handleSubmit(onSubmit)}
+            <Typography
+              variant="h2"
+              align="center"
+              sx={{
+                fontWeight: "400",
+                fontSize: {
+                  md: "1.1rem",
+                  sm: "1.1rem",
+                  xs: "1rem",
+                },
+                lineHeight: "1.2rem",
+                color: "var(--color-text-muted)",
+              }}
             >
+              Vui lòng nhập mật khẩu mới.
+            </Typography>
+
+            <form onSubmit={handleSubmit(handleResetPassword)}>
               <Box
                 sx={{
                   display: "flex",
@@ -179,21 +174,13 @@ const ResetPassword = () => {
                   margin: "30px 0",
                 }}
               >
-                <label
-                  style={{
-                    fontSize: "1.2rem",
-                  }}
-                  htmlFor="newPassword"
-                >
-                  Mật khẩu mới
-                </label>
                 <ThemeProvider theme={customTheme(outerTheme)}>
                   <TextField
                     id="newPassword"
                     label="Mật khẩu mới"
                     type={showNewPassword ? "text" : "password"}
                     variant="standard"
-                    sx={{ mb: 1 }}
+                    sx={{ mb: 4 }}
                     disabled={isLoading}
                     {...register("newPassword", {
                       required: "Mật khẩu không được để trống",
@@ -202,6 +189,11 @@ const ResetPassword = () => {
                         message: "Mật khẩu phải có ít nhất 6 ký tự",
                       },
                     })}
+                    error={!!errors.newPassword}
+                    helperText={errors.newPassword?.message}
+                    FormHelperTextProps={{
+                      sx: { fontSize: "0.9rem", color: "red" },
+                    }}
                     InputProps={{
                       endAdornment: (
                         <InputAdornment position="end">
@@ -228,21 +220,7 @@ const ResetPassword = () => {
                     }}
                   />
                 </ThemeProvider>
-                {errors.newPassword && (
-                  <p className={styles.errorMessage}>
-                    {errors.newPassword.message}
-                  </p>
-                )}
 
-                <label
-                  style={{
-                    padding: "30px 0 0 0",
-                    fontSize: "1.2rem",
-                  }}
-                  htmlFor="confirmPassword"
-                >
-                  Xác nhận mật khẩu
-                </label>
                 <ThemeProvider theme={customTheme(outerTheme)}>
                   <TextField
                     id="confirmPassword"
@@ -257,6 +235,11 @@ const ResetPassword = () => {
                         value === watch("newPassword") ||
                         "Mật khẩu xác nhận không khớp",
                     })}
+                    error={!!errors.confirmPassword}
+                    helperText={errors.confirmPassword?.message}
+                    FormHelperTextProps={{
+                      sx: { fontSize: "0.9rem", color: "red" },
+                    }}
                     InputProps={{
                       endAdornment: (
                         <InputAdornment position="end">
@@ -283,11 +266,6 @@ const ResetPassword = () => {
                     }}
                   />
                 </ThemeProvider>
-                {errors.confirmPassword && (
-                  <p className={styles.errorMessage}>
-                    {errors.confirmPassword.message}
-                  </p>
-                )}
               </Box>
 
               <Box
@@ -299,37 +277,46 @@ const ResetPassword = () => {
               >
                 <Button
                   variant="contained"
+                  fullWidth
                   sx={{
-                    p: "10px 80px",
-                    fontSize: "1.2rem",
-                    fontWeight: "normal",
+                    p: {
+                      md: "10px 80px",
+                      sm: "10px 80px",
+                      xs: "10px 60px",
+                    },
+                    mt: 3,
+                    fontSize: {
+                      md: "1.2rem",
+                      sm: "1.2rem",
+                      xs: "1rem",
+                    },
                   }}
                   type="submit"
                   disabled={isLoading}
                 >
-                  XÁC NHẬN
+                  Xác nhận
                 </Button>
               </Box>
-
-              <Snackbar
-                open={snackbar.open}
-                autoHideDuration={3000}
-                onClose={handleCloseSnackbar}
-                anchorOrigin={{ vertical: "right", horizontal: "right" }}
-              >
-                <Alert
-                  onClose={handleCloseSnackbar}
-                  severity={snackbar.severity}
-                  variant="filled"
-                  sx={{ width: "100%", p: "10px 20px" }}
-                >
-                  {snackbar.message}
-                </Alert>
-              </Snackbar>
             </form>
           </Box>
         </Box>
       </Stack>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "right", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          variant="standard"
+          sx={{ width: "100%", p: "10px 20px" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Fragment>
   );
 };

@@ -6,12 +6,12 @@ import {
   Stack,
   TextField,
   ThemeProvider,
+  Typography,
   useTheme,
 } from "@mui/material";
+import styles from "./index.module.css";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
-
-import styles from "./index.module.css";
 import customTheme from "@/components/CustemTheme";
 import { useState } from "react";
 import { useForgotPasswordMutation } from "@/services/api/auth";
@@ -52,24 +52,23 @@ const ForgotPassword = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
-  const onSubmit = async (data) => {
+  const handleForgotPassword = async (data) => {
     try {
       const response = await forgotPassword({
         email: data?.email,
       }).unwrap();
 
       if (response) {
-        navigate("/forgot-password-verify", {
-          state: {
-            message: "Đã xác nhận email !",
-            severity: "success",
-            email: data.email,
-          },
-        });
+        handleShowSnackbar(true);
+        setTimeout(() => {
+          navigate("/forgot-password/forgot-password-verify", {
+            state: { email: data.email },
+          });
+        }, 1000);
       }
     } catch (error) {
       handleShowSnackbar(false);
-      console.log("Register failed:", error);
+      console.log("Verify account failed:", error);
     }
   };
 
@@ -93,32 +92,51 @@ const ForgotPassword = () => {
       <Box
         sx={{
           backgroundColor: "white",
-          width: 500,
-          height: 550,
+          width: {
+            xs: "90vw",
+            sm: 500,
+            md: 500,
+          },
+          height: 500,
           borderRadius: 2,
           boxShadow: "0px 4px 30px 5px rgba(0, 0, 0, 0.3)",
         }}
       >
         <Box sx={{ p: "40px 40px 0 40px" }}>
-          <h1 style={{ fontWeight: "500", textAlign: "center" }}>
-            QUÊN MẬT KHẨU
-          </h1>
+          <Typography
+            variant="h1"
+            align="center"
+            sx={{
+              fontWeight: "500",
+              fontSize: {
+                md: "2.2rem",
+                sm: "2.2rem",
+                xs: "1.8rem",
+              },
+              m: 4,
+            }}
+          >
+            Quên mật khẩu
+          </Typography>
 
-          <h3
-            style={{
-              fontWeight: "normal",
-              marginTop: 20,
+          <Typography
+            variant="h2"
+            sx={{
+              fontWeight: "400",
+              fontSize: {
+                md: "1.2rem",
+                sm: "1.2rem",
+                xs: "1rem",
+              },
+              lineHeight: "1.2rem",
               color: "var(--color-text-muted)",
               textAlign: "center",
             }}
           >
             Vui lòng nhập email để đặt lại mật khẩu.
-          </h3>
+          </Typography>
 
-          <form
-            style={{ padding: "0px 36px" }}
-            onSubmit={handleSubmit(onSubmit)}
-          >
+          <form onSubmit={handleSubmit(handleForgotPassword)}>
             <Box
               sx={{
                 display: "flex",
@@ -126,14 +144,6 @@ const ForgotPassword = () => {
                 margin: "30px 0",
               }}
             >
-              <label
-                style={{
-                  fontSize: "1.2rem",
-                }}
-                htmlFor="email"
-              >
-                Email
-              </label>
               <ThemeProvider theme={customTheme(outerTheme)}>
                 <TextField
                   id="email"
@@ -148,11 +158,13 @@ const ForgotPassword = () => {
                       message: "Email không hợp lệ",
                     },
                   })}
+                  error={!!errors.email}
+                  helperText={errors.email?.message}
+                  FormHelperTextProps={{
+                    sx: { fontSize: "0.9rem", color: "red" },
+                  }}
                 />
               </ThemeProvider>
-              {errors.email && (
-                <p className={styles.errorMessage}>{errors.email.message}</p>
-              )}
             </Box>
 
             <Box
@@ -164,41 +176,49 @@ const ForgotPassword = () => {
             >
               <Button
                 variant="contained"
+                fullWidth
                 sx={{
-                  p: "10px 80px",
+                  p: {
+                    md: "10px 80px",
+                    sm: "10px 80px",
+                    xs: "10px 60px",
+                  },
                   mt: 3,
-                  fontSize: "1.2rem",
-                  fontWeight: "normal",
+                  fontSize: {
+                    md: "1.1rem",
+                    sm: "1.1rem",
+                    xs: "1rem",
+                  },
                 }}
                 type="submit"
                 disabled={isLoading}
               >
-                XÁC NHẬN EMAIL
+                Xác nhận email
               </Button>
 
-              <Link className={styles.linkFooter} to="/">
+              <Link className={styles.backToLogin} to="/">
                 Trở về đăng nhập
               </Link>
             </Box>
-
-            <Snackbar
-              open={snackbar.open}
-              autoHideDuration={3000}
-              onClose={handleCloseSnackbar}
-              anchorOrigin={{ vertical: "right", horizontal: "right" }}
-            >
-              <Alert
-                onClose={handleCloseSnackbar}
-                severity={snackbar.severity}
-                variant="filled"
-                sx={{ width: "100%", p: "10px 20px" }}
-              >
-                {snackbar.message}
-              </Alert>
-            </Snackbar>
           </form>
         </Box>
       </Box>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "right", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          variant="standard"
+          sx={{ width: "100%", p: "10px 20px" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Stack>
   );
 };

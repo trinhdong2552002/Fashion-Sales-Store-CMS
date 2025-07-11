@@ -13,17 +13,14 @@ import {
 } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
-
-import styles from "./index.module.css";
 import customTheme from "@/components/CustemTheme";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useState } from "react";
 import { useForgotPasswordVerifyMutation } from "@/services/api/auth";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 
 const ForgotPasswordVerify = () => {
   const outerTheme = useTheme();
   const [showOtp, setShowOtp] = useState(false);
-  const [error, setError] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
   const [forgotPasswordVerify, { isLoading }] =
@@ -53,17 +50,6 @@ const ForgotPasswordVerify = () => {
     event.preventDefault();
   };
 
-  useEffect(() => {
-    if (location.state?.message) {
-      setSnackbar({
-        open: true,
-        message: location.state.message || "",
-        severity: location.state.severity || "success",
-      });
-    }
-    window.history.replaceState({}, document.title);
-  }, [location]);
-
   const handleShowSnackbar = (success) => {
     if (success) {
       setSnackbar({
@@ -84,55 +70,31 @@ const ForgotPasswordVerify = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
-  const onSubmit = async (data) => {
-    setError("");
-
+  const handleForgotPasswordVerify = async (data) => {
     try {
       const response = await forgotPasswordVerify({
         email: email,
         verificationCode: data?.verificationCode,
       }).unwrap();
+      const token = response?.result?.forgotPasswordToken;
+      localStorage.setItem("forgotPasswordToken", token);
 
       if (response) {
-        navigate("/reset-password", {
-          state: {
-            message: "Xác thực email thành công !",
-            severity: "success",
-            forgotPasswordToken: response.result.forgotPasswordToken,
-          },
-        });
+        handleShowSnackbar(true);
+        setTimeout(() => {
+          navigate("/forgot-password/reset-password", {
+            state: { email, forgotPasswordToken: token },
+          });
+        }, 1000);
       }
     } catch (error) {
       handleShowSnackbar(false);
-      if (error.status === 401) {
-        setError("OTP không hợp lệ hoặc người dùng chưa được xác thực !");
-      } else {
-        setError(
-          "Mã OTP không đúng hoặc đã hết hạn. Vui lòng kiểm tra và nhập lại."
-        );
-      }
       console.log("OTP verification failed:", error);
     }
   };
 
   return (
     <Fragment>
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={3000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "right", horizontal: "right" }}
-      >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity={snackbar.severity}
-          variant="filled"
-          sx={{ width: "100%", p: "10px 20px" }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-
       <Stack
         alignItems={"center"}
         sx={{
@@ -152,140 +114,160 @@ const ForgotPasswordVerify = () => {
         <Box
           sx={{
             backgroundColor: "white",
-            width: 500,
-            height: 520,
+            width: {
+              xs: "90vw",
+              sm: 500,
+              md: 500,
+            },
+            height: 500,
             borderRadius: 2,
             boxShadow: "0px 4px 30px 5px rgba(0, 0, 0, 0.3)",
+            mb: {
+              md: 0,
+              sm: 0,
+              xs: 4,
+            },
           }}
         >
-          <h2
-            style={{
-              textAlign: "center",
-              margin: "46px 0 20px 0",
-              fontWeight: "inherit",
-            }}
-          >
-            XÁC THỰC TÀI KHOẢN
-          </h2>
-
-          <form
-            style={{ padding: "0px 36px" }}
-            onSubmit={handleSubmit(onSubmit)}
-          >
-            <Box
+          <Box sx={{ p: "40px 40px 0 40px" }}>
+            <Typography
+              variant="h1"
+              align="center"
               sx={{
-                display: "flex",
-                flexDirection: "column",
-                margin: "30px 0",
+                fontWeight: "500",
+                fontSize: {
+                  md: "2.2rem",
+                  sm: "2.2rem",
+                  xs: "1.8rem",
+                },
+                mt: 4,
+                mb: 4,
               }}
             >
-              <Box sx={{ mb: 4 }}>
-                <Typography variant="body1" sx={{ fontWeight: "bold" }}>
-                  Email:
-                </Typography>
+              Xác thực tài khoản
+            </Typography>
+
+            <Typography
+              variant="h2"
+              align="center"
+              sx={{
+                fontWeight: "400",
+                fontSize: {
+                  md: "1.1rem",
+                  sm: "1.1rem",
+                  xs: "1rem",
+                },
+                lineHeight: "1.2rem",
+                color: "var(--color-text-muted)",
+              }}
+            >
+              Vui lòng nhập OTP chúng tôi đã gửi đến email của bạn.
+            </Typography>
+
+            <form onSubmit={handleSubmit(handleForgotPasswordVerify)}>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  margin: "30px 0",
+                }}
+              >
                 <Typography
-                  variant="body1"
-                  sx={{ color: "var(--color-text-muted)" }}
+                  sx={{
+                    mt: 2,
+                    mb: 2,
+                    fontSize: "1.1rem",
+                    fontWeight: 500,
+                  }}
                 >
                   {email}
                 </Typography>
 
-                {error && (
-                  <Typography color="error" sx={{ mt: 2 }}>
-                    {error}
-                  </Typography>
-                )}
+                <ThemeProvider theme={customTheme(outerTheme)}>
+                  <TextField
+                    id="verificationCode"
+                    label="Nhập mã OTP"
+                    type={showOtp ? "text" : "password"}
+                    variant="standard"
+                    sx={{ mb: 1 }}
+                    disabled={isLoading}
+                    {...register("verificationCode", {
+                      required: "OTP không được để trống",
+                      pattern: {
+                        value: /^[0-9]{6}$/,
+                        message: "OTP phải là 6 chữ số",
+                      },
+                    })}
+                    error={!!errors.verificationCode}
+                    helperText={errors.verificationCode?.message}
+                    FormHelperTextProps={{
+                      sx: { fontSize: "0.9rem", color: "red" },
+                    }}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            aria-label={
+                              showOtp ? "hide the OTP" : "display the OTP"
+                            }
+                            onClick={handleClickShowOtp}
+                            onMouseDown={handleMouseDownOtp}
+                            onMouseUp={handleMouseUpOtp}
+                            edge="end"
+                            disabled={isLoading}
+                          >
+                            {showOtp ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </ThemeProvider>
               </Box>
 
-              <label
-                style={{
-                  paddingBottom: 4,
-                  fontSize: "1.2rem",
-                }}
-                htmlFor="verificationCode"
+              <Box
+                display={"flex"}
+                justifyContent={"center"}
+                alignItems={"center"}
               >
-                Xác thực mã OTP
-              </label>
-
-              <ThemeProvider theme={customTheme(outerTheme)}>
-                <TextField
-                  id="verificationCode"
-                  label="Nhập mã OTP"
-                  type={showOtp ? "text" : "password"}
-                  variant="standard"
-                  sx={{ mb: 1 }}
-                  disabled={isLoading}
-                  {...register("verificationCode", {
-                    required: "OTP không được để trống",
-                    pattern: {
-                      value: /^[0-9]{6}$/,
-                      message: "OTP phải là 6 chữ số",
+                <Button
+                  variant="contained"
+                  fullWidth
+                  sx={{
+                    p: {
+                      md: "10px 80px",
+                      sm: "10px 80px",
+                      xs: "10px 60px",
                     },
-                  })}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          aria-label={
-                            showOtp ? "hide the OTP" : "display the OTP"
-                          }
-                          onClick={handleClickShowOtp}
-                          onMouseDown={handleMouseDownOtp}
-                          onMouseUp={handleMouseUpOtp}
-                          edge="end"
-                          disabled={isLoading}
-                        >
-                          {showOtp ? <VisibilityOff /> : <Visibility />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
+                    mt: 3,
+                    fontSize: "1.2rem",
                   }}
-                />
-                {errors.verificationCode && (
-                  <p className={styles.errorMessage}>
-                    {errors.verificationCode.message}
-                  </p>
-                )}
-              </ThemeProvider>
-            </Box>
-
-            <Box
-              display={"flex"}
-              justifyContent={"center"}
-              alignItems={"center"}
-            >
-              <Button
-                variant="contained"
-                sx={{
-                  p: "10px 80px",
-                  fontSize: "1.2rem",
-                  fontWeight: "normal",
-                }}
-                type="submit"
-                disabled={isLoading}
-              >
-                XÁC NHẬN
-              </Button>
-            </Box>
-
-            <Snackbar
-              open={snackbar.open}
-              autoHideDuration={3000}
-              onClose={handleCloseSnackbar}
-              anchorOrigin={{ vertical: "right", horizontal: "right" }}
-            >
-              <Alert
-                onClose={handleCloseSnackbar}
-                severity={snackbar.severity}
-                variant="filled"
-                sx={{ width: "100%", p: "10px 20px" }}
-              >
-                {snackbar.message}
-              </Alert>
-            </Snackbar>
-          </form>
+                  type="submit"
+                  disabled={isLoading}
+                >
+                  Xác nhận
+                </Button>
+              </Box>
+            </form>
+          </Box>
         </Box>
       </Stack>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "right", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          variant="standard"
+          sx={{ width: "100%", p: "10px 20px" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Fragment>
   );
 };

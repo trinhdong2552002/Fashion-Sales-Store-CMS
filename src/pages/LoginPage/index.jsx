@@ -10,14 +10,15 @@ import {
   Snackbar,
   Alert,
   Box,
+  Typography,
 } from "@mui/material";
+import styles from "./index.module.css";
 import { Fragment, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
-import styles from "./index.module.css";
 import { useLoginMutation } from "@/services/api/auth";
 import customTheme from "@/components/CustemTheme";
-import { useLazyGetMyInfoQuery } from "../../services/api/auth";
+import { useLazyGetMyInfoQuery } from "@/services/api/auth";
 
 const Login = () => {
   const outerTheme = useTheme();
@@ -102,22 +103,6 @@ const Login = () => {
 
   return (
     <Fragment>
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={4000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "right", horizontal: "right" }}
-      >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity={snackbar.severity}
-          variant="standard"
-          sx={{ width: "100%", p: "10px 20px" }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-
       <Stack
         alignItems={"center"}
         sx={{
@@ -137,25 +122,54 @@ const Login = () => {
         <Box
           sx={{
             backgroundColor: "white",
-            width: 500,
+            width: {
+              xs: "90vw",
+              sm: 500,
+              md: 500,
+            },
             height: 600,
             borderRadius: 2,
             boxShadow: "0px 4px 30px 5px rgba(0, 0, 0, 0.3)",
+            mb: {
+              md: 0,
+              sm: 0,
+              xs: 4,
+            },
           }}
         >
           <Box sx={{ p: "40px 40px 0 40px" }}>
-            <h1 style={{ fontWeight: "500", textAlign: "center" }}>
-              ĐĂNG NHẬP
-            </h1>
-            <h3
-              style={{
-                fontWeight: "normal",
-                marginTop: 20,
+            <Typography
+              variant="h1"
+              align="center"
+              sx={{
+                fontWeight: "500",
+                fontSize: {
+                  md: "2.2rem",
+                  sm: "2.2rem",
+                  xs: "1.8rem",
+                },
+                mt: 4,
+                mb: 4,
+              }}
+            >
+              Đăng nhập
+            </Typography>
+            <Typography
+              variant="h2"
+              align="center"
+              sx={{
+                fontWeight: "400",
+                fontSize: {
+                  md: "1.1rem",
+                  sm: "1.1rem",
+                  xs: "1rem",
+                },
+                lineHeight: "1.2rem",
                 color: "var(--color-text-muted)",
               }}
             >
               Chào mừng đến với hệ thống CMS của chúng tôi.
-            </h3>
+            </Typography>
 
             <form onSubmit={handleSubmit(handleLogin)}>
               <Box
@@ -165,14 +179,6 @@ const Login = () => {
                   margin: "30px 0",
                 }}
               >
-                <label
-                  style={{
-                    fontSize: "1.2rem",
-                  }}
-                  htmlFor="email"
-                >
-                  Email
-                </label>
                 <ThemeProvider theme={customTheme(outerTheme)}>
                   <TextField
                     id="email"
@@ -186,18 +192,15 @@ const Login = () => {
                         message: "Email không hợp lệ",
                       },
                     })}
+                    error={!!errors.email}
+                    helperText={errors.email?.message}
+                    FormHelperTextProps={{
+                      sx: { fontSize: "0.9rem", color: "red" },
+                    }}
+                    sx={{ mb: 4 }}
                   />
                 </ThemeProvider>
-                {errors.email && (
-                  <p className={styles.errorMessage}>{errors.email.message}</p>
-                )}
 
-                <label
-                  style={{ padding: "30px 0 0 0", fontSize: "1.2rem" }}
-                  htmlFor="password"
-                >
-                  Mật khẩu
-                </label>
                 <ThemeProvider theme={customTheme(outerTheme)}>
                   <TextField
                     id="password"
@@ -212,6 +215,11 @@ const Login = () => {
                         message: "Mật khẩu phải có ít nhất 6 ký tự",
                       },
                     })}
+                    error={!!errors.password}
+                    helperText={errors.password?.message}
+                    FormHelperTextProps={{
+                      sx: { fontSize: "0.9rem", color: "red" },
+                    }}
                     InputProps={{
                       endAdornment: (
                         <InputAdornment position="end">
@@ -234,11 +242,6 @@ const Login = () => {
                     }}
                   />
                 </ThemeProvider>
-                {errors.password && (
-                  <p className={styles.errorMessage}>
-                    {errors.password.message}
-                  </p>
-                )}
               </Box>
 
               <Box
@@ -254,23 +257,46 @@ const Login = () => {
 
                 <Button
                   variant="contained"
+                  fullWidth
                   sx={{
-                    p: "10px 80px",
+                    p: {
+                      md: "10px 80px",
+                      sm: "10px 80px",
+                      xs: "10px 60px",
+                    },
                     mt: 3,
-                    fontSize: "1.2rem",
-                    fontWeight: "normal",
-                    
+                    fontSize: {
+                      md: "1.2rem",
+                      sm: "1.2rem",
+                      xs: "1rem",
+                    },
                   }}
                   type="submit"
                   disabled={isLoginLoading}
                 >
-                  ĐĂNG NHẬP
+                  Đăng nhập
                 </Button>
               </Box>
             </form>
           </Box>
         </Box>
       </Stack>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "right", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          variant="standard"
+          sx={{ width: "100%", p: "10px 20px" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Fragment>
   );
 };

@@ -1,18 +1,18 @@
-.linkFooter {
+.backToLogin {
     color: black;
+    font-size: 1.2rem;
     text-decoration: none;
-    margin-top: 36px;
-    margin-left: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    margin-top: 32px;
 }
 
-.linkFooter:hover {
+
+.backToLogin:hover {
     text-decoration: underline;
+    transition: s ease;
 }
 
-.errorMessage {
-    color: red;
-    margin-top: 10px;
+@media screen and (max-width: 600px) {
+    .backToLogin {
+        font-size: 1rem;
+    }
 }
