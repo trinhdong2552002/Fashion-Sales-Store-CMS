@@ -36,13 +36,13 @@ export const authApi = baseApi.injectEndpoints({
     // Quên mật khẩu
     forgotPassword: builder.mutation({
       query: (credentials) => ({
-        url: "/v1/auth/forgot-password",
+        url: "/v1/public/auth/forgot-password",
         method: "POST",
         data: {
           email: credentials.email,
         },
       }),
-      invalidatesTags: [TAG_KEYS.USER],
+      invalidatesTags: [TAG_KEYS.AUTH],
     }),
 
     // Xác thực mật khẩu
@@ -55,7 +55,7 @@ export const authApi = baseApi.injectEndpoints({
           verificationCode: credentials.verificationCode,
         },
       }),
-      invalidatesTags: [TAG_KEYS.USER],
+      invalidatesTags: [TAG_KEYS.AUTH],
     }),
 
     // Đặt lại mật khẩu
@@ -69,7 +69,7 @@ export const authApi = baseApi.injectEndpoints({
           confirmPassword: credentials.confirmPassword,
         },
       }),
-      invalidatesTags: [TAG_KEYS.USER],
+      invalidatesTags: [TAG_KEYS.AUTH],
     }),
 
     // Đăng xuất
@@ -96,7 +96,7 @@ export const authApi = baseApi.injectEndpoints({
         url: "/v1/public/auth/refresh-token",
         method: "POST",
         data: {
-          refreshToken: credentials.refreshToken, 
+          refreshToken: credentials.refreshToken,
         },
       }),
       invalidatesTags: [TAG_KEYS.AUTH],

@@ -1,12 +1,7 @@
-import { Navigate, Route, Routes } from "react-router-dom";
-
-import LoginLayout from "@/layouts/LoginLayout";
-
+import { Route, Routes } from "react-router-dom";
 import Login from "@/pages/LoginPage";
-
 import AdminLayout from "./layouts/AdminLayout";
 import Admin from "./pages/Admin";
-
 import ThemeProvider from "./context/ThemeProvider";
 import ProductsManagement from "./pages/Admin/shared/ProductsManagement";
 import CategoriesManagement from "./pages/Admin/shared/CategoriesManagement";
@@ -32,10 +27,11 @@ const App = () => {
   return (
     <ThemeProvider>
       <Routes>
+        <Route index element={<Login />} />
+
         {/* Route Login */}
-        <Route path="/" element={<LoginLayout />}>
-          <Route index element={<Login />} />
-          <Route path="forgot-password" element={<ForgotPassword />} />
+        <Route path="/forgot-password" element={<ForgotPasswordLayout />}>
+          <Route index element={<ForgotPassword />} />
           <Route
             path="forgot-password-verify"
             element={<ForgotPasswordVerify />}
