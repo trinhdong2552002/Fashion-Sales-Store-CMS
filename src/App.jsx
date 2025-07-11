@@ -22,6 +22,7 @@ import ProductVariantsManagement from "./pages/Admin/shared/ProductVariantsManag
 import ForgotPassword from "./pages/ForgotPassword";
 import ForgotPasswordVerify from "./pages/ForgotPasswordVerify";
 import ResetPassword from "./pages/ResetPassword";
+import ForgotPasswordLayout from "./layouts/ForgotPasswordLayout";
 
 const App = () => {
   return (
