@@ -12,7 +12,17 @@ export const provinceApi = baseApi.injectEndpoints({
       }),
       providesTags: [TAG_KEYS.PROVINCE],
     }),
+
+    listDistrictsByProvince: builder.query({
+      query: ({ id, page, size }) => ({
+        url: `/v1/private/provinces/${id}/districts`,
+        method: "GET",
+        params: { page, size },
+      }),
+      providesTags: [TAG_KEYS.PROVINCE],
+    }),
   }),
 });
 
-export const { useListProvincesQuery } = provinceApi;
+export const { useListProvincesQuery, useListDistrictsByProvinceQuery } =
+  provinceApi;

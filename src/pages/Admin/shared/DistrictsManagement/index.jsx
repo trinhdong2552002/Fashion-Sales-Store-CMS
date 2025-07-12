@@ -1,12 +1,26 @@
 import { DataGrid } from "@mui/x-data-grid";
-import { Typography, Box, Snackbar, Alert, Button } from "@mui/material";
+import {
+  Typography,
+  Box,
+  Snackbar,
+  Alert,
+  Button,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+} from "@mui/material";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import { useListDistrictsQuery } from "@/services/api/district";
 import { Refresh } from "@mui/icons-material";
 import { useState } from "react";
 import ErrorDisplay from "@/components/ErrorDisplay";
+import { useListDistrictsByProvinceQuery } from "@/services/api/province";
+import { useListProvincesQuery } from "@/services/api/province";
+import { skipToken } from "@reduxjs/toolkit/query";
 
 const DistrictsManagement = () => {
+  const [selectedProvinceId, setSelectedProvinceId] = useState("");
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 20,
@@ -21,26 +35,74 @@ const DistrictsManagement = () => {
     data: dataDistricts,
     isLoading: isLoadingDistricts,
     isError: isErrorDistricts,
-    refetch,
-  } = useListDistrictsQuery({
-    page: paginationModel.page,
-    size: paginationModel.pageSize,
-  });
+    refetch: refetchDistricts,
+  } = useListDistrictsQuery(
+    {
+      page: paginationModel.page,
+      size: paginationModel.pageSize,
+    },
+    {
+      refetchOnMountOrArgChange: true,
+    }
+  );
+
+  const { data: dataProvinces, isError: isErrorProvinces } =
+    useListProvincesQuery(
+      {
+        page: 0,
+        size: 100,
+      },
+      {
+        refetchOnMountOrArgChange: true,
+      }
+    );
+
+  const {
+    data: dataDistrictsByProvince,
+    isLoading: isLoadingDistrictsByProvince,
+    isError: isErrorDistrictsByProvince,
+    refetch: refetchDataDistrictsByProvince,
+  } = useListDistrictsByProvinceQuery(
+    selectedProvinceId
+      ? {
+          id: selectedProvinceId,
+          page: paginationModel.page,
+          size: paginationModel.pageSize,
+        }
+      : skipToken,
+    {
+      refetchOnMountOrArgChange: true,
+    }
+  );
+
+  const isLoading = selectedProvinceId
+    ? isLoadingDistrictsByProvince
+    : isLoadingDistricts;
+
+  const dataRowDistricts =
+    (selectedProvinceId
+      ? dataDistrictsByProvince?.result?.items
+      : dataDistricts?.result?.items) || [];
+
+  const totalRows = selectedProvinceId
+    ? dataDistrictsByProvince?.result?.totalItems
+    : dataDistricts?.result?.totalItems || 0;
 
   const columnsDistrict = [
     { field: "id", headerName: "ID", width: 150 },
     { field: "name", headerName: "Tên quận / huyện", width: 200 },
   ];
 
-  const dataRowDistricts = dataDistricts?.result?.items || [];
-  const totalRows = dataDistricts?.result?.totalItems || 0;
-
   const handleCloseSnackbar = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
   const handleRefresh = () => {
-    refetch();
+    if (selectedProvinceId) {
+      refetchDataDistrictsByProvince();
+    } else {
+      refetchDistricts();
+    }
     setSnackbar({
       open: true,
       message: "Danh sách quận / huyện đã được làm mới !",
@@ -48,12 +110,12 @@ const DistrictsManagement = () => {
     });
   };
 
-  if (isErrorDistricts) {
+  if (isErrorDistricts || isErrorDistrictsByProvince || isErrorProvinces) {
     return (
       <ErrorDisplay
         error={{
           message:
-            "Không tải được danh sách quận / huyện. Vui lòng kiểm tra kết nối của bạn và thử lại !",
+            "Không tải được dữ liệu. Vui lòng kiểm tra kết nối của bạn và thử lại !",
         }}
       />
     );
@@ -66,10 +128,10 @@ const DistrictsManagement = () => {
       </Typography>
 
       <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="space-between"
         sx={{ mb: 2 }}
-        display={"flex"}
-        justifyContent={"space-between"}
-        alignItems={"center"}
       >
         <Button
           variant="outlined"
@@ -78,6 +140,28 @@ const DistrictsManagement = () => {
         >
           Làm mới
         </Button>
+
+        <FormControl sx={{ minWidth: 300 }}>
+          <InputLabel>Chọn tỉnh / thành phố</InputLabel>
+          <Select
+            value={selectedProvinceId}
+            label="Chọn tỉnh / thành phố"
+            onChange={(e) => {
+              setPaginationModel({
+                page: 0,
+                pageSize: paginationModel.pageSize,
+              });
+              setSelectedProvinceId(e.target.value);
+            }}
+          >
+            {dataProvinces?.result?.items?.map((province) => (
+              <MenuItem key={province.id} value={province.id}>
+                {province.name}
+              </MenuItem>
+            ))}
+            ‰
+          </Select>
+        </FormControl>
       </Box>
 
       <Box height={500} width={"100%"}>
@@ -92,7 +176,7 @@ const DistrictsManagement = () => {
           }}
           columns={columnsDistrict}
           rows={dataRowDistricts}
-          loading={isLoadingDistricts}
+          loading={isLoading}
           disableSelectionOnClick
           slotProps={{
             loadingOverlay: {
