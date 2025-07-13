@@ -210,7 +210,7 @@ const ColorsManagement = () => {
   return (
     <DashboardLayoutWrapper>
       <Typography variant="h5" gutterBottom>
-        Quản lý màu sắc
+        Quản lý Màu sắc
       </Typography>
 
       <Box

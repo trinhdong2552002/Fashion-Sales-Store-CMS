@@ -67,7 +67,7 @@ const ProvincesManagement = () => {
   return (
     <DashboardLayoutWrapper>
       <Typography variant="h5" gutterBottom>
-        Quản lý tỉnh / thành phố
+        Quản lý Tỉnh / thành phố
       </Typography>
       <Button
         sx={{ mb: 2 }}

@@ -128,7 +128,7 @@ const WardsManagement = () => {
   return (
     <DashboardLayoutWrapper>
       <Typography variant="h5" gutterBottom>
-        Quản lý phường / xã
+        Quản lý Phường / xã
       </Typography>
 
       <Box

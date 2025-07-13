@@ -124,7 +124,7 @@ const DistrictsManagement = () => {
   return (
     <DashboardLayoutWrapper>
       <Typography variant="h5" gutterBottom>
-        Quản lý quận / huyện
+        Quản lý Quận / huyện
       </Typography>
 
       <Box

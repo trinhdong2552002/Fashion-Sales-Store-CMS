@@ -67,7 +67,7 @@ const SizesManagement = () => {
   return (
     <DashboardLayoutWrapper>
       <Typography variant="h5" gutterBottom>
-        Quản lý kích thước
+        Quản lý Kích thước
       </Typography>
 
       <Button

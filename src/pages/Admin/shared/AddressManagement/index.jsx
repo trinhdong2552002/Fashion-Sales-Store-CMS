@@ -189,7 +189,7 @@ const AddressManagement = () => {
   return (
     <DashboardLayoutWrapper>
       <Typography variant="h5" gutterBottom>
-        Quản lý địa chỉ
+        Quản lý Địa chỉ
       </Typography>
 
       <Button

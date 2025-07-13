@@ -275,7 +275,7 @@ const PromotionsManagement = () => {
   return (
     <DashboardLayoutWrapper>
       <Typography variant="h5" gutterBottom>
-        Quản lý khuyến mãi
+        Quản lý Khuyến mãi
       </Typography>
 
       <Box
