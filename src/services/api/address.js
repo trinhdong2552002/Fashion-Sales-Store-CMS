@@ -3,64 +3,71 @@ import { TAG_KEYS } from "/src/constants/tagKeys.js";
 
 export const addressApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getAddresses: builder.query({
-      query: ({ pageNo = 1, pageSize = 100, sortBy = "" } = {}) => ({
-        url: `/v1/addresses`,
+    listAddressForAdmin: builder.query({
+      query: ({ page, size }) => ({
+        url: `/v1/admin/addresses`,
         method: "GET",
-        params: { pageNo, pageSize, sortBy },
+        params: { page, size },
       }),
       providesTags: [TAG_KEYS.ADDRESS],
-      transformResponse: (response) => {
-        console.log("Get Addresses API Response:", response);
-        const items = Array.isArray(response.result?.items)
-          ? response.result.items.map((address) => ({
-              ...address,
-              provinceName: address.province?.name || "",
-              districtName: address.district?.name || "",
-              wardName: address.ward?.name || "",
-              provinceId: address.province?.id || "",
-              districtId: address.district?.id || "",
-              wardCode: address.ward?.code || "",
-            }))
-          : [];
-        return {
-          items,
-          page: response.result?.page || 1,
-          size: response.result?.size || 100,
-          totalPages: response.result?.totalPages || 1,
-          totalItems: response.result?.totalItems || 0,
-        };
-      },
-    }),
-    createAddress: builder.mutation({
-      query: (addressData) => ({
-        url: `/v1/addresses`,
-        method: "POST",
-        data: addressData,
-      }),
-      invalidatesTags: [TAG_KEYS.ADDRESS],
-    }),
-    updateAddress: builder.mutation({
-      query: ({ addressId, addressData }) => ({
-        url: `/v1/addresses/${addressId}`,
-        method: "PUT",
-        data: addressData,
-      }),
-      invalidatesTags: [TAG_KEYS.ADDRESS],
     }),
     deleteAddress: builder.mutation({
-      query: (addressId) => ({
-        url: `/v1/addresses/${addressId}`,
+      query: ({ id }) => ({
+        url: `/v1/admin/addresses/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: [TAG_KEYS.ADDRESS],
+      async onQueryStarted({ id }, { dispatch, queryFulfilled }) {
+        const patchResult = dispatch(
+          addressApi.util.updateQueryData("listAddressForAdmin", (draft) => {
+            if (draft) {
+              const address = draft.find((item) => item.id === id);
+              if (address) {
+                address.status = "INACTIVE";
+              }
+              return draft;
+            }
+          })
+        );
+        try {
+          await queryFulfilled;
+        } catch (error) {
+          patchResult.undo();
+          console.log("Error deleting address:", error);
+        }
+      },
+    }),
+    restoreAddress: builder.mutation({
+      query: ({ id }) => ({
+        url: `/v1/admin/addresses/${id}/restore`,
+        method: "PATCH",
+      }),
+      invalidatesTags: [TAG_KEYS.ADDRESS],
+      async onQueryStarted({ id }, { dispatch, queryFulfilled }) {
+        const patchResult = dispatch(
+          addressApi.util.updateQueryData("listAddressForAdmin", (draft) => {
+            if (draft) {
+              const address = draft.find((item) => item.id === id);
+              if (address) {
+                address.status = "ACTIVE";
+              }
+              return draft;
+            }
+          })
+        );
+        try {
+          await queryFulfilled;
+        } catch (error) {
+          patchResult.undo();
+          console.log("Error restoring address:", error);
+        }
+      },
     }),
   }),
 });
 
 export const {
-  useGetAddressesQuery,
-  useCreateAddressMutation,
-  useUpdateAddressMutation,
+  useListAddressForAdminQuery,
   useDeleteAddressMutation,
+  useRestoreAddressMutation,
 } = addressApi;

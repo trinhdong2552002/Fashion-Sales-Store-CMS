@@ -12,6 +12,7 @@ export const TAG_KEYS = {
   WARD: "Ward",
   DISTRICT: "District",
   PROVINCE: "Province",
+  ADDRESS: "Address",
   ORDER: "Order",
   ORDER_ITEM: "OrderItem",
   BRANCHES: "Branches",

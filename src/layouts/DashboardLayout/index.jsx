@@ -164,9 +164,15 @@ const DashboardLayoutWrapper = ({ children }) => {
       title: "Quận / huyện",
       icon: <Place />,
     },
+
     {
       path: "/admin/provincesManagement",
       title: "Tỉnh / thành phố",
+      icon: <Place />,
+    },
+    {
+      path: "/admin/addressManagement",
+      title: "Địa chỉ",
       icon: <Place />,
     },
     {
@@ -325,7 +331,6 @@ const DashboardLayoutWrapper = ({ children }) => {
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
             Admin Dashboard
           </Typography>
-          <Stack direction="row" alignItems="center" spacing={2}></Stack>
         </Toolbar>
       </AppBar>
       <Box

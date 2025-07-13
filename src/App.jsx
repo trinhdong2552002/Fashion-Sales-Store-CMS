@@ -22,6 +22,7 @@ import ProductVariantsManagement from "./pages/Admin/shared/ProductVariantsManag
 import ForgotPassword from "./pages/ForgotPassword";
 import ForgotPasswordVerify from "./pages/ForgotPasswordVerify";
 import ResetPassword from "./pages/ResetPassword";
+import AddressManagement from "./pages/Admin/shared/AddressManagement";
 import ForgotPasswordLayout from "./layouts/ForgotPasswordLayout";
 
 const App = () => {
@@ -57,6 +58,7 @@ const App = () => {
           <Route path="wardsManagement" element={<WardsManagement />} />
           <Route path="districtsManagement" element={<DistrictsManagement />} />
           <Route path="provincesManagement" element={<ProvincesManagement />} />
+          <Route path="addressManagement" element={<AddressManagement />} />
           <Route
             path="categoriesManagement"
             element={<CategoriesManagement />}
