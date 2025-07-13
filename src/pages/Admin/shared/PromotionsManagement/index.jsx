@@ -145,6 +145,11 @@ const PromotionsManagement = () => {
         ...newPromotion,
         discountPercent: parseFloat(newPromotion.discountPercent),
       }).unwrap();
+      setSnackbar({
+        open: true,
+        severity: "success",
+        message: "Thêm khuyến mãi thành công!",
+      });
       setNewPromotion({
         code: "",
         description: "",
@@ -154,11 +159,7 @@ const PromotionsManagement = () => {
       });
       setOpenAddDialog(false);
       setSubmitted(false);
-      setSnackbar({
-        open: true,
-        severity: "success",
-        message: "Thêm khuyến mãi thành công!",
-      });
+      refetch();
     } catch (error) {
       const errorMessage = error?.data?.message;
       setSnackbar({
