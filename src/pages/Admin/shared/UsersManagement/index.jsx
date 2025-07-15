@@ -13,8 +13,6 @@ import {
   Select,
   MenuItem,
   Grid,
-  Snackbar,
-  Alert,
   Box,
   IconButton,
 } from "@mui/material";
@@ -29,6 +27,7 @@ import { useListRolesQuery } from "@/services/api/role";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import { useNavigate } from "react-router-dom";
 import { Add, Delete, Refresh, Restore } from "@mui/icons-material";
+import SnackbarComponent from "@/components/Snackbar";
 
 const UsersManagement = () => {
   const navigate = useNavigate();
@@ -461,7 +460,9 @@ const UsersManagement = () => {
           </FormControl>
         </DialogContent>
         <DialogActions>
-          <Button color="error" onClick={() => setOpenDialog(false)}>Hủy</Button>
+          <Button color="error" onClick={() => setOpenDialog(false)}>
+            Hủy
+          </Button>
           <Button variant="contained" onClick={handleAddUser}>
             Thêm
           </Button>
@@ -506,20 +507,7 @@ const UsersManagement = () => {
         </DialogActions>
       </Dialog>
 
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "right", horizontal: "right" }}
-      >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity={snackbar.severity}
-          sx={{ width: "100%" }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+      <SnackbarComponent snackbar={snackbar} onClose={handleCloseSnackbar} />
     </DashboardLayoutWrapper>
   );
 };

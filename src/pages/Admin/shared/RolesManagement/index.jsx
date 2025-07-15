@@ -1,10 +1,11 @@
 import { DataGrid } from "@mui/x-data-grid";
-import { Alert, Box, Button, Snackbar, Typography } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import { useListRolesQuery } from "@/services/api/role";
 import { useState } from "react";
 import { Refresh } from "@mui/icons-material";
 import ErrorDisplay from "@/components/ErrorDisplay";
+import SnackbarComponent from "@/components/Snackbar";
 
 const RolesManagement = () => {
   const [paginationModel, setPaginationModel] = useState({
@@ -113,21 +114,7 @@ const RolesManagement = () => {
         />
       </Box>
 
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={4000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "right", horizontal: "right" }}
-      >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity={snackbar.severity}
-          variant="standard"
-          sx={{ width: "100%" }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+      <SnackbarComponent snackbar={snackbar} onClose={handleCloseSnackbar} />
     </DashboardLayoutWrapper>
   );
 };

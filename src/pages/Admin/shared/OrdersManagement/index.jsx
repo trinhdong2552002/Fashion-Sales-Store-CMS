@@ -1,17 +1,8 @@
 import { useState } from "react";
 import { DataGrid } from "@mui/x-data-grid";
-import {
-  Typography,
-  Button,
-  Snackbar,
-  Alert,
-  Box,
-  IconButton,
-  Chip,
-} from "@mui/material";
+import { Typography, Button, Box, IconButton, Chip } from "@mui/material";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import { useListOrdersForAdminQuery } from "@/services/api/order";
-import ErrorDisplay from "@/components/ErrorDisplay";
 import {
   Cancel,
   CheckCircle,
@@ -22,6 +13,8 @@ import {
   Settings,
   Visibility,
 } from "@mui/icons-material";
+import ErrorDisplay from "@/components/ErrorDisplay";
+import SnackbarComponent from "@/components/Snackbar";
 
 const getOrderStatusColor = (status) => {
   switch (status) {
@@ -196,20 +189,7 @@ const OrdersManagement = () => {
         />
       </Box>
 
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "right", horizontal: "right" }}
-      >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity={snackbar.severity}
-          sx={{ width: "100%" }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+      <SnackbarComponent snackbar={snackbar} onClose={handleCloseSnackbar} />
     </DashboardLayoutWrapper>
   );
 };

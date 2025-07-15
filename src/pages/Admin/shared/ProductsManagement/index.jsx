@@ -25,7 +25,6 @@ const ProductsManagement = () => {
   const [openRestoreDialog, setOpenRestoreDialog] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState(null);
-
   const [submitted, setSubmitted] = useState(false);
   const [paginationModel, setPaginationModel] = useState({
     page: 0,

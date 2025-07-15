@@ -7,8 +7,6 @@ import {
   TextField,
   ThemeProvider,
   useTheme,
-  Snackbar,
-  Alert,
   Box,
   Typography,
 } from "@mui/material";
@@ -18,6 +16,7 @@ import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { useLoginMutation } from "@/services/api/auth";
 import customTheme from "@/components/CustemTheme";
+import SnackbarComponent from "@/components/Snackbar";
 import { useLazyGetMyInfoQuery } from "@/services/api/auth";
 
 const Login = () => {
@@ -282,21 +281,7 @@ const Login = () => {
         </Box>
       </Stack>
 
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={4000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "right", horizontal: "right" }}
-      >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity={snackbar.severity}
-          variant="standard"
-          sx={{ width: "100%", p: "10px 20px" }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+      <SnackbarComponent snackbar={snackbar} onClose={handleCloseSnackbar} />
     </Fragment>
   );
 };

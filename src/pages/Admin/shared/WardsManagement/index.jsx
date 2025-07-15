@@ -3,8 +3,6 @@ import {
   Typography,
   Box,
   Button,
-  Snackbar,
-  Alert,
   FormControl,
   InputLabel,
   Select,
@@ -18,8 +16,9 @@ import {
   useListDistrictsQuery,
   useListWardsByDistrictQuery,
 } from "@/services/api/district";
-import ErrorDisplay from "@/components/ErrorDisplay";
 import { skipToken } from "@reduxjs/toolkit/query";
+import ErrorDisplay from "@/components/ErrorDisplay";
+import SnackbarComponent from "@/components/Snackbar";
 
 const WardsManagement = () => {
   const [selectedDistrictId, setSelectedDistrictId] = useState("");
@@ -199,21 +198,7 @@ const WardsManagement = () => {
         />
       </Box>
 
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={4000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "right", horizontal: "right" }}
-      >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity={snackbar.severity}
-          variant="standard"
-          sx={{ width: "100%" }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+      <SnackbarComponent snackbar={snackbar} onClose={handleCloseSnackbar} />
     </DashboardLayoutWrapper>
   );
 };

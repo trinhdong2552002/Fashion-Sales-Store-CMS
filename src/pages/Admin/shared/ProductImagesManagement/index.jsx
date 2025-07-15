@@ -2,8 +2,6 @@ import { DataGrid } from "@mui/x-data-grid";
 import {
   Typography,
   Button,
-  Alert,
-  Snackbar,
   Box,
   IconButton,
   Dialog,
@@ -23,6 +21,7 @@ import { useGetMyInfoQuery } from "@/services/api/auth";
 import { useState } from "react";
 import { AddPhotoAlternate, Delete, Refresh } from "@mui/icons-material";
 import ErrorDisplay from "@/components/ErrorDisplay";
+import SnackbarComponent from "@/components/Snackbar";
 
 const ProductImagesManagement = () => {
   const [previewImage, setPreviewImage] = useState(null);
@@ -296,20 +295,7 @@ const ProductImagesManagement = () => {
         </DialogContent>
       </Dialog>
 
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "right", horizontal: "right" }}
-      >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity={snackbar.severity}
-          sx={{ width: "100%" }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+      <SnackbarComponent snackbar={snackbar} onClose={handleCloseSnackbar} />
     </DashboardLayoutWrapper>
   );
 };

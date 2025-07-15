@@ -9,8 +9,6 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
-  Alert,
-  Snackbar,
   Box,
   IconButton,
 } from "@mui/material";
@@ -25,6 +23,7 @@ import {
 } from "@/services/api/branches";
 import { Add, Delete, Edit, Refresh, Restore } from "@mui/icons-material";
 import ErrorDisplay from "@/components/ErrorDisplay";
+import SnackbarComponent from "@/components/Snackbar";
 
 const BranchesManagement = () => {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
@@ -495,20 +494,7 @@ const BranchesManagement = () => {
         </Dialog>
       </Box>
 
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={4000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "right", horizontal: "right" }}
-      >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity={snackbar.severity}
-          sx={{ width: "100%" }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+      <SnackbarComponent snackbar={snackbar} onClose={handleCloseSnackbar} />
     </DashboardLayoutWrapper>
   );
 };

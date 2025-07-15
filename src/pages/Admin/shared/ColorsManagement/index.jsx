@@ -8,8 +8,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Snackbar,
-  Alert,
   IconButton,
   Box,
 } from "@mui/material";
@@ -23,6 +21,7 @@ import {
 } from "@/services/api/color";
 import { Add, Delete, Edit } from "@mui/icons-material";
 import ErrorDisplay from "@/components/ErrorDisplay";
+import SnackbarComponent from "@/components/Snackbar";
 
 const ColorsManagement = () => {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
@@ -340,20 +339,7 @@ const ColorsManagement = () => {
         </DialogActions>
       </Dialog>
 
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "right", horizontal: "right" }}
-      >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity={snackbar.severity}
-          sx={{ width: "100%" }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+      <SnackbarComponent snackbar={snackbar} onClose={handleCloseSnackbar} />
     </DashboardLayoutWrapper>
   );
 };

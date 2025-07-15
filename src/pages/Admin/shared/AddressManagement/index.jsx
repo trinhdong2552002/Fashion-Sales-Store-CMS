@@ -4,8 +4,6 @@ import {
   Typography,
   Box,
   Button,
-  Snackbar,
-  Alert,
   IconButton,
   Dialog,
   DialogTitle,
@@ -13,14 +11,14 @@ import {
   DialogActions,
 } from "@mui/material";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
-
 import { Delete, Refresh, Restore } from "@mui/icons-material";
-import ErrorDisplay from "@/components/ErrorDisplay";
 import {
   useListAddressForAdminQuery,
   useDeleteAddressMutation,
   useRestoreAddressMutation,
 } from "@/services/api/address";
+import ErrorDisplay from "@/components/ErrorDisplay";
+import SnackbarComponent from "@/components/Snackbar";
 
 const AddressManagement = () => {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
@@ -275,21 +273,7 @@ const AddressManagement = () => {
         </DialogActions>
       </Dialog>
 
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={4000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "right", horizontal: "right" }}
-      >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity={snackbar.severity}
-          variant="standard"
-          sx={{ width: "100%" }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+      <SnackbarComponent snackbar={snackbar} onClose={handleCloseSnackbar} />
     </DashboardLayoutWrapper>
   );
 };

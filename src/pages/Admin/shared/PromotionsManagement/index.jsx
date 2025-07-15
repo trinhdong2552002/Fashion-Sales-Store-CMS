@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import {
   Typography,
@@ -8,9 +8,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Grid,
-  Snackbar,
-  Alert,
   IconButton,
   Box,
 } from "@mui/material";
@@ -24,6 +21,7 @@ import {
 } from "@/services/api/promotion";
 import { Add, Delete, Edit, Refresh, Restore } from "@mui/icons-material";
 import ErrorDisplay from "@/components/ErrorDisplay";
+import SnackbarComponent from "@/components/Snackbar";
 
 const PromotionsManagement = () => {
   const [openAddDialog, setOpenAddDialog] = useState(false);
@@ -577,20 +575,7 @@ const PromotionsManagement = () => {
         </DialogActions>
       </Dialog>
 
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "right", horizontal: "right" }}
-      >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity={snackbar.severity}
-          sx={{ width: "100%" }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+      <SnackbarComponent snackbar={snackbar} onClose={handleCloseSnackbar} />
     </DashboardLayoutWrapper>
   );
 };

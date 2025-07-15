@@ -1,8 +1,6 @@
 import {
-  Alert,
   Box,
   Button,
-  Snackbar,
   Stack,
   TextField,
   ThemeProvider,
@@ -14,6 +12,7 @@ import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import customTheme from "@/components/CustemTheme";
 import { useState } from "react";
+import SnackbarComponent from "@/components/Snackbar";
 import { useForgotPasswordMutation } from "@/services/api/auth";
 
 const ForgotPassword = () => {
@@ -204,21 +203,7 @@ const ForgotPassword = () => {
         </Box>
       </Box>
 
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={3000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "right", horizontal: "right" }}
-      >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity={snackbar.severity}
-          variant="standard"
-          sx={{ width: "100%", p: "10px 20px" }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+      <SnackbarComponent snackbar={snackbar} onClose={handleCloseSnackbar} />
     </Stack>
   );
 };

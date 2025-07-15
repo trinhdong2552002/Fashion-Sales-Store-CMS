@@ -1,11 +1,9 @@
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import {
-  Alert,
   Box,
   Button,
   IconButton,
   InputAdornment,
-  Snackbar,
   Stack,
   TextField,
   ThemeProvider,
@@ -16,6 +14,7 @@ import { Fragment, useState } from "react";
 import { useForm } from "react-hook-form";
 import customTheme from "@/components/CustemTheme";
 import { useLocation, useNavigate } from "react-router-dom";
+import SnackbarComponent from "@/components/Snackbar";
 import { useResetPasswordMutation } from "@/services/api/auth";
 
 const ResetPassword = () => {
@@ -302,21 +301,7 @@ const ResetPassword = () => {
         </Box>
       </Stack>
 
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={3000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "right", horizontal: "right" }}
-      >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity={snackbar.severity}
-          variant="standard"
-          sx={{ width: "100%", p: "10px 20px" }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+      <SnackbarComponent snackbar={snackbar} onClose={handleCloseSnackbar} />
     </Fragment>
   );
 };
