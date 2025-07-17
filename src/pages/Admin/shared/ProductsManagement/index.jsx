@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Typography, Box } from "@mui/material";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import {
@@ -24,8 +24,9 @@ const ProductsManagement = () => {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [openRestoreDialog, setOpenRestoreDialog] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState(null);
-  const [selectedStatus, setSelectedStatus] = useState(null);
   const [submitted, setSubmitted] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState("");
+  const [searchText, setSearchText] = useState("");
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 10,
@@ -74,8 +75,30 @@ const ProductsManagement = () => {
     refetchOnMountOrArgChange: true,
   });
 
-  const dataRowProducts = dataProducts?.result?.items || [];
-  const totalRows = dataProducts?.result?.totalItems || 0;
+  const filteredProducts = useMemo(() => {
+    let filtered = dataProducts?.result?.items || [];
+
+    // Filter theo status
+    if (selectedStatus) {
+      filtered = filtered.filter(
+        (product) => product.status === selectedStatus
+      );
+    }
+
+    // // Filter theo search text
+    if (searchText) {
+      filtered = filtered.filter(
+        (product) =>
+          product.name.toLowerCase().includes(searchText.toLowerCase()) ||
+          product.description.toLowerCase().includes(searchText.toLowerCase())
+      );
+    }
+
+    return filtered;
+  }, [dataProducts?.result?.items, selectedStatus, searchText]);
+
+  const dataRowProducts = filteredProducts;
+  const totalRows = filteredProducts.length;
 
   const handleCloseSnackbar = () => {
     setSnackbar({ ...snackbar, open: false });
@@ -271,7 +294,7 @@ const ProductsManagement = () => {
       <ProductToolbar
         selectedStatus={selectedStatus}
         onStatusChange={setSelectedStatus}
-        // onSearch={setSearchText}
+        onSearch={setSearchText}
         onAddProduct={() => {
           setOpenAddDialog(true);
           setNewProduct({ name: "", description: "", categoryId: "" });

@@ -10,7 +10,7 @@ import {
   Button,
 } from "@mui/material";
 import { Search, Refresh, Add } from "@mui/icons-material";
-import { Fragment } from "react";
+import { Fragment, useState } from "react";
 
 const ProductToolbar = ({
   selectedStatus,
@@ -19,6 +19,26 @@ const ProductToolbar = ({
   onAddProduct,
   onRefresh,
 }) => {
+  const [searchValue, setSearchValue] = useState("");
+
+  const handleStatusChange = (e) => {
+    onStatusChange(e.target.value);
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchValue(e.target.value);
+  };
+
+  const handleSearchSubmit = () => {
+    onSearch(searchValue);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleSearchSubmit();
+    }
+  };
+
   return (
     <Fragment>
       <Grid
@@ -33,12 +53,14 @@ const ProductToolbar = ({
           <TextField
             fullWidth
             variant="standard"
+            value={searchValue}
+            onChange={handleSearchChange}
+            onKeyDown={handleKeyDown}
             label="Tìm kiếm sản phẩm"
-            onChange={(e) => onSearch(e.target.value)}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="start">
-                  <IconButton aria-label="search">
+                  <IconButton aria-label="search" onClick={handleSearchSubmit}>
                     <Search />
                   </IconButton>
                 </InputAdornment>
@@ -52,7 +74,7 @@ const ProductToolbar = ({
             <InputLabel>Trạng thái</InputLabel>
             <Select
               value={selectedStatus}
-              onChange={(e) => onStatusChange(e.target.value)}
+              onChange={handleStatusChange}
               label="Trạng thái"
             >
               <MenuItem value="">Tất cả</MenuItem>
