@@ -1,5 +1,5 @@
 import { Fragment, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import {
   AppBar,
   Toolbar,
@@ -11,14 +11,10 @@ import {
   ListItemText,
   Box,
   IconButton,
-  Stack,
-  ListItemAvatar,
-  Avatar,
-  styled,
-  Grid,
-  MenuItem,
-  Menu,
-  Badge,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Divider,
 } from "@mui/material";
 
 import {
@@ -28,8 +24,7 @@ import {
   Height,
   Image,
   LocalOffer,
-  Logout,
-  MoreVert,
+  Menu,
   Palette,
   Payment,
   People,
@@ -37,164 +32,35 @@ import {
   Receipt,
   Store,
   Tune,
+  ExpandMore,
+  LocationOn,
+  Inventory,
 } from "@mui/icons-material";
-import { useDispatch, useSelector } from "react-redux";
-import { clearUser, selectUser } from "../../store/redux/user/reducer";
-import { useLogoutMutation } from "../../services/api/auth";
-import { clearAuth } from "../../store/redux/auth/reducer";
+
+import UserInfo from "./shared/UserInfo";
 
 const drawerWidth = 300;
 
-const StyledBadge = styled(Badge)(({ theme }) => ({
-  "& .MuiBadge-badge": {
-    backgroundColor: "#44b700",
-    color: "#44b700",
-    boxShadow: `0 0 0 2px ${theme.palette.background.paper}`,
-    "&::after": {
-      position: "absolute",
-      top: 0,
-      left: 0,
-      width: "100%",
-      height: "100%",
-      borderRadius: "50%",
-      animation: "ripple 1.2s infinite ease-in-out",
-      border: "1px solid currentColor",
-      content: '""',
-    },
-  },
-  "@keyframes ripple": {
-    "0%": {
-      transform: "scale(.8)",
-      opacity: 1,
-    },
-    "100%": {
-      transform: "scale(2.4)",
-      opacity: 0,
-    },
-  },
-}));
-
 const DashboardLayoutWrapper = ({ children }) => {
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const [logout] = useLogoutMutation();
   const location = useLocation();
-  const [anchorEl, setAnchorEl] = useState(null);
-
   const [mobileOpen, setMobileOpen] = useState(false);
-  const myInfo = useSelector(selectUser);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
-  const handleMenuOpen = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleLogout = async () => {
-    try {
-      if (!localStorage.getItem("accessToken")) {
-        throw new Error("accessToken is required for logout");
-      }
-      const response = await logout({
-        accessToken: localStorage.getItem("accessToken"),
-      }).unwrap();
-      console.log("Logout response:", response);
-
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
-      dispatch(clearAuth());
-      dispatch(clearUser());
-      handleMenuClose();
-      navigate("/");
-    } catch (error) {
-      console.error("Logout error:", error);
-    }
-  };
-
-  const navigationItems = [
+  // Single navigation items
+  const singleNavigationItems = [
     { path: "/admin/dashboard", title: "Tổng quan", icon: <Dashboard /> },
-    {
-      path: "/admin/productsManagement",
-      title: "Sản phẩm",
-      icon: <Checkroom />,
-    },
-    {
-      path: "/admin/productVariantsManagement",
-      title: "Biến thể sản phẩm",
-      icon: <Tune />,
-    },
-    {
-      path: "/admin/productImagesManagement",
-      title: "Hình ảnh sản phẩm",
-      icon: <Image />,
-    },
-    {
-      path: "/admin/colorsManagement",
-      title: "Màu sắc",
-      icon: <Palette />,
-    },
-    {
-      path: "/admin/sizesManagement",
-      title: "Kích thước",
-      icon: <Height />,
-    },
-    {
-      path: "/admin/categoriesManagement",
-      title: "Danh mục",
-      icon: <Category />,
-    },
-    {
-      path: "/admin/usersManagement",
-      title: "Người dùng",
-      icon: <People />,
-    },
-    {
-      path: "/admin/wardsManagement",
-      title: "Phường / xã",
-      icon: <Place />,
-    },
-    {
-      path: "/admin/districtsManagement",
-      title: "Quận / huyện",
-      icon: <Place />,
-    },
-
-    {
-      path: "/admin/provincesManagement",
-      title: "Tỉnh / thành phố",
-      icon: <Place />,
-    },
-    {
-      path: "/admin/addressManagement",
-      title: "Địa chỉ",
-      icon: <Place />,
-    },
-    {
-      path: "/admin/ordersManagement",
-      title: "Đơn hàng",
-      icon: <Receipt />,
-    },
-    {
-      path: "/admin/rolesManagement",
-      title: "Vai trò",
-      icon: <People />,
-    },
+    { path: "/admin/usersManagement", title: "Người dùng", icon: <People /> },
+    { path: "/admin/ordersManagement", title: "Đơn hàng", icon: <Receipt /> },
+    { path: "/admin/rolesManagement", title: "Vai trò", icon: <People /> },
     {
       path: "/admin/paymentHistoriesManagement",
       title: "Lịch sử Thanh toán",
       icon: <Payment />,
     },
-    {
-      path: "/admin/branchesManagement",
-      title: "Chi nhánh",
-      icon: <Store />,
-    },
+    { path: "/admin/branchesManagement", title: "Chi nhánh", icon: <Store /> },
     {
       path: "/admin/promotionsManagement",
       title: "Khuyến mãi",
@@ -202,119 +68,250 @@ const DashboardLayoutWrapper = ({ children }) => {
     },
   ];
 
-  const drawer = (
-    <Fragment>
-      <Toolbar />
-      <Grid container>
-        <Grid size={12}>
-          <List>
-            {navigationItems.map((item) => (
-              <Link
-                to={item.path}
-                key={item.path}
-                style={{ textDecoration: "none", color: "black" }}
+  // Grouped navigation items
+  const groupedNavigationItems = [
+    {
+      title: "Mục sản phẩm",
+      icon: <Inventory />,
+      items: [
+        {
+          path: "/admin/productsManagement",
+          title: "Sản phẩm",
+          icon: <Checkroom />,
+        },
+        {
+          path: "/admin/productVariantsManagement",
+          title: "Biến thể sản phẩm",
+          icon: <Tune />,
+        },
+        {
+          path: "/admin/productImagesManagement",
+          title: "Hình ảnh sản phẩm",
+          icon: <Image />,
+        },
+        {
+          path: "/admin/categoriesManagement",
+          title: "Danh mục",
+          icon: <Category />,
+        },
+        {
+          path: "/admin/colorsManagement",
+          title: "Màu sắc",
+          icon: <Palette />,
+        },
+        {
+          path: "/admin/sizesManagement",
+          title: "Kích thước",
+          icon: <Height />,
+        },
+      ],
+    },
+    {
+      title: "Mục địa chỉ",
+      icon: <LocationOn />,
+      items: [
+        {
+          path: "/admin/provincesManagement",
+          title: "Tỉnh / thành phố",
+          icon: <Place />,
+        },
+        {
+          path: "/admin/districtsManagement",
+          title: "Quận / huyện",
+          icon: <Place />,
+        },
+        {
+          path: "/admin/wardsManagement",
+          title: "Phường / xã",
+          icon: <Place />,
+        },
+        { path: "/admin/addressManagement", title: "Địa chỉ", icon: <Place /> },
+      ],
+    },
+  ];
+
+  // Check if current path is in a group
+  const isPathInGroup = (groupItems) => {
+    return groupItems.some((item) => item.path === location.pathname);
+  };
+
+  // Navigation content component
+  const NavigationContent = ({ isMobile = false }) => (
+    <Box sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
+      {/* Header */}
+      <Box
+        sx={{
+          p: 2,
+          borderBottom: "1px solid #e0e0e0",
+          backgroundColor: "#f8f9fa",
+        }}
+      >
+        <Typography variant="h6" sx={{ fontWeight: 600, color: "#1976d2" }}>
+          Admin Dashboard
+        </Typography>
+      </Box>
+
+      {/* Navigation */}
+      <Box sx={{ flexGrow: 1, overflowY: "auto", pb: "120px" }}>
+        <List sx={{ pt: 1 }}>
+          {/* Single items */}
+          {singleNavigationItems.map((item) => (
+            <Link
+              to={item.path}
+              key={item.path}
+              style={{ textDecoration: "none", color: "inherit" }}
+              onClick={() => isMobile && setMobileOpen(false)}
+            >
+              <ListItem
+                sx={{
+                  mx: 1,
+                  mb: 0.5,
+                  borderRadius: 1,
+                  "&:hover": {
+                    backgroundColor: "#f5f5f5",
+                  },
+                  backgroundColor:
+                    location.pathname === item.path ? "#e3f2fd" : "transparent",
+                  border:
+                    location.pathname === item.path
+                      ? "1px solid #1976d2"
+                      : "1px solid transparent",
+                }}
               >
-                <ListItem
+                <ListItemIcon
                   sx={{
-                    "&:hover": {
-                      backgroundColor: "#f5f5f5",
-                    },
-                    backgroundColor:
-                      location.pathname === item.path
-                        ? "#f0f0f0"
-                        : "transparent",
+                    color:
+                      location.pathname === item.path ? "#1976d2" : "inherit",
                   }}
                 >
-                  <ListItemIcon>{item.icon}</ListItemIcon>
-                  <ListItemText primary={item.title} />
-                </ListItem>
-              </Link>
-            ))}
-          </List>
-        </Grid>
-        <Grid size={12}>
-          <List
-            sx={{
-              backgroundColor: "#f5f5f5",
-              width: "100%",
-              p: "12px 10px",
-              position: "relative",
-              bottom: 0,
-              left: 0,
-            }}
-          >
-            <ListItem sx={{ p: 0 }}>
-              <ListItemAvatar sx={{ m: 0 }}>
-                <StyledBadge
-                  overlap="circular"
-                  anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-                  variant="dot"
-                >
-                  <Avatar alt={myInfo.name} src={myInfo.avatarUrl} />
-                </StyledBadge>
-              </ListItemAvatar>
-              <ListItemText
-                primary={myInfo.name}
-                secondary={
-                  <Typography variant="body2">{myInfo.email}</Typography>
-                }
-              />
+                  {item.icon}
+                </ListItemIcon>
+                <ListItemText
+                  primary={item.title}
+                  primaryTypographyProps={{
+                    fontWeight: location.pathname === item.path ? 600 : 400,
+                    color:
+                      location.pathname === item.path ? "#1976d2" : "inherit",
+                  }}
+                />
+              </ListItem>
+            </Link>
+          ))}
 
-              <IconButton onClick={handleMenuOpen}>
-                <MoreVert color="action" />
-              </IconButton>
+          {/* Divider */}
+          <Divider sx={{ my: 1 }} />
 
-              <Menu
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={handleMenuClose}
-                onClick={handleMenuClose}
-                slotProps={{
-                  paper: {
-                    elevation: 0,
-                    sx: {
-                      overflow: "visible",
-                      filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
-                      ml: 5,
-                      "&::before": {
-                        content: '""',
-                        display: "block",
-                        position: "absolute",
-                        top: 26,
-                        left: -4,
-                        width: 10,
-                        height: 10,
-                        bgcolor: "background.paper",
-                        transform: "translateY(-50%) rotate(45deg)",
-                        zIndex: 0,
-                      },
-                    },
+          {/* Grouped items */}
+          {groupedNavigationItems.map((group) => (
+            <Accordion
+              key={group.title}
+              defaultExpanded={isPathInGroup(group.items)}
+              sx={{
+                boxShadow: "none",
+                "&:before": { display: "none" },
+                "&.Mui-expanded": { margin: 0 },
+              }}
+            >
+              <AccordionSummary
+                expandIcon={<ExpandMore />}
+                sx={{
+                  mx: 1,
+                  borderRadius: 1,
+                  "&:hover": {
+                    backgroundColor: "#f5f5f5",
                   },
                 }}
               >
-                <MenuItem onClick={handleLogout}>
-                  <Logout color="action" sx={{ mr: 1 }} />
-                  Đăng xuất
-                </MenuItem>
-              </Menu>
-            </ListItem>
-          </List>
-        </Grid>
-      </Grid>
-    </Fragment>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                  <Box
+                    sx={{
+                      color: isPathInGroup(group.items) ? "#1976d2" : "inherit",
+                    }}
+                  >
+                    {group.icon}
+                  </Box>
+                  <Typography
+                    sx={{
+                      fontWeight: isPathInGroup(group.items) ? 600 : 400,
+                      color: isPathInGroup(group.items) ? "#1976d2" : "inherit",
+                    }}
+                  >
+                    {group.title}
+                  </Typography>
+                </Box>
+              </AccordionSummary>
+              <AccordionDetails sx={{ p: 0 }}>
+                <List sx={{ pt: 0 }}>
+                  {group.items.map((item) => (
+                    <Link
+                      to={item.path}
+                      key={item.path}
+                      style={{ textDecoration: "none", color: "inherit" }}
+                      onClick={() => isMobile && setMobileOpen(false)}
+                    >
+                      <ListItem
+                        sx={{
+                          mx: 1,
+                          mb: 0.5,
+                          borderRadius: 1,
+                          pl: 4,
+                          "&:hover": {
+                            backgroundColor: "#f5f5f5",
+                          },
+                          backgroundColor:
+                            location.pathname === item.path
+                              ? "#e3f2fd"
+                              : "transparent",
+                          border:
+                            location.pathname === item.path
+                              ? "1px solid #1976d2"
+                              : "1px solid transparent",
+                        }}
+                      >
+                        <ListItemIcon
+                          sx={{
+                            color:
+                              location.pathname === item.path
+                                ? "#1976d2"
+                                : "inherit",
+                            minWidth: 32,
+                          }}
+                        >
+                          {item.icon}
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={item.title}
+                          primaryTypographyProps={{
+                            fontWeight:
+                              location.pathname === item.path ? 600 : 400,
+                            color:
+                              location.pathname === item.path
+                                ? "#1976d2"
+                                : "inherit",
+                          }}
+                        />
+                      </ListItem>
+                    </Link>
+                  ))}
+                </List>
+              </AccordionDetails>
+            </Accordion>
+          ))}
+        </List>
+      </Box>
+
+      {/* User info */}
+      <UserInfo isMobile={isMobile} drawerWidth={drawerWidth} />
+    </Box>
   );
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        backgroundColor: "var(--color-bg)",
-        height: "100vh",
-      }}
-    >
+    <Fragment>
+      {/* TODO: Mobile AppBar */}
       <AppBar
         position="fixed"
         sx={{
+          display: { xs: "block", sm: "block", md: "none" },
           zIndex: (theme) => theme.zIndex.drawer + 1,
         }}
       >
@@ -324,62 +321,67 @@ const DashboardLayoutWrapper = ({ children }) => {
             aria-label="open drawer"
             edge="start"
             onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { sm: "none" } }}
+            sx={{ mr: 2 }}
           >
             <Menu />
           </IconButton>
-          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
+          <Typography variant="h6" noWrap sx={{ flexGrow: 1 }}>
             Admin Dashboard
           </Typography>
         </Toolbar>
       </AppBar>
+
+      {/* TODO: Desktop Sidebar */}
       <Box
-        component="nav"
-        sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
+        sx={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: drawerWidth,
+          height: "100vh",
+          backgroundColor: "#fff",
+          borderRight: "1px solid #e0e0e0",
+          // zIndex: 1100,
+          display: { xs: "none", md: "block" },
+        }}
       >
-        <Drawer
-          variant="temporary"
-          open={mobileOpen}
-          onClose={handleDrawerToggle}
-          ModalProps={{
-            keepMounted: true,
-          }}
-          sx={{
-            display: { xs: "block", sm: "none" },
-            "& .MuiDrawer-paper": {
-              boxSizing: "border-box",
-              width: drawerWidth,
-            },
-          }}
-        >
-          {drawer}
-        </Drawer>
-        <Drawer
-          variant="permanent"
-          sx={{
-            display: { xs: "none", sm: "block" },
-            "& .MuiDrawer-paper": {
-              boxSizing: "border-box",
-              width: drawerWidth,
-            },
-          }}
-          open
-        >
-          {drawer}
-        </Drawer>
+        <NavigationContent isMobile={false} />
       </Box>
+
+      {/* TODO: Mobile Drawer */}
+      <Drawer
+        variant="temporary"
+        open={mobileOpen}
+        onClose={handleDrawerToggle}
+        ModalProps={{
+          keepMounted: true,
+        }}
+        sx={{
+          display: { xs: "block", md: "none" },
+          "& .MuiDrawer-paper": {
+            boxSizing: "border-box",
+            width: drawerWidth,
+            position: "relative",
+          },
+        }}
+      >
+        <NavigationContent isMobile={true} />
+      </Drawer>
+
+      {/* TODO: Main Content */}
       <Box
         component="main"
         sx={{
           flexGrow: 1,
-          p: 3,
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
+          ml: { xs: 0, md: `${drawerWidth}px` },
+          mt: { xs: "64px", md: 0 },
+          minHeight: "100vh",
+          backgroundColor: "#f8f9fa",
         }}
       >
-        <Toolbar />
-        {children}
+        <Box sx={{ p: 4 }}>{children}</Box>
       </Box>
-    </Box>
+    </Fragment>
   );
 };
 
