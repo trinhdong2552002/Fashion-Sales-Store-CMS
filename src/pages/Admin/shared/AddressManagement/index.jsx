@@ -186,20 +186,18 @@ const AddressManagement = () => {
 
   return (
     <DashboardLayoutWrapper>
-      <Typography variant="h5" gutterBottom>
-        Quản lý Địa chỉ
-      </Typography>
+      <Typography variant="h5">Quản lý Địa chỉ</Typography>
 
       <Button
         variant="outlined"
         onClick={handleRefresh}
         startIcon={<Refresh />}
-        sx={{ mb: 2 }}
+        sx={{ mb: 3, mt: 3 }}
       >
         Làm mới
       </Button>
 
-      <Box height={500} width={"100%"}>
+      <Box height={600}>
         <DataGrid
           sx={{
             boxShadow: 2,

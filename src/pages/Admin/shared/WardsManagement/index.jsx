@@ -126,15 +126,13 @@ const WardsManagement = () => {
 
   return (
     <DashboardLayoutWrapper>
-      <Typography variant="h5" gutterBottom>
-        Quản lý Phường / xã
-      </Typography>
+      <Typography variant="h5">Quản lý Phường / xã</Typography>
 
       <Box
         display="flex"
         alignItems="center"
         justifyContent="space-between"
-        sx={{ mb: 2 }}
+        sx={{ mb: 3, mt: 3 }}
       >
         <Button
           variant="outlined"
@@ -166,7 +164,7 @@ const WardsManagement = () => {
         </FormControl>
       </Box>
 
-      <Box height={500} width="100%">
+      <Box height={600}>
         <DataGrid
           sx={{
             boxShadow: 2,

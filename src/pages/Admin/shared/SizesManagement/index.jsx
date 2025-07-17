@@ -67,12 +67,10 @@ const SizesManagement = () => {
 
   return (
     <DashboardLayoutWrapper>
-      <Typography variant="h5" gutterBottom>
-        Quản lý Kích thước
-      </Typography>
+      <Typography variant="h5">Quản lý Kích thước</Typography>
 
       <Button
-        sx={{ mb: 2 }}
+        sx={{ mb: 3, mt: 3 }}
         variant="outlined"
         onClick={handleRefresh}
         startIcon={<Refresh />}
@@ -80,7 +78,7 @@ const SizesManagement = () => {
         Làm mới
       </Button>
 
-      <Box height={500} width={"100%"}>
+      <Box height={600}>
         <DataGrid
           sx={{
             boxShadow: 2,

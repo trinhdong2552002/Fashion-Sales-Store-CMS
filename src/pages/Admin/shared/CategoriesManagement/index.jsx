@@ -254,12 +254,12 @@ const CategoriesManagement = () => {
 
   return (
     <DashboardLayoutWrapper>
-      <Typography variant="h5" gutterBottom>
+      <Typography variant="h5">
         Quản lý Danh mục
       </Typography>
 
       <Box
-        sx={{ mb: 2 }}
+        sx={{ mt: 3, mb: 3 }}
         display={"flex"}
         justifyContent={"space-between"}
         alignItems={"center"}
@@ -285,7 +285,7 @@ const CategoriesManagement = () => {
         </Button>
       </Box>
 
-      <Box height={500} width={"100%"}>
+      <Box height={600}>
         <DataGrid
           sx={{
             boxShadow: 2,

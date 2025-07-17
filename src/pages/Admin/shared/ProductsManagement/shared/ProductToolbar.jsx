@@ -10,6 +10,7 @@ import {
   Button,
 } from "@mui/material";
 import { Search, Refresh, Add } from "@mui/icons-material";
+import { Fragment } from "react";
 
 const ProductToolbar = ({
   selectedStatus,
@@ -19,11 +20,10 @@ const ProductToolbar = ({
   onRefresh,
 }) => {
   return (
-    <>
+    <Fragment>
       <Grid
         container
-        spacing={2}
-        sx={{ mb: 4 }}
+        spacing={4}
         display="flex"
         direction="row"
         justifyContent="flex-start"
@@ -67,7 +67,7 @@ const ProductToolbar = ({
         container
         justifyContent="space-between"
         alignItems="center"
-        sx={{ mb: 2 }}
+        sx={{ mb: 3, mt: 3 }}
       >
         <Button
           variant="outlined"
@@ -87,7 +87,7 @@ const ProductToolbar = ({
           Thêm sản phẩm
         </Button>
       </Grid>
-    </>
+    </Fragment>
   );
 };
 

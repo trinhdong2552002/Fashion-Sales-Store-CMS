@@ -188,10 +188,13 @@ const ProductImagesManagement = () => {
 
   return (
     <DashboardLayoutWrapper>
-      <Typography variant="h5" gutterBottom>
-        Quản lý Hình ảnh Sản phẩm
-      </Typography>
-      <Box sx={{ mb: 2, display: "flex", gap: 2 }}>
+      <Typography variant="h5">Quản lý Hình ảnh Sản phẩm</Typography>
+      <Box
+        sx={{ mb: 3, mt: 3 }}
+        display={"flex"}
+        justifyContent={"space-between"}
+        alignItems={"center"}
+      >
         <Button
           variant="outlined"
           color="primary"
@@ -218,7 +221,7 @@ const ProductImagesManagement = () => {
         </Button>
       </Box>
 
-      <Box height={500} width={"100%"}>
+      <Box height={600}>
         <DataGrid
           sx={{
             boxShadow: 2,

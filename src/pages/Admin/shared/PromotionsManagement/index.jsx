@@ -272,12 +272,10 @@ const PromotionsManagement = () => {
 
   return (
     <DashboardLayoutWrapper>
-      <Typography variant="h5" gutterBottom>
-        Quản lý Khuyến mãi
-      </Typography>
+      <Typography variant="h5">Quản lý Khuyến mãi</Typography>
 
       <Box
-        sx={{ mb: 2 }}
+        sx={{ mb: 3, mt: 3 }}
         display={"flex"}
         justifyContent={"space-between"}
         alignItems={"center"}
@@ -307,7 +305,7 @@ const PromotionsManagement = () => {
         </Button>
       </Box>
 
-      <Box height={500} width={"100%"}>
+      <Box height={600}>
         <DataGrid
           sx={{
             boxShadow: 2,

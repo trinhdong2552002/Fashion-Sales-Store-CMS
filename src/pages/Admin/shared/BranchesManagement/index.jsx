@@ -261,238 +261,230 @@ const BranchesManagement = () => {
 
   return (
     <DashboardLayoutWrapper>
-      <Box sx={{ m: "0 10px" }}>
-        <Typography variant="h5" gutterBottom>
-          Quản lý Chi nhánh
-        </Typography>
-        <Box
-          sx={{ mb: 2 }}
-          display={"flex"}
-          justifyContent={"space-between"}
-          alignItems={"center"}
+      <Typography variant="h5">Quản lý Chi nhánh</Typography>
+      <Box
+        sx={{ mt: 3, mb: 3 }}
+        display={"flex"}
+        justifyContent={"space-between"}
+        alignItems={"center"}
+      >
+        <Button
+          variant="outlined"
+          onClick={handleRefresh}
+          startIcon={<Refresh />}
         >
-          <Button
-            variant="outlined"
-            onClick={handleRefresh}
-            startIcon={<Refresh />}
-          >
-            Làm mới
-          </Button>
+          Làm mới
+        </Button>
 
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => {
+            setOpenAddDialog(true);
+            setNewBranches({
+              name: "",
+              location: "",
+              phone: "",
+            });
+          }}
+          startIcon={<Add />}
+        >
+          Thêm chi nhánh
+        </Button>
+      </Box>
+
+      <Box height={600}>
+        <DataGrid
+          sx={{
+            boxShadow: 2,
+            border: 2,
+            borderColor: "primary.light",
+            "& .MuiDataGrid-cell:hover": {
+              color: "primary.main",
+            },
+          }}
+          columns={columnsBranches}
+          rows={dataRowBranches}
+          loading={isLoadingBranches}
+          disableSelectionOnClick
+          slotProps={{
+            loadingOverlay: {
+              variant: "linear-progress",
+              noRowsVariant: "linear-progress",
+            },
+          }}
+          localeText={{
+            noRowsLabel: "Không có dữ liệu",
+          }}
+          pagination
+          paginationMode="server"
+          sortingMode="server"
+          filterMode="server"
+          rowCount={totalRows}
+          paginationModel={paginationModel}
+          onPaginationModelChange={setPaginationModel}
+          pageSizeOptions={[10, 15, 20]}
+        />
+      </Box>
+
+      {/* TODO: Dialog add branches */}
+      <Dialog fullWidth open={openAddDialog}>
+        <DialogTitle>Thêm chi nhánh</DialogTitle>
+        <DialogContent>
+          <TextField
+            label="Tên chi nhánh"
+            value={newBranches.name}
+            onChange={(e) =>
+              setNewBranches({ ...newBranches, name: e.target.value })
+            }
+            fullWidth
+            sx={{ mt: 2 }}
+            error={submitted && !newBranches.name}
+            helperText={
+              submitted && !newBranches.name ? "name không được để trống" : ""
+            }
+          />
+          <TextField
+            label="Địa điểm"
+            value={newBranches.location}
+            onChange={(e) =>
+              setNewBranches({ ...newBranches, location: e.target.value })
+            }
+            fullWidth
+            sx={{ mt: 2 }}
+            error={submitted && !newBranches.location}
+            helperText={
+              submitted && !newBranches.location
+                ? "location không được để trống"
+                : ""
+            }
+          />
+          <TextField
+            label="Số điện thoại"
+            value={newBranches.phone}
+            onChange={(e) =>
+              setNewBranches({ ...newBranches, phone: e.target.value })
+            }
+            fullWidth
+            sx={{ mt: 2 }}
+            error={submitted && !newBranches.phone}
+            helperText={
+              submitted && !newBranches.phone ? "phone không được để trống" : ""
+            }
+          />
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button color="error" onClick={() => setOpenAddDialog(false)}>
+            Hủy
+          </Button>
           <Button
             variant="contained"
             color="primary"
-            onClick={() => {
-              setOpenAddDialog(true);
-              setNewBranches({
-                name: "",
-                location: "",
-                phone: "",
-              });
-            }}
-            startIcon={<Add />}
+            onClick={() => handleAddBranches(newBranches)}
           >
-            Thêm chi nhánh
+            Thêm
           </Button>
-        </Box>
+        </DialogActions>
+      </Dialog>
 
-        <Box height={500} width={"100%"}>
-          <DataGrid
-            sx={{
-              boxShadow: 2,
-              border: 2,
-              borderColor: "primary.light",
-              "& .MuiDataGrid-cell:hover": {
-                color: "primary.main",
-              },
-            }}
-            columns={columnsBranches}
-            rows={dataRowBranches}
-            loading={isLoadingBranches}
-            disableSelectionOnClick
-            slotProps={{
-              loadingOverlay: {
-                variant: "linear-progress",
-                noRowsVariant: "linear-progress",
-              },
-            }}
-            localeText={{
-              noRowsLabel: "Không có dữ liệu",
-            }}
-            pagination
-            paginationMode="server"
-            sortingMode="server"
-            filterMode="server"
-            rowCount={totalRows}
-            paginationModel={paginationModel}
-            onPaginationModelChange={setPaginationModel}
-            pageSizeOptions={[10, 15, 20]}
+      {/* TODO: Dialog update branches */}
+      <Dialog fullWidth open={openUpdateDialog}>
+        <DialogTitle>Cập nhật chi nhánh</DialogTitle>
+        <DialogContent>
+          <TextField
+            label="Tên chi nhánh"
+            value={newBranches.name}
+            onChange={(e) =>
+              setNewBranches({ ...newBranches, name: e.target.value })
+            }
+            fullWidth
+            sx={{ mt: 2 }}
+            error={submitted && !newBranches.name}
+            helperText={
+              submitted && !newBranches.name ? "name không được để trống" : ""
+            }
           />
-        </Box>
+          <TextField
+            label="Địa điểm"
+            value={newBranches.location}
+            onChange={(e) =>
+              setNewBranches({ ...newBranches, location: e.target.value })
+            }
+            fullWidth
+            sx={{ mt: 2 }}
+            error={submitted && !newBranches.location}
+            helperText={
+              submitted && !newBranches.location
+                ? "location không được để trống"
+                : ""
+            }
+          />
+          <TextField
+            label="Số điện thoại"
+            value={newBranches.phone}
+            onChange={(e) =>
+              setNewBranches({ ...newBranches, phone: e.target.value })
+            }
+            fullWidth
+            sx={{ mt: 2 }}
+            error={submitted && !newBranches.phone}
+            helperText={
+              submitted && !newBranches.phone ? "phone không được để trống" : ""
+            }
+          />
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button color="error" onClick={() => setOpenUpdateDialog(false)}>
+            Hủy
+          </Button>
+          <Button variant="contained" onClick={handleUpdateBranches}>
+            Cập nhật
+          </Button>
+        </DialogActions>
+      </Dialog>
 
-        {/* TODO: Dialog add branches */}
-        <Dialog fullWidth open={openAddDialog}>
-          <DialogTitle>Thêm chi nhánh</DialogTitle>
-          <DialogContent>
-            <TextField
-              label="Tên chi nhánh"
-              value={newBranches.name}
-              onChange={(e) =>
-                setNewBranches({ ...newBranches, name: e.target.value })
-              }
-              fullWidth
-              sx={{ mt: 2 }}
-              error={submitted && !newBranches.name}
-              helperText={
-                submitted && !newBranches.name ? "name không được để trống" : ""
-              }
-            />
-            <TextField
-              label="Địa điểm"
-              value={newBranches.location}
-              onChange={(e) =>
-                setNewBranches({ ...newBranches, location: e.target.value })
-              }
-              fullWidth
-              sx={{ mt: 2 }}
-              error={submitted && !newBranches.location}
-              helperText={
-                submitted && !newBranches.location
-                  ? "location không được để trống"
-                  : ""
-              }
-            />
-            <TextField
-              label="Số điện thoại"
-              value={newBranches.phone}
-              onChange={(e) =>
-                setNewBranches({ ...newBranches, phone: e.target.value })
-              }
-              fullWidth
-              sx={{ mt: 2 }}
-              error={submitted && !newBranches.phone}
-              helperText={
-                submitted && !newBranches.phone
-                  ? "phone không được để trống"
-                  : ""
-              }
-            />
-          </DialogContent>
-          <DialogActions sx={{ p: 2 }}>
-            <Button color="error" onClick={() => setOpenAddDialog(false)}>
-              Hủy
-            </Button>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => handleAddBranches(newBranches)}
-            >
-              Thêm
-            </Button>
-          </DialogActions>
-        </Dialog>
+      <Dialog open={openDeleteDialog}>
+        <DialogTitle>Xác nhận xóa ?</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-dialog-description">
+            Bạn có chắc chắn muốn xoá chi nhánh này không ?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDeleteDialog} color="error">
+            Hủy
+          </Button>
+          <Button
+            onClick={handleDeleteBranches}
+            color="error"
+            variant="contained"
+            autoFocus
+          >
+            Xóa
+          </Button>
+        </DialogActions>
+      </Dialog>
 
-        {/* TODO: Dialog update branches */}
-        <Dialog fullWidth open={openUpdateDialog}>
-          <DialogTitle>Cập nhật chi nhánh</DialogTitle>
-          <DialogContent>
-            <TextField
-              label="Tên chi nhánh"
-              value={newBranches.name}
-              onChange={(e) =>
-                setNewBranches({ ...newBranches, name: e.target.value })
-              }
-              fullWidth
-              sx={{ mt: 2 }}
-              error={submitted && !newBranches.name}
-              helperText={
-                submitted && !newBranches.name ? "name không được để trống" : ""
-              }
-            />
-            <TextField
-              label="Địa điểm"
-              value={newBranches.location}
-              onChange={(e) =>
-                setNewBranches({ ...newBranches, location: e.target.value })
-              }
-              fullWidth
-              sx={{ mt: 2 }}
-              error={submitted && !newBranches.location}
-              helperText={
-                submitted && !newBranches.location
-                  ? "location không được để trống"
-                  : ""
-              }
-            />
-            <TextField
-              label="Số điện thoại"
-              value={newBranches.phone}
-              onChange={(e) =>
-                setNewBranches({ ...newBranches, phone: e.target.value })
-              }
-              fullWidth
-              sx={{ mt: 2 }}
-              error={submitted && !newBranches.phone}
-              helperText={
-                submitted && !newBranches.phone
-                  ? "phone không được để trống"
-                  : ""
-              }
-            />
-          </DialogContent>
-          <DialogActions sx={{ p: 2 }}>
-            <Button color="error" onClick={() => setOpenUpdateDialog(false)}>
-              Hủy
-            </Button>
-            <Button variant="contained" onClick={handleUpdateBranches}>
-              Cập nhật
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        <Dialog open={openDeleteDialog}>
-          <DialogTitle>Xác nhận xóa ?</DialogTitle>
-          <DialogContent>
-            <DialogContentText id="delete-dialog-description">
-              Bạn có chắc chắn muốn xoá chi nhánh này không ?
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseDeleteDialog} color="error">
-              Hủy
-            </Button>
-            <Button
-              onClick={handleDeleteBranches}
-              color="error"
-              variant="contained"
-              autoFocus
-            >
-              Xóa
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        <Dialog open={openRestoreDialog}>
-          <DialogTitle>Xác nhận khôi phục ?</DialogTitle>
-          <DialogContent>
-            <Typography>
-              Bạn có chắc chắn muốn khôi phục chi nhánh này không ?
-            </Typography>
-          </DialogContent>
-          <DialogActions>
-            <Button color="error" onClick={handleCloseRestoreDialog}>
-              Huỷ
-            </Button>
-            <Button
-              variant="contained"
-              color="success"
-              onClick={handleRestoreBranches}
-            >
-              Khôi phục
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </Box>
+      <Dialog open={openRestoreDialog}>
+        <DialogTitle>Xác nhận khôi phục ?</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Bạn có chắc chắn muốn khôi phục chi nhánh này không ?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button color="error" onClick={handleCloseRestoreDialog}>
+            Huỷ
+          </Button>
+          <Button
+            variant="contained"
+            color="success"
+            onClick={handleRestoreBranches}
+          >
+            Khôi phục
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <SnackbarComponent snackbar={snackbar} onClose={handleCloseSnackbar} />
     </DashboardLayoutWrapper>

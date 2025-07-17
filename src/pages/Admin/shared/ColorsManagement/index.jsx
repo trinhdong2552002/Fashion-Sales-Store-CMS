@@ -11,7 +11,6 @@ import {
   IconButton,
   Box,
 } from "@mui/material";
-import RefreshIcon from "@mui/icons-material/Refresh";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import {
   useListColorsQuery,
@@ -19,7 +18,7 @@ import {
   useUpdateColorMutation,
   useDeleteColorMutation,
 } from "@/services/api/color";
-import { Add, Delete, Edit } from "@mui/icons-material";
+import { Add, Delete, Edit, Refresh } from "@mui/icons-material";
 import ErrorDisplay from "@/components/ErrorDisplay";
 import SnackbarComponent from "@/components/Snackbar";
 
@@ -208,18 +207,20 @@ const ColorsManagement = () => {
 
   return (
     <DashboardLayoutWrapper>
-      <Typography variant="h5" gutterBottom>
-        Quản lý Màu sắc
-      </Typography>
+      <Typography variant="h5">Quản lý Màu sắc</Typography>
 
       <Box
-        sx={{ mb: 2 }}
+        sx={{ mb: 3, mt: 3 }}
         display={"flex"}
         justifyContent={"space-between"}
         alignItems={"center"}
       >
-        <Button variant="outlined" color="primary" onClick={handleRefresh}>
-          <RefreshIcon sx={{ mr: 1 }} />
+        <Button
+          variant="outlined"
+          color="primary"
+          onClick={handleRefresh}
+          startIcon={<Refresh />}
+        >
           Làm mới
         </Button>
 
@@ -237,7 +238,7 @@ const ColorsManagement = () => {
         </Button>
       </Box>
 
-      <Box height={500} width={"100%"}>
+      <Box height={600}>
         <DataGrid
           sx={{
             boxShadow: 2,

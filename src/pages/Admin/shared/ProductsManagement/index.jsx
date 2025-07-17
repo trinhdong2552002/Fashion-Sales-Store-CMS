@@ -266,14 +266,12 @@ const ProductsManagement = () => {
 
   return (
     <DashboardLayoutWrapper>
-      <Typography variant="h5" gutterBottom>
-        Quản lý Sản phẩm
-      </Typography>
+      <Typography variant="h5">Quản lý Sản phẩm</Typography>
 
       <ProductToolbar
         selectedStatus={selectedStatus}
         onStatusChange={setSelectedStatus}
-        // onSearch={setSearchText} // nếu có
+        // onSearch={setSearchText}
         onAddProduct={() => {
           setOpenAddDialog(true);
           setNewProduct({ name: "", description: "", categoryId: "" });
@@ -281,7 +279,7 @@ const ProductsManagement = () => {
         onRefresh={handleRefresh}
       />
 
-      <Box height={500} width={"100%"}>
+      <Box height={600}>
         <ProductTable
           rows={dataRowProducts}
           totalRows={totalRows}

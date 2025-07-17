@@ -306,18 +306,19 @@ const UsersManagement = () => {
 
   return (
     <DashboardLayoutWrapper>
-      <Typography variant="h5" gutterBottom>
-        Quản lý Người dùng
-      </Typography>
+      <Typography variant="h5">Quản lý Người dùng</Typography>
 
       <Box
-        sx={{ mb: 2 }}
+        sx={{ mt: 3, mb: 3 }}
         display={"flex"}
         justifyContent={"space-between"}
         alignItems={"center"}
       >
-        <Button variant="outlined" onClick={handleRefresh}>
-          <Refresh sx={{ mr: 1 }} />
+        <Button
+          variant="outlined"
+          onClick={handleRefresh}
+          startIcon={<Refresh />}
+        >
           Làm mới
         </Button>
 
@@ -358,7 +359,7 @@ const UsersManagement = () => {
           </FormControl>
         </Grid>
       </Grid>
-      <Box height={500} width={"100%"}>
+      <Box height={600}>
         <DataGrid
           sx={{
             boxShadow: 2,
