@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { Typography, Box } from "@mui/material";
+import { Fragment, useMemo, useState } from "react";
+import { Typography, IconButton } from "@mui/material";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import {
   useListProductsForAdminQuery,
@@ -10,13 +10,14 @@ import {
 } from "@/services/api/product";
 import { useListCategoriesForAdminQuery } from "@/services/api/categories";
 import ErrorDisplay from "@/components/ErrorDisplay";
-import ProductTable from "./shared/ProductTable";
 import ProductToolbar from "./shared/ProductToolbar";
 import ProductDialogAdd from "./shared/ProductDialogAdd";
 import ProductDialogEdit from "./shared/ProductDialogEdit";
 import ProductDialogDelete from "./shared/ProductDialogDelete";
 import ProductDialogRestore from "./shared/ProductDialogRestore";
 import SnackbarComponent from "@/components/Snackbar";
+import TableData from "@/components/TableData";
+import { Delete, Edit, Restore } from "@mui/icons-material";
 
 const ProductsManagement = () => {
   const [openAddDialog, setOpenAddDialog] = useState(false);
@@ -99,6 +100,39 @@ const ProductsManagement = () => {
 
   const dataRowProducts = filteredProducts;
   const totalRows = filteredProducts.length;
+
+  const columnsProduct = [
+    { field: "id", headerName: "ID", width: 100 },
+    { field: "name", headerName: "Tên sản phẩm", width: 400 },
+    { field: "description", headerName: "Mô tả", width: 500 },
+    { field: "isAvailable", headerName: "Có sẵn", width: 150 },
+    { field: "averageRating", headerName: "Đánh giá trung bình", width: 150 },
+    { field: "soldQuantity", headerName: "Số lượng đã bán", width: 150 },
+    { field: "totalReviews", headerName: "Tổng đánh giá", width: 150 },
+    { field: "createdAt", headerName: "Ngày tạo", width: 150 },
+    { field: "status", headerName: "Trạng thái", width: 150 },
+    {
+      field: "actions",
+      headerName: "Hành động",
+      width: 200,
+      renderCell: (params) => (
+        <Fragment>
+          <IconButton onClick={() => handleEditProduct(params.row.id)}>
+            <Edit color="primary" />
+          </IconButton>
+          {params.row.status === "INACTIVE" ? (
+            <IconButton onClick={() => handleOpenRestoreDialog(params.row.id)}>
+              <Restore color="success" />
+            </IconButton>
+          ) : (
+            <IconButton onClick={() => handleOpenDeleteDialog(params.row.id)}>
+              <Delete color="error" />
+            </IconButton>
+          )}
+        </Fragment>
+      ),
+    },
+  ];
 
   const handleCloseSnackbar = () => {
     setSnackbar({ ...snackbar, open: false });
@@ -302,18 +336,15 @@ const ProductsManagement = () => {
         onRefresh={handleRefresh}
       />
 
-      <Box height={600}>
-        <ProductTable
-          rows={dataRowProducts}
-          totalRows={totalRows}
-          loading={isLoadingProducts}
-          paginationModel={paginationModel}
-          onPaginationModelChange={setPaginationModel}
-          onEdit={handleEditProduct}
-          onDelete={handleOpenDeleteDialog}
-          onRestore={handleOpenRestoreDialog}
-        />
-      </Box>
+      <TableData
+        rows={dataRowProducts}
+        totalRows={totalRows}
+        columnsData={columnsProduct}
+        loading={isLoadingProducts}
+        paginationModel={paginationModel}
+        onPaginationModelChange={setPaginationModel}
+        pageSizeOptions={[10, 15, 20]}
+      />
 
       <ProductDialogAdd
         open={openAddDialog}
