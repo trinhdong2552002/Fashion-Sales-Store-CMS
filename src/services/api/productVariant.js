@@ -4,22 +4,11 @@ import { TAG_KEYS } from "/src/constants/tagKeys.js";
 
 export const productVariantApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    listProductVariants: builder.query({
-      query: ({
-        productId,
-        pageNo = 1,
-        pageSize = 10,
-        colorId,
-        sizeId,
-      } = {}) => {
-        if (!productId)
-          throw new Error("Vui lòng chọn một sản phẩm để xem biến thể.");
-        return {
-          url: `/v1/admin/products/${productId}/product-variants`,
-          method: "GET",
-          params: { pageNo, pageSize, colorId, sizeId },
-        };
-      },
+    listAllProduct_VariantsByProduct: builder.query({
+      query: ({ page, size, id }) => ({
+        url: `/v1/admin/products/${id}/product-variants/admin`,
+        params: { page, size },
+      }),
       providesTags: [TAG_KEYS.PRODUCT_VARIANT],
     }),
     updateProductVariant: builder.mutation({
@@ -112,7 +101,7 @@ export const productVariantApi = baseApi.injectEndpoints({
 });
 
 export const {
-  useListProductVariantsQuery,
+  useListAllProduct_VariantsByProductQuery,
   useUpdateProductVariantMutation,
   useDeleteProductVariantMutation,
   useRestoreProductVariantMutation,

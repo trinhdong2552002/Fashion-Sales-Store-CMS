@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import {
   Typography,
@@ -12,47 +12,41 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  CircularProgress,
-  Alert,
-  Snackbar,
   Grid,
   Box,
+  IconButton,
 } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
-import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
-import { useListProductsForAdminQuery } from "@/services/api/product"; // Thay đổi import
+import SnackbarComponent from "@/components/Snackbar";
 import {
-  useListProductVariantsQuery,
+  useListAllProduct_VariantsByProductQuery,
   useUpdateProductVariantMutation,
   useDeleteProductVariantMutation,
   useRestoreProductVariantMutation,
 } from "@/services/api/productVariant";
-import { useGetMyInfoQuery } from "@/services/api/auth";
-import {
-  setProductVariants,
-  setLoading as setProductVariantLoading,
-  setError as setProductVariantError,
-  selectProductVariants,
-} from "@/store/redux/productVariant/reducer";
+import { skipToken } from "@reduxjs/toolkit/query";
+import { useListProductsForAdminQuery } from "@/services/api/product";
+import { Delete, Edit, Restore } from "@mui/icons-material";
+import TableData from "@/components/TableData";
 
 const ProductVariantsManagement = () => {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const productVariants = useSelector(selectProductVariants);
+  const [previewImage, setPreviewImage] = useState(null);
 
-  const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(5);
   const [selectedProductId, setSelectedProductId] = useState("");
   const [editProductVariant, setEditProductVariant] = useState(null);
+
+  const [productVariantToDelete, setProductVariantToDelete] = useState(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [paginationModel, setPaginationModel] = useState({
+    page: 0,
+    pageSize: 10,
+  });
   const [newProductVariant, setNewProductVariant] = useState({
     price: "",
     quantity: "",
   });
-  const [productVariantToDelete, setProductVariantToDelete] = useState(null);
-  const [openDialog, setOpenDialog] = useState(false);
-  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -60,102 +54,74 @@ const ProductVariantsManagement = () => {
   });
 
   const {
-    data: userInfo,
-    error: userError,
-    isLoading: userLoading,
-  } = useGetMyInfoQuery();
+    data: dataProducts,
+    isLoading: isLoadingProduct,
+    isError: isErrorProduct,
+    refetch: refetchProducts
+  } = useListProductsForAdminQuery({
+    refetchOnMountOrArgChange: true,
+    refetchOnFocus: true,
+  });
+  console.log(dataProducts);
+
   const {
-    data: productsData,
-    isLoading: isFetchingProducts,
-    error: fetchProductsError,
-  } = useListProductsForAdminQuery();
-  const {
-    data: productVariantsData,
-    isLoading: isFetchingProductVariants,
-    error: fetchProductVariantsError,
+    data: dataProductVariants,
+    isLoading: isLoadingProductVariant,
+    isError: isErrorProductVariant,
     refetch: refetchProductVariants,
-  } = useListProductVariantsQuery(
+  } = useListAllProduct_VariantsByProductQuery(
     selectedProductId
-      ? { productId: selectedProductId, pageNo: page + 1, pageSize }
-      : { skip: true }
+      ? {
+          id: selectedProductId,
+          page: paginationModel.page,
+          size: paginationModel.pageSize,
+        }
+      : skipToken,
+    {
+      refetchOnMountOrArgChange: true,
+      refetchOnFocus: true,
+    }
   );
 
   const [updateProductVariant] = useUpdateProductVariantMutation();
   const [deleteProductVariant] = useDeleteProductVariantMutation();
   const [restoreProductVariant] = useRestoreProductVariantMutation();
 
-  useEffect(() => {
-    dispatch(setProductVariantLoading(isFetchingProductVariants));
-    if (productVariantsData?.items) {
-      dispatch(setProductVariants(productVariantsData.items));
-      dispatch(setProductVariantError(null));
-    }
-  }, [productVariantsData, isFetchingProductVariants, dispatch]);
-
-  useEffect(() => {
-    if (fetchProductsError) {
-      setSnackbar({
-        open: true,
-        message:
-          "Lỗi khi tải danh sách sản phẩm: " +
-          (fetchProductsError?.data?.message || "Không xác định"),
-        severity: "error",
-      });
-    }
-  }, [fetchProductsError]);
-
-  // Check user permissions
-  useEffect(() => {
-    if (userError) {
-      setSnackbar({
-        open: true,
-        message:
-          "Bạn cần đăng nhập để truy cập trang này: " +
-          (userError?.data?.message || "Lỗi không xác định"),
-        severity: "error",
-      });
-      setTimeout(() => navigate("/"), 2000);
-    } else if (userInfo) {
-      const roles = userInfo.result?.roles || [];
-      const hasAdminRole = roles.some(
-        (role) => role.name?.toUpperCase() === "ADMIN"
-      );
-      if (!hasAdminRole) {
-        setSnackbar({
-          open: true,
-          message: `Bạn không có quyền truy cập trang này. Vai trò: ${
-            roles.map((r) => r.name).join(", ") || "Không xác định"
-          }`,
-          severity: "error",
-        });
-        setTimeout(() => navigate("/"), 2000);
-      }
-    }
-  }, [userInfo, userError, userLoading, navigate]);
-
-  const columns = [
-    { field: "id", headerName: "ID", width: 90 },
-    { field: "price", headerName: "Giá", width: 120 },
-    { field: "quantity", headerName: "Số lượng", width: 120 },
-    { field: "isAvailable", headerName: "Có sẵn", width: 120 },
-    { field: "status", headerName: "Trạng thái", width: 120 },
+  const columnsProductVariant = [
+    { field: "id", headerName: "ID", width: 150 },
+    { field: "price", headerName: "Giá", width: 150 },
+    { field: "quantity", headerName: "Số lượng", width: 150 },
+    { field: "isAvailable", headerName: "Có sẵn", width: 150 },
     {
-      field: "product",
-      headerName: "Sản phẩm",
-      width: 150,
-      renderCell: (params) => params.row.product?.name || "N/A",
+      field: "imageUrl",
+      headerName: "Trạng thái",
+      width: 200,
+      renderCell: (params) => (
+        <img
+          src={params.row.imageUrl}
+          alt={params.row.fileName}
+          style={{
+            width: 50,
+            height: 50,
+            objectFit: "cover",
+            cursor: "pointer",
+          }}
+          onClick={() => setPreviewImage(params.value)}
+        />
+      ),
     },
+    { field: "status", headerName: "Trạng thái", width: 150 },
     {
       field: "size",
       headerName: "Kích thước",
       width: 120,
-      renderCell: (params) => params.row.size?.name || "N/A",
+      renderCell: (params) => params.row?.size?.name || "-",
     },
     {
       field: "color",
-      headerName: "Màu",
+      headerName: "Màu sắc",
       width: 120,
-      renderCell: (params) => params.row.color?.name || "N/A",
+      renderCell: (params) => params.row?.color?.name || "-",
     },
     {
       field: "actions",
@@ -163,27 +129,27 @@ const ProductVariantsManagement = () => {
       width: 150,
       renderCell: (params) => (
         <>
-          <Button
+          <IconButton
             variant="text"
             color="primary"
             onClick={() => handleEditVariant(params.row)}
           >
-            Sửa
-          </Button>
+            <Edit />
+          </IconButton>
           {params.row?.status === "INACTIVE" ? (
-            <Button
+            <IconButton
               onClick={() => handleRestoreVariant(params.row.id)}
               color="success"
             >
-              Khôi phục
-            </Button>
+              <Restore />
+            </IconButton>
           ) : (
-            <Button
+            <IconButton
               onClick={() => handleOpenDeleteDialog(params.row.id)}
               color="error"
             >
-              Xóa
-            </Button>
+              <Delete />
+            </IconButton>
           )}
         </>
       ),
@@ -301,20 +267,21 @@ const ProductVariantsManagement = () => {
   };
 
   const handleRefresh = () => {
-    setPage(0); // Reset to first page on refresh
-    refetchProductVariants();
+    refetchProducts();
     setSnackbar({
       open: true,
-      message: "Danh sách sản phẩm biến thể đã được làm mới!",
+      message: "Danh sách biến thể sản phẩm đã được làm mới!",
       severity: "info",
     });
   };
 
-  if (userLoading || isFetchingProducts) {
-    return <CircularProgress />;
-  }
+  // Lọc sản phẩm trạng thái theo ACTIVE
+  const activeProducts = dataProducts?.result?.items.filter(
+    (product) => product.status === "ACTIVE"
+  );
 
-  const totalRows = productVariantsData?.totalItems || 0;
+  const dataRowProductVariants = dataProductVariants?.result?.items || [];
+  const totalRows = dataProductVariants?.result?.totalItems || 0;
 
   return (
     <DashboardLayoutWrapper>
@@ -337,7 +304,7 @@ const ProductVariantsManagement = () => {
           label="Chọn sản phẩm"
         >
           <MenuItem value="">-- Chọn sản phẩm --</MenuItem>
-          {productsData?.items?.map((product) => (
+          {activeProducts?.map((product) => (
             <MenuItem key={product.id} value={product.id}>
               {product.name}
             </MenuItem>
@@ -345,48 +312,16 @@ const ProductVariantsManagement = () => {
         </Select>
       </FormControl>
 
-      {!selectedProductId ? (
-        <Alert severity="info">
-          Vui lòng chọn một sản phẩm để xem biến thể.
-        </Alert>
-      ) : fetchProductVariantsError ? (
-        <Alert severity="error">
-          {fetchProductVariantsError?.data?.message || "Lỗi khi tải biến thể"}
-        </Alert>
-      ) : productVariants.length === 0 ? (
-        <Alert severity="info">Sản phẩm này không có biến thể nào.</Alert>
-      ) : (
-        <Box height={500} width={"100%"}>
-          <DataGrid
-            sx={{
-              boxShadow: 2,
-              border: 2,
-              borderColor: "primary.light",
-              "& .MuiDataGrid-cell:hover": {
-                color: "primary.main",
-              },
-            }}
-            rows={productVariants}
-            columns={columns}
-            rowCount={totalRows}
-            paginationMode="server"
-            page={page}
-            onPageChange={(newPage) => setPage(newPage)}
-            pageSize={pageSize}
-            onPageSizeChange={(newPageSize) => {
-              setPageSize(newPageSize);
-              setPage(0);
-            }}
-            rowsPerPageOptions={[5, 10, 20]}
-            getRowId={(row) => row.id}
-            disableSelectionOnClick
-            aria-label="Bảng biến thể sản phẩm"
-            localeText={{
-              noRowsLabel: "Không có dữ liệu",
-            }}
-          />
-        </Box>
-      )}
+      <TableData
+        rows={dataRowProductVariants}
+        totalRows={totalRows}
+        columnsData={columnsProductVariant}
+        loading={isLoadingProduct || isLoadingProductVariant}
+        paginationModel={paginationModel}
+        onPaginationModelChange={setPaginationModel}
+        pageSizeOptions={[10, 15, 20]}
+        P
+      />
 
       <Dialog
         open={openDialog}
@@ -463,19 +398,24 @@ const ProductVariantsManagement = () => {
         </DialogActions>
       </Dialog>
 
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={handleCloseSnackbar}
+      <Dialog
+        aria-hidden="false"
+        open={previewImage}
+        onClose={() => setPreviewImage(null)}
+        fullWidth
       >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity={snackbar.severity}
-          sx={{ width: "100%" }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+        <DialogTitle>Xem ảnh</DialogTitle>
+        <DialogContent>
+          <Box
+            component="img"
+            src={previewImage}
+            alt="Preview"
+            sx={{ width: "100%", objectFit: "contain", borderRadius: 2 }}
+          />
+        </DialogContent>
+      </Dialog>
+
+      <SnackbarComponent snackbar={snackbar} onClose={handleCloseSnackbar} />
     </DashboardLayoutWrapper>
   );
 };
