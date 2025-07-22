@@ -21,79 +21,63 @@ export const productVariantApi = baseApi.injectEndpoints({
         },
       }),
       invalidatesTags: [TAG_KEYS.PRODUCT_VARIANT],
-      async onQueryStarted({ id }, { dispatch, queryFulfilled }) {
-        try {
-          const { data } = await queryFulfilled;
-          dispatch(
-            productVariantApi.util.updateQueryData(
-              "listProductVariants",
-              undefined,
-              (draft) => {
-                const index = draft.items.findIndex((item) => item.id === id);
-                if (index !== -1) {
-                  draft.items[index] = {
-                    ...draft.items[index],
-                    ...data.result,
-                  };
-                }
-              }
-            )
-          );
-        } catch (error) {
-          console.log("Error updating variant:", error);
-        }
-      },
     }),
     deleteProductVariant: builder.mutation({
-      query: (id) => ({
+      query: ({ id }) => ({
         url: `/v1/admin/product-variants/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: [TAG_KEYS.PRODUCT_VARIANT],
-      async onQueryStarted(id, { dispatch, queryFulfilled }) {
+      async onQueryStarted({ id }, { dispatch, queryFulfilled }) {
+        const patchResult = dispatch(
+          productVariantApi.util.updateQueryData(
+            "listAllProduct_VariantsByProduct",
+            (draft) => {
+              if (draft) {
+                const productVariant = draft.find((item) => item.id === id);
+                if (productVariant) {
+                  productVariant.status = "INACTIVE";
+                }
+                return draft;
+              }
+            }
+          )
+        );
         try {
           await queryFulfilled;
-          dispatch(
-            productVariantApi.util.updateQueryData(
-              "listProductVariants",
-              undefined,
-              (draft) => {
-                const index = draft.items.findIndex((item) => item.id === id);
-                if (index !== -1) {
-                  draft.items[index].status = "INACTIVE";
-                }
-              }
-            )
-          );
         } catch (error) {
-          console.log("Error deleting variant:", error);
+          patchResult.undo();
+          console.log("Error deleting product variant:", error);
         }
       },
     }),
 
     restoreProductVariant: builder.mutation({
-      query: (id) => ({
+      query: ({ id }) => ({
         url: `/v1/admin/product-variants/${id}/restore`,
         method: "PATCH",
       }),
       invalidatesTags: [TAG_KEYS.PRODUCT_VARIANT],
-      async onQueryStarted(id, { dispatch, queryFulfilled }) {
+      async onQueryStarted({ id }, { dispatch, queryFulfilled }) {
+        const patchResult = dispatch(
+          productVariantApi.util.updateQueryData(
+            "listAllProduct_VariantsByProduct",
+            (draft) => {
+              if (draft) {
+                const productVariant = draft.find((item) => item.id === id);
+                if (productVariant) {
+                  productVariant.status = "INACTIVE";
+                }
+                return draft;
+              }
+            }
+          )
+        );
         try {
           await queryFulfilled;
-          dispatch(
-            productVariantApi.util.updateQueryData(
-              "listProductVariants",
-              undefined,
-              (draft) => {
-                const index = draft.items.findIndex((item) => item.id === id);
-                if (index !== -1) {
-                  draft.items[index].status = "ACTIVE";
-                }
-              }
-            )
-          );
         } catch (error) {
-          console.log("Error restoring variant:", error);
+          patchResult.undo();
+          console.log("Error restore product variant:", error);
         }
       },
     }),
