@@ -22,6 +22,7 @@ import { useState } from "react";
 import { AddPhotoAlternate, Delete, Refresh } from "@mui/icons-material";
 import ErrorDisplay from "@/components/ErrorDisplay";
 import SnackbarComponent from "@/components/Snackbar";
+import { PreviewImage } from "@/components/PreviewImage";
 
 const ProductImagesManagement = () => {
   const [previewImage, setPreviewImage] = useState(null);
@@ -281,23 +282,10 @@ const ProductImagesManagement = () => {
         </DialogActions>
       </Dialog>
 
-      <Dialog
-        aria-hidden="false"
-        open={previewImage}
-        onClose={() => setPreviewImage(null)}
-        fullWidth
-      >
-        <DialogTitle>Xem ảnh</DialogTitle>
-        <DialogContent>
-          <Box
-            component="img"
-            src={previewImage}
-            alt="Preview"
-            sx={{ width: "100%", objectFit: "contain", borderRadius: 2 }}
-          />
-        </DialogContent>
-      </Dialog>
-
+      <PreviewImage
+        previewImage={previewImage}
+        setPreviewImage={setPreviewImage}
+      />
       <SnackbarComponent snackbar={snackbar} onClose={handleCloseSnackbar} />
     </DashboardLayoutWrapper>
   );
