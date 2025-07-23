@@ -22,6 +22,10 @@ import {
 import { Add, Delete, Edit, Refresh, Restore } from "@mui/icons-material";
 import ErrorDisplay from "@/components/ErrorDisplay";
 import SnackbarComponent from "@/components/Snackbar";
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import dayjs from "dayjs";
 
 const PromotionsManagement = () => {
   const [openAddDialog, setOpenAddDialog] = useState(false);
@@ -43,8 +47,8 @@ const PromotionsManagement = () => {
     code: "",
     description: "",
     discountPercent: "",
-    startDate: "",
-    endDate: "",
+    startDate: dayjs(),
+    endDate: dayjs(),
   });
 
   const {
@@ -74,8 +78,16 @@ const PromotionsManagement = () => {
     { field: "code", headerName: "Mã khuyến mãi", width: 200 },
     { field: "description", headerName: "Mô tả", width: 200 },
     { field: "discountPercent", headerName: "Giảm giá (%)", width: 150 },
-    { field: "startDate", headerName: "Ngày bắt đầu", width: 200 },
-    { field: "endDate", headerName: "Ngày kết thúc", width: 200 },
+    {
+      field: "startDate",
+      headerName: "Ngày bắt đầu",
+      width: 200,
+    },
+    {
+      field: "endDate",
+      headerName: "Ngày kết thúc",
+      width: 200,
+    },
     { field: "status", headerName: "Trạng thái", width: 200 },
     { field: "createdBy", headerName: "Người tạo", width: 200 },
     { field: "createdAt", headerName: "Ngày tạo", width: 200 },
@@ -142,6 +154,8 @@ const PromotionsManagement = () => {
       await addPromotion({
         ...newPromotion,
         discountPercent: parseFloat(newPromotion.discountPercent),
+        startDate: newPromotion.startDate.format("YYYY-MM-DD"),
+        endDate: newPromotion.endDate.format("YYYY-MM-DD"),
       }).unwrap();
       setSnackbar({
         open: true,
@@ -152,8 +166,8 @@ const PromotionsManagement = () => {
         code: "",
         description: "",
         discountPercent: "",
-        startDate: "",
-        endDate: "",
+        startDate: dayjs(),
+        endDate: dayjs(),
       });
       setOpenAddDialog(false);
       setSubmitted(false);
@@ -176,8 +190,8 @@ const PromotionsManagement = () => {
         code: promotionToEdit.code,
         description: promotionToEdit.description || "",
         discountPercent: promotionToEdit.discountPercent,
-        startDate: promotionToEdit.startDate,
-        endDate: promotionToEdit.endDate,
+        startDate: dayjs(promotionToEdit.startDate),
+        endDate: dayjs(promotionToEdit.endDate),
       });
       setSelectedPromotionId(id);
       setOpenEditDialog(true);
@@ -191,6 +205,9 @@ const PromotionsManagement = () => {
       await updatePromotion({
         id: selectedPromotionId,
         ...newPromotion,
+        discountPercent: parseFloat(newPromotion.discountPercent),
+        startDate: newPromotion.startDate.format("YYYY-MM-DD"),
+        endDate: newPromotion.endDate.format("YYYY-MM-DD"),
       }).unwrap();
       setSnackbar({
         open: true,
@@ -201,8 +218,8 @@ const PromotionsManagement = () => {
         code: "",
         description: "",
         discountPercent: "",
-        startDate: "",
-        endDate: "",
+        startDate: dayjs(),
+        endDate: dayjs(),
       });
       setSelectedPromotionId(null);
       setOpenEditDialog(false);
@@ -245,7 +262,7 @@ const PromotionsManagement = () => {
       setSnackbar({
         open: true,
         severity: "success",
-        message: "Khôi phục danh mục thành công !",
+        message: "Khôi phục khuyến mãi thành công!",
       });
       setOpenRestoreDialog(false);
       setSelectedPromotionId(null);
@@ -296,8 +313,8 @@ const PromotionsManagement = () => {
               code: "",
               description: "",
               discountPercent: "",
-              startDate: "",
-              endDate: "",
+              startDate: dayjs(),
+              endDate: dayjs(),
             });
           }}
         >
@@ -339,8 +356,8 @@ const PromotionsManagement = () => {
         />
       </Box>
 
-      {/* TODO: Dialog add promotion */}
-      <Dialog open={openAddDialog}>
+      {/* Add promotion dialog */}
+      <Dialog open={openAddDialog} maxWidth="md" fullWidth>
         <DialogTitle>Thêm khuyến mãi</DialogTitle>
         <DialogContent>
           <TextField
@@ -353,7 +370,7 @@ const PromotionsManagement = () => {
             sx={{ mt: 2 }}
             error={submitted && !newPromotion.code}
             helperText={
-              submitted && !newPromotion.code ? "code không được để trống" : ""
+              submitted && !newPromotion.code ? "Mã khuyến mãi không được để trống" : ""
             }
           />
           <TextField
@@ -367,7 +384,7 @@ const PromotionsManagement = () => {
             error={submitted && !newPromotion.description}
             helperText={
               submitted && !newPromotion.description
-                ? "description không được để trống"
+                ? "Mô tả không được để trống"
                 : ""
             }
           />
@@ -386,44 +403,42 @@ const PromotionsManagement = () => {
             error={submitted && !newPromotion.discountPercent}
             helperText={
               submitted && !newPromotion.discountPercent
-                ? "discountPercent không được để trống"
+                ? "Phần trăm giảm giá không được để trống"
                 : ""
             }
           />
-          <TextField
-            label="Ngày bắt đầu"
-            type="date"
-            value={newPromotion.startDate}
-            onChange={(e) =>
-              setNewPromotion({ ...newPromotion, startDate: e.target.value })
-            }
-            fullWidth
-            sx={{ mt: 2 }}
-            InputLabelProps={{ shrink: true }}
-            error={submitted && !newPromotion.startDate}
-            helperText={
-              submitted && !newPromotion.startDate
-                ? "startDate không được để trống"
-                : ""
-            }
-          />
-          <TextField
-            label="Ngày kết thúc"
-            type="date"
-            value={newPromotion.endDate}
-            onChange={(e) =>
-              setNewPromotion({ ...newPromotion, endDate: e.target.value })
-            }
-            fullWidth
-            sx={{ mt: 2 }}
-            InputLabelProps={{ shrink: true }}
-            error={submitted && !newPromotion.endDate}
-            helperText={
-              submitted && !newPromotion.endDate
-                ? "endDate không được để trống"
-                : ""
-            }
-          />
+
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <Box
+              display={"flex"}
+              gap={2}
+              alignItems={"center"}
+              justifyContent={"space-between"}
+              sx={{ mt: 2 }}
+            >
+              <DatePicker
+                label="Ngày bắt đầu"
+                value={newPromotion.startDate}
+                onChange={(value) =>
+                  setNewPromotion({
+                    ...newPromotion,
+                    startDate: value || dayjs(),
+                  })
+                }
+                sx={{ flex: 1 }}
+              />
+
+              <DatePicker
+                label="Ngày kết thúc"
+                value={newPromotion.endDate}
+                onChange={(value) =>
+                  setNewPromotion({ ...newPromotion, endDate: value || dayjs() })
+                }
+                sx={{ flex: 1 }}
+                minDate={newPromotion.startDate}
+              />
+            </Box>
+          </LocalizationProvider>
         </DialogContent>
         <DialogActions>
           <Button color="error" onClick={() => setOpenAddDialog(false)}>
@@ -435,8 +450,8 @@ const PromotionsManagement = () => {
         </DialogActions>
       </Dialog>
 
-      {/* TODO: Dialog edit promotion */}
-      <Dialog open={openEditDialog}>
+      {/* Edit promotion dialog */}
+      <Dialog open={openEditDialog} maxWidth="md" fullWidth>
         <DialogTitle>Cập nhật khuyến mãi</DialogTitle>
         <DialogContent>
           <TextField
@@ -449,7 +464,7 @@ const PromotionsManagement = () => {
             sx={{ mt: 2 }}
             error={submitted && !newPromotion.code}
             helperText={
-              submitted && !newPromotion.code ? "code không được để trống" : ""
+              submitted && !newPromotion.code ? "Mã khuyến mãi không được để trống" : ""
             }
           />
           <TextField
@@ -463,7 +478,7 @@ const PromotionsManagement = () => {
             error={submitted && !newPromotion.description}
             helperText={
               submitted && !newPromotion.description
-                ? "description không được để trống"
+                ? "Mô tả không được để trống"
                 : ""
             }
           />
@@ -482,44 +497,42 @@ const PromotionsManagement = () => {
             error={submitted && !newPromotion.discountPercent}
             helperText={
               submitted && !newPromotion.discountPercent
-                ? "discountPercent không được để trống"
+                ? "Phần trăm giảm giá không được để trống"
                 : ""
             }
           />
-          <TextField
-            label="Ngày bắt đầu"
-            type="date"
-            value={newPromotion.startDate}
-            onChange={(e) =>
-              setNewPromotion({ ...newPromotion, startDate: e.target.value })
-            }
-            fullWidth
-            sx={{ mt: 2 }}
-            InputLabelProps={{ shrink: true }}
-            error={submitted && !newPromotion.startDate}
-            helperText={
-              submitted && !newPromotion.startDate
-                ? "startDate không được để trống"
-                : ""
-            }
-          />
-          <TextField
-            label="Ngày kết thúc"
-            type="date"
-            value={newPromotion.endDate}
-            onChange={(e) =>
-              setNewPromotion({ ...newPromotion, endDate: e.target.value })
-            }
-            fullWidth
-            sx={{ mt: 2 }}
-            InputLabelProps={{ shrink: true }}
-            error={submitted && !newPromotion.endDate}
-            helperText={
-              submitted && !newPromotion.endDate
-                ? "endDate không được để trống"
-                : ""
-            }
-          />
+          
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <Box
+              display={"flex"}
+              gap={2}
+              alignItems={"center"}
+              justifyContent={"space-between"}
+              sx={{ mt: 2 }}
+            >
+              <DatePicker
+                label="Ngày bắt đầu"
+                value={newPromotion.startDate}
+                onChange={(value) =>
+                  setNewPromotion({
+                    ...newPromotion,
+                    startDate: value || dayjs(),
+                  })
+                }
+                sx={{ flex: 1 }}
+              />
+
+              <DatePicker
+                label="Ngày kết thúc"
+                value={newPromotion.endDate}
+                onChange={(value) =>
+                  setNewPromotion({ ...newPromotion, endDate: value || dayjs() })
+                }
+                sx={{ flex: 1 }}
+                minDate={newPromotion.startDate}
+              />
+            </Box>
+          </LocalizationProvider>
         </DialogContent>
         <DialogActions>
           <Button color="error" onClick={() => setOpenEditDialog(false)}>
