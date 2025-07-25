@@ -16,8 +16,8 @@ const ProductDialogRestore = ({ open, onClose, onConfirm }) => {
           Bạn có chắc chắn muốn khôi phục sản phẩm này không ?
         </Typography>
       </DialogContent>
-      <DialogActions>
-        <Button color="error" onClick={onClose}>
+      <DialogActions sx={{p: 3}}>
+        <Button color="error" variant="outlined" onClick={onClose}>
           Hủy
         </Button>
         <Button variant="contained" color="success" onClick={onConfirm}>

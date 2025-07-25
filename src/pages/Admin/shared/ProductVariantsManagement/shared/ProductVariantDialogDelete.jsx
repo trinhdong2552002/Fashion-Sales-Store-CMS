@@ -18,7 +18,7 @@ export const ProductVariantDialogDelete = ({
       <DialogContent>
         <Typography>Bạn có chắc chắn muốn xóa sản phẩm này không?</Typography>
       </DialogContent>
-      <DialogActions>
+      <DialogActions sx={{p: 3}}>
         <Button variant="outlined" color="error" onClick={closeDeleteDialog}>
           Hủy
         </Button>

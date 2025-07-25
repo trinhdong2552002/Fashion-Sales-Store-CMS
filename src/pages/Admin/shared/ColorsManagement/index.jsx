@@ -288,8 +288,12 @@ const ColorsManagement = () => {
             }
           />
         </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-          <Button color="error" onClick={() => setOpenAddDialog(false)}>
+        <DialogActions sx={{ p: 3 }}>
+          <Button
+            color="error"
+            variant="outlined"
+            onClick={() => setOpenAddDialog(false)}
+          >
             Hủy
           </Button>
           <Button onClick={() => handleAddColor(newColor)} variant="contained">
@@ -314,8 +318,12 @@ const ColorsManagement = () => {
             }
           />
         </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-          <Button color="error" onClick={() => setOpenUpdateDialog(false)}>
+        <DialogActions sx={{ p: 3 }}>
+          <Button
+            color="error"
+            variant="outlined"
+            onClick={() => setOpenUpdateDialog(false)}
+          >
             Hủy
           </Button>
           <Button variant="contained" onClick={handleUpdateColor}>
@@ -330,8 +338,12 @@ const ColorsManagement = () => {
         <DialogContent>
           <Typography>Bạn có chắc chắn muốn xóa màu sắc này không ?</Typography>
         </DialogContent>
-        <DialogActions>
-          <Button color="error" onClick={handleCloseDeleteDialog}>
+        <DialogActions sx={{ p: 3 }}>
+          <Button
+            color="error"
+            variant="outlined"
+            onClick={handleCloseDeleteDialog}
+          >
             Hủy
           </Button>
           <Button color="error" variant="contained" onClick={handleDeleteColor}>

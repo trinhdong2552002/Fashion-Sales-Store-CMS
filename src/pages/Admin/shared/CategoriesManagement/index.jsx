@@ -10,6 +10,7 @@ import {
   DialogContent,
   TextField,
   DialogActions,
+  Chip,
 } from "@mui/material";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import {
@@ -22,6 +23,7 @@ import {
 import { Add, Delete, Edit, Refresh, Restore } from "@mui/icons-material";
 import ErrorDisplay from "@/components/ErrorDisplay";
 import SnackbarComponent from "@/components/Snackbar";
+import { statusDisplay } from "/src/constants/badgeStatus";
 
 const CategoriesManagement = () => {
   const [openAddDialog, setOpenAddDialog] = useState(false);
@@ -71,11 +73,68 @@ const CategoriesManagement = () => {
     { field: "id", headerName: "ID", width: 100 },
     { field: "name", headerName: "Tên danh mục", width: 200 },
     { field: "description", headerName: "Mô tả danh mục", width: 200 },
-    { field: "status", headerName: "Trạng thái", width: 200 },
-    { field: "createdBy", headerName: "Người tạo", width: 200 },
-    { field: "updatedBy", headerName: "Người cập nhật", width: 200 },
-    { field: "createdAt", headerName: "Ngày tạo", width: 200 },
-    { field: "updatedAt", headerName: "Ngày cập nhật", width: 200 },
+    {
+      field: "status",
+      headerName: "Trạng thái",
+      width: 200,
+      renderCell: (params) => {
+        const display = statusDisplay[params.value] || {
+          label: "Không rõ",
+          color: "default",
+        };
+        return (
+          <Chip
+            label={display.label}
+            color={display.color}
+            variant={display.variant}
+          />
+        );
+      },
+    },
+    {
+      field: "createdBy",
+      headerName: "Người tạo",
+      width: 200,
+      renderCell: (params) => (
+        <div style={{ color: params.value ? "normal" : "#888" }}>
+          {params.row.createdBy || "--"}
+        </div>
+      ),
+    },
+    {
+      field: "updatedBy",
+      headerName: "Người cập nhật",
+      width: 200,
+      renderCell: (params) => (
+        <div style={{ color: params.value ? "normal" : "#888" }}>
+          {params.row.updatedBy || "--"}
+        </div>
+      ),
+    },
+    {
+      field: "createdAt",
+      headerName: "Ngày tạo",
+      width: 200,
+      renderCell: (params) => (
+        <div style={{ color: params.value ? "normal" : "#888" }}>
+          {params.row.createdAt
+            ? new Date(params.row.createdAt).toLocaleDateString("vi-VN")
+            : "N/A"}
+        </div>
+      ),
+    },
+    {
+      field: "updatedAt",
+      headerName: "Ngày cập nhật",
+      width: 200,
+      renderCell: (params) => (
+        <div style={{ color: params.value ? "normal" : "#888" }}>
+          {params.row.updatedAt
+            ? new Date(params.row.updatedAt).toLocaleDateString("vi-VN")
+            : "--"}
+        </div>
+      ),
+    },
     {
       field: "action",
       headerName: "Hành động",
@@ -254,9 +313,7 @@ const CategoriesManagement = () => {
 
   return (
     <DashboardLayoutWrapper>
-      <Typography variant="h5">
-        Quản lý Danh mục
-      </Typography>
+      <Typography variant="h5">Quản lý Danh mục</Typography>
 
       <Box
         sx={{ mt: 3, mb: 3 }}
@@ -349,8 +406,12 @@ const CategoriesManagement = () => {
             sx={{ mt: 3 }}
           />
         </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-          <Button color="error" onClick={() => setOpenAddDialog(false)}>
+        <DialogActions sx={{ p: 3 }}>
+          <Button
+            color="error"
+            variant="outlined"
+            onClick={() => setOpenAddDialog(false)}
+          >
             Huỷ
           </Button>
           <Button
@@ -393,8 +454,12 @@ const CategoriesManagement = () => {
             sx={{ mt: 3 }}
           />
         </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-          <Button color="error" onClick={() => setOpenEditDialog(false)}>
+        <DialogActions sx={{ p: 3 }}>
+          <Button
+            color="error"
+            variant="outlined"
+            onClick={() => setOpenEditDialog(false)}
+          >
             Huỷ
           </Button>
           <Button
@@ -414,8 +479,12 @@ const CategoriesManagement = () => {
             Bạn có chắc chắn muốn xoá danh mục này không ?
           </Typography>
         </DialogContent>
-        <DialogActions>
-          <Button color="error" onClick={handleCloseDeleteDialog}>
+        <DialogActions sx={{ p: 3 }}>
+          <Button
+            color="error"
+            variant="outlined"
+            onClick={handleCloseDeleteDialog}
+          >
             Huỷ
           </Button>
           <Button
@@ -435,8 +504,12 @@ const CategoriesManagement = () => {
             Bạn có chắc chắn muốn khôi phục danh mục này không ?
           </Typography>
         </DialogContent>
-        <DialogActions>
-          <Button color="error" onClick={handleCloseRestoreDialog}>
+        <DialogActions sx={{ p: 3 }}>
+          <Button
+            color="error"
+            variant="outlined"
+            onClick={handleCloseRestoreDialog}
+          >
             Huỷ
           </Button>
           <Button

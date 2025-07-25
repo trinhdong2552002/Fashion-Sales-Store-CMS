@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Typography, IconButton } from "@mui/material";
+import { Typography, IconButton, Chip } from "@mui/material";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import SnackbarComponent from "@/components/Snackbar";
 import ErrorDisplay from "@/components/ErrorDisplay";
@@ -18,6 +18,7 @@ import { ProductVariantDialogDelete } from "./shared/ProductVariantDialogDelete"
 import { ProductVariantDialogRestore } from "./shared/ProductVariantDialogRestore";
 import { ProductVariantDialogEdit } from "./shared/ProductVariantDialogEdit";
 import { PreviewImage } from "@/components/PreviewImage";
+import { statusDisplay } from "/src/constants/badgeStatus";
 
 const ProductVariantsManagement = () => {
   const [previewImage, setPreviewImage] = useState(null);
@@ -90,7 +91,7 @@ const ProductVariantsManagement = () => {
     { field: "isAvailable", headerName: "Có sẵn", width: 150 },
     {
       field: "imageUrl",
-      headerName: "Trạng thái",
+      headerName: "Hình ảnh sản phẩm",
       width: 200,
       renderCell: (params) => (
         <img
@@ -106,7 +107,24 @@ const ProductVariantsManagement = () => {
         />
       ),
     },
-    { field: "status", headerName: "Trạng thái", width: 150 },
+    {
+      field: "status",
+      headerName: "Trạng thái",
+      width: 200,
+      renderCell: (params) => {
+        const display = statusDisplay[params.value] || {
+          label: "Không rõ",
+          color: "default",
+        };
+        return (
+          <Chip
+            label={display.label}
+            color={display.color}
+            variant={display.variant}
+          />
+        );
+      },
+    },
     {
       field: "size",
       headerName: "Kích thước",

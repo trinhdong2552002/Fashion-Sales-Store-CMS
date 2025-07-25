@@ -84,7 +84,7 @@ const UsersManagement = () => {
     {
       field: "status",
       headerName: "Trạng thái",
-      width: 150,
+      width: 200,
       renderCell: (params) => {
         const display = statusDisplay[params.value] || {
           label: "Không rõ",
@@ -457,8 +457,12 @@ const UsersManagement = () => {
             </Select>
           </FormControl>
         </DialogContent>
-        <DialogActions>
-          <Button color="error" onClick={() => setOpenDialog(false)}>
+        <DialogActions sx={{ p: 3 }}>
+          <Button
+            color="error"
+            variant="outlined"
+            onClick={() => setOpenDialog(false)}
+          >
             Hủy
           </Button>
           <Button variant="contained" onClick={handleAddUser}>
@@ -474,8 +478,12 @@ const UsersManagement = () => {
             Bạn có chắc chắn muốn xóa người dùng này không ?
           </Typography>
         </DialogContent>
-        <DialogActions>
-          <Button color="error" onClick={handleCloseDeleteDialog}>
+        <DialogActions sx={{ p: 3 }}>
+          <Button
+            color="error"
+            variant="outlined"
+            onClick={handleCloseDeleteDialog}
+          >
             Hủy
           </Button>
           <Button onClick={handleDeleteUser} color="error" variant="contained">
@@ -491,8 +499,12 @@ const UsersManagement = () => {
             Bạn có chắc chắn muốn khôi phục người dùng này không?
           </Typography>
         </DialogContent>
-        <DialogActions>
-          <Button color="error" onClick={handleCloseRestoreDialog}>
+        <DialogActions sx={{ p: 3 }}>
+          <Button
+            color="error"
+            variant="outlined"
+            onClick={handleCloseRestoreDialog}
+          >
             Hủy
           </Button>
           <Button

@@ -1,5 +1,5 @@
 import { Fragment, useMemo, useState } from "react";
-import { Typography, IconButton } from "@mui/material";
+import { Typography, IconButton, Chip } from "@mui/material";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import {
   useListProductsForAdminQuery,
@@ -18,6 +18,7 @@ import ProductDialogRestore from "./shared/ProductDialogRestore";
 import SnackbarComponent from "@/components/Snackbar";
 import TableData from "@/components/TableData";
 import { Delete, Edit, Restore } from "@mui/icons-material";
+import { statusDisplay } from "/src/constants/badgeStatus";
 
 const ProductsManagement = () => {
   const [openAddDialog, setOpenAddDialog] = useState(false);
@@ -104,13 +105,50 @@ const ProductsManagement = () => {
   const columnsProduct = [
     { field: "id", headerName: "ID", width: 100 },
     { field: "name", headerName: "Tên sản phẩm", width: 400 },
-    { field: "description", headerName: "Mô tả", width: 500 },
+    {
+      field: "description",
+      headerName: "Mô tả",
+      width: 500,
+      renderCell: (params) => (
+        <div style={{ color: params.value ? "normal" : "#888" }}>
+          {params.row.description || "--"}
+        </div>
+      ),
+    },
     { field: "isAvailable", headerName: "Có sẵn", width: 150 },
     { field: "averageRating", headerName: "Đánh giá trung bình", width: 150 },
     { field: "soldQuantity", headerName: "Số lượng đã bán", width: 150 },
     { field: "totalReviews", headerName: "Tổng đánh giá", width: 150 },
-    { field: "createdAt", headerName: "Ngày tạo", width: 150 },
-    { field: "status", headerName: "Trạng thái", width: 150 },
+    {
+      field: "createdAt",
+      headerName: "Ngày tạo",
+      width: 200,
+      renderCell: (params) => (
+        <div style={{ color: params.value ? "normal" : "#888" }}>
+          {params.row.createdAt
+            ? new Date(params.row.createdAt).toLocaleDateString("vi-VN")
+            : "N/A"}
+        </div>
+      ),
+    },
+    {
+      field: "status",
+      headerName: "Trạng thái",
+      width: 200,
+      renderCell: (params) => {
+        const display = statusDisplay[params.value] || {
+          label: "Không rõ",
+          color: "default",
+        };
+        return (
+          <Chip
+            label={display.label}
+            color={display.color}
+            variant={display.variant}
+          />
+        );
+      },
+    },
     {
       field: "actions",
       headerName: "Hành động",

@@ -11,6 +11,7 @@ import {
   DialogActions,
   Box,
   IconButton,
+  Chip,
 } from "@mui/material";
 
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
@@ -24,6 +25,7 @@ import {
 import { Add, Delete, Edit, Refresh, Restore } from "@mui/icons-material";
 import ErrorDisplay from "@/components/ErrorDisplay";
 import SnackbarComponent from "@/components/Snackbar";
+import { statusDisplay } from "/src/constants/badgeStatus";
 
 const BranchesManagement = () => {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
@@ -67,15 +69,72 @@ const BranchesManagement = () => {
   const totalRows = dataBranches?.result?.totalItems || 0;
 
   const columnsBranches = [
-    { field: "id", headerName: "ID", width: 100 },
-    { field: "name", headerName: "Tên chi nhánh", width: 150 },
+    { field: "id", headerName: "ID", width: 150 },
+    { field: "name", headerName: "Tên chi nhánh", width: 200 },
     { field: "location", headerName: "Địa điểm", width: 200 },
-    { field: "phone", headerName: "Số điện thoại", width: 150 },
-    { field: "status", headerName: "Trạng thái", width: 120 },
-    { field: "createdBy", headerName: "Người tạo", width: 200 },
-    { field: "updatedBy", headerName: "Người cập nhật", width: 200 },
-    { field: "createdAt", headerName: "Ngày tạo", width: 120 },
-    { field: "updatedAt", headerName: "Ngày cập nhật", width: 120 },
+    { field: "phone", headerName: "Số điện thoại", width: 200 },
+    {
+      field: "status",
+      headerName: "Trạng thái",
+      width: 200,
+      renderCell: (params) => {
+        const display = statusDisplay[params.value] || {
+          label: "Không rõ",
+          color: "default",
+        };
+        return (
+          <Chip
+            label={display.label}
+            color={display.color}
+            variant={display.variant}
+          />
+        );
+      },
+    },
+    {
+      field: "createdBy",
+      headerName: "Người tạo",
+      width: 200,
+      renderCell: (params) => (
+        <div style={{ color: params.value ? "normal" : "#888" }}>
+          {params.row.createdBy || "--"}
+        </div>
+      ),
+    },
+    {
+      field: "updatedBy",
+      headerName: "Người cập nhật",
+      width: 200,
+      renderCell: (params) => (
+        <div style={{ color: params.value ? "normal" : "#888" }}>
+          {params.row.updatedBy || "--"}
+        </div>
+      ),
+    },
+    {
+      field: "createdAt",
+      headerName: "Ngày tạo",
+      width: 200,
+      renderCell: (params) => (
+        <div style={{ color: params.value ? "normal" : "#888" }}>
+          {params.row.createdAt
+            ? new Date(params.row.createdAt).toLocaleDateString("vi-VN")
+            : "N/A"}
+        </div>
+      ),
+    },
+    {
+      field: "updatedAt",
+      headerName: "Ngày cập nhật",
+      width: 200,
+      renderCell: (params) => (
+        <div style={{ color: params.value ? "normal" : "#888" }}>
+          {params.row.updatedAt
+            ? new Date(params.row.updatedAt).toLocaleDateString("vi-VN")
+            : "--"}
+        </div>
+      ),
+    },
     {
       field: "actions",
       headerName: "Hành động",
@@ -373,8 +432,8 @@ const BranchesManagement = () => {
             }
           />
         </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-          <Button color="error" onClick={() => setOpenAddDialog(false)}>
+        <DialogActions sx={{ p: 3 }}>
+          <Button color="error" variant="outlined" onClick={() => setOpenAddDialog(false)}>
             Hủy
           </Button>
           <Button
@@ -433,8 +492,12 @@ const BranchesManagement = () => {
             }
           />
         </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-          <Button color="error" onClick={() => setOpenUpdateDialog(false)}>
+        <DialogActions sx={{ p: 3 }}>
+          <Button
+            color="error"
+            variant="outlined"
+            onClick={() => setOpenUpdateDialog(false)}
+          >
             Hủy
           </Button>
           <Button variant="contained" onClick={handleUpdateBranches}>
@@ -450,8 +513,12 @@ const BranchesManagement = () => {
             Bạn có chắc chắn muốn xoá chi nhánh này không ?
           </DialogContentText>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDeleteDialog} color="error">
+        <DialogActions sx={{ p: 3 }}>
+          <Button
+            onClick={handleCloseDeleteDialog}
+            color="error"
+            variant="outlined"
+          >
             Hủy
           </Button>
           <Button
@@ -472,8 +539,12 @@ const BranchesManagement = () => {
             Bạn có chắc chắn muốn khôi phục chi nhánh này không ?
           </Typography>
         </DialogContent>
-        <DialogActions>
-          <Button color="error" onClick={handleCloseRestoreDialog}>
+        <DialogActions sx={{ p: 3 }}>
+          <Button
+            color="error"
+            variant="outlined"
+            onClick={handleCloseRestoreDialog}
+          >
             Huỷ
           </Button>
           <Button

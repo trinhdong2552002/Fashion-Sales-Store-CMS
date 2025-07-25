@@ -61,8 +61,8 @@ export const ProductVariantDialogEdit = ({
           //   }
         />
       </DialogContent>
-      <DialogActions>
-        <Button color="error" onClick={closeEditDialog}>
+      <DialogActions sx={{p: 3}}>
+        <Button color="error" variant="outlined" onClick={closeEditDialog}>
           Hủy
         </Button>
         <Button onClick={handleUpdateProductVariant} variant="contained">

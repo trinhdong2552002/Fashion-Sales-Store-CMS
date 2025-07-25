@@ -14,8 +14,8 @@ const ProductDialogDelete = ({ open, onClose, onConfirm }) => {
       <DialogContent>
         <Typography>Bạn có chắc chắn muốn xóa sản phẩm này không ?</Typography>
       </DialogContent>
-      <DialogActions>
-        <Button color="error" onClick={onClose}>
+      <DialogActions sx={{p: 3}}>
+        <Button color="error" variant="outlined" onClick={onClose}>
           Hủy
         </Button>
         <Button variant="contained" color="error" onClick={onConfirm}>

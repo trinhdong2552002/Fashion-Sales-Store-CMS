@@ -10,6 +10,7 @@ import {
   DialogActions,
   IconButton,
   Box,
+  Chip,
 } from "@mui/material";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import {
@@ -26,6 +27,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
+import { statusDisplay } from "/src/constants/badgeStatus";
 
 const PromotionsManagement = () => {
   const [openAddDialog, setOpenAddDialog] = useState(false);
@@ -76,21 +78,81 @@ const PromotionsManagement = () => {
   const columnsPromotion = [
     { field: "id", headerName: "ID", width: 150 },
     { field: "code", headerName: "Mã khuyến mãi", width: 200 },
-    { field: "description", headerName: "Mô tả", width: 200 },
+    {
+      field: "description",
+      headerName: "Mô tả",
+      width: 300,
+      renderCell: (params) => (
+        <div style={{ color: params.value ? "normal" : "#888" }}>
+          {params.row.description || "--"}
+        </div>
+      ),
+    },
     { field: "discountPercent", headerName: "Giảm giá (%)", width: 150 },
     {
       field: "startDate",
       headerName: "Ngày bắt đầu",
       width: 200,
+      renderCell: (params) => (
+        <div style={{ color: params.value ? "normal" : "#888" }}>
+          {params.row.startDate
+            ? new Date(params.row.startDate).toLocaleDateString("vi-VN")
+            : "N/A"}
+        </div>
+      ),
     },
     {
       field: "endDate",
       headerName: "Ngày kết thúc",
       width: 200,
+      renderCell: (params) => (
+        <div style={{ color: params.value ? "normal" : "#888" }}>
+          {params.row.endDate
+            ? new Date(params.row.endDate).toLocaleDateString("vi-VN")
+            : "N/A"}
+        </div>
+      ),
     },
-    { field: "status", headerName: "Trạng thái", width: 200 },
-    { field: "createdBy", headerName: "Người tạo", width: 200 },
-    { field: "createdAt", headerName: "Ngày tạo", width: 200 },
+    {
+      field: "status",
+      headerName: "Trạng thái",
+      width: 200,
+      renderCell: (params) => {
+        const display = statusDisplay[params.value] || {
+          label: "Không rõ",
+          color: "default",
+        };
+        return (
+          <Chip
+            label={display.label}
+            color={display.color}
+            variant={display.variant}
+          />
+        );
+      },
+    },
+    {
+      field: "createdBy",
+      headerName: "Người tạo",
+      width: 200,
+      renderCell: (params) => (
+        <div style={{ color: params.value ? "normal" : "#888" }}>
+          {params.row.createdBy || "--"}
+        </div>
+      ),
+    },
+    {
+      field: "createdAt",
+      headerName: "Ngày tạo",
+      width: 200,
+      renderCell: (params) => (
+        <div style={{ color: params.value ? "normal" : "#888" }}>
+          {params.row.createdAt
+            ? new Date(params.row.createdAt).toLocaleDateString("vi-VN")
+            : "N/A"}
+        </div>
+      ),
+    },
     {
       field: "actions",
       headerName: "Hành động",
@@ -370,7 +432,9 @@ const PromotionsManagement = () => {
             sx={{ mt: 2 }}
             error={submitted && !newPromotion.code}
             helperText={
-              submitted && !newPromotion.code ? "Mã khuyến mãi không được để trống" : ""
+              submitted && !newPromotion.code
+                ? "Mã khuyến mãi không được để trống"
+                : ""
             }
           />
           <TextField
@@ -432,7 +496,10 @@ const PromotionsManagement = () => {
                 label="Ngày kết thúc"
                 value={newPromotion.endDate}
                 onChange={(value) =>
-                  setNewPromotion({ ...newPromotion, endDate: value || dayjs() })
+                  setNewPromotion({
+                    ...newPromotion,
+                    endDate: value || dayjs(),
+                  })
                 }
                 sx={{ flex: 1 }}
                 minDate={newPromotion.startDate}
@@ -440,8 +507,12 @@ const PromotionsManagement = () => {
             </Box>
           </LocalizationProvider>
         </DialogContent>
-        <DialogActions>
-          <Button color="error" onClick={() => setOpenAddDialog(false)}>
+        <DialogActions sx={{ p: 3 }}>
+          <Button
+            color="error"
+            variant="outlined"
+            onClick={() => setOpenAddDialog(false)}
+          >
             Hủy
           </Button>
           <Button onClick={handleAddPromotion} variant="contained">
@@ -464,7 +535,9 @@ const PromotionsManagement = () => {
             sx={{ mt: 2 }}
             error={submitted && !newPromotion.code}
             helperText={
-              submitted && !newPromotion.code ? "Mã khuyến mãi không được để trống" : ""
+              submitted && !newPromotion.code
+                ? "Mã khuyến mãi không được để trống"
+                : ""
             }
           />
           <TextField
@@ -501,7 +574,7 @@ const PromotionsManagement = () => {
                 : ""
             }
           />
-          
+
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <Box
               display={"flex"}
@@ -526,7 +599,10 @@ const PromotionsManagement = () => {
                 label="Ngày kết thúc"
                 value={newPromotion.endDate}
                 onChange={(value) =>
-                  setNewPromotion({ ...newPromotion, endDate: value || dayjs() })
+                  setNewPromotion({
+                    ...newPromotion,
+                    endDate: value || dayjs(),
+                  })
                 }
                 sx={{ flex: 1 }}
                 minDate={newPromotion.startDate}
@@ -534,8 +610,12 @@ const PromotionsManagement = () => {
             </Box>
           </LocalizationProvider>
         </DialogContent>
-        <DialogActions>
-          <Button color="error" onClick={() => setOpenEditDialog(false)}>
+        <DialogActions sx={{ p: 3 }}>
+          <Button
+            color="error"
+            variant="outlined"
+            onClick={() => setOpenEditDialog(false)}
+          >
             Hủy
           </Button>
           <Button onClick={handleUpdatePromotion} variant="contained">
@@ -551,8 +631,12 @@ const PromotionsManagement = () => {
             Bạn có chắc chắn muốn xóa khuyến mãi này không ?
           </Typography>
         </DialogContent>
-        <DialogActions>
-          <Button color="error" onClick={handleCloseDeleteDialog}>
+        <DialogActions sx={{ p: 3 }}>
+          <Button
+            color="error"
+            variant="outlined"
+            onClick={handleCloseDeleteDialog}
+          >
             Hủy
           </Button>
           <Button
@@ -572,8 +656,12 @@ const PromotionsManagement = () => {
             Bạn có chắc chắn muốn khôi phục khuyến mãi này không ?
           </Typography>
         </DialogContent>
-        <DialogActions>
-          <Button color="error" onClick={handleCloseRestoreDialog}>
+        <DialogActions sx={{ p: 3 }}>
+          <Button
+            color="error"
+            variant="outlined"
+            onClick={handleCloseRestoreDialog}
+          >
             Hủy
           </Button>
           <Button

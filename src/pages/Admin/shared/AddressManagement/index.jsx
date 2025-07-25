@@ -9,6 +9,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Chip,
 } from "@mui/material";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import { Delete, Refresh, Restore } from "@mui/icons-material";
@@ -19,6 +20,7 @@ import {
 } from "@/services/api/address";
 import ErrorDisplay from "@/components/ErrorDisplay";
 import SnackbarComponent from "@/components/Snackbar";
+import { statusDisplay } from "/src/constants/badgeStatus";
 
 const AddressManagement = () => {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
@@ -56,28 +58,45 @@ const AddressManagement = () => {
   const totalRows = dataAddress?.result?.totalItems || 0;
 
   const columnsAddress = [
-    { field: "id", headerName: "ID", width: 100 },
+    { field: "id", headerName: "ID", width: 150 },
     { field: "streetDetail", headerName: "Địa chỉ cụ thể", width: 200 },
     {
       field: "ward",
       headerName: "Phường / Xã",
       width: 200,
-      renderCell: (params) => params.row?.ward?.name || "—",
+      renderCell: (params) => params.row?.ward?.name || "—-",
     },
     {
       field: "district",
       headerName: "Quận / Huyện",
       width: 200,
-      renderCell: (params) => params.row?.district?.name || "—",
+      renderCell: (params) => params.row?.district?.name || "—-",
     },
     {
       field: "province",
       headerName: "Tỉnh / Thành phố",
       width: 200,
-      renderCell: (params) => params.row?.province?.name || "—",
+      renderCell: (params) => params.row?.province?.name || "—-",
     },
     { field: "isDefault", headerName: "Địa chỉ mặc định", width: 200 },
-    { field: "status", headerName: "Trạng thái", width: 200 },
+    {
+      field: "status",
+      headerName: "Trạng thái",
+      width: 200,
+      renderCell: (params) => {
+        const display = statusDisplay[params.value] || {
+          label: "Không rõ",
+          color: "default",
+        };
+        return (
+          <Chip
+            label={display.label}
+            color={display.color}
+            variant={display.variant}
+          />
+        );
+      },
+    },
     {
       field: "action",
       headerName: "Hành động",
@@ -236,8 +255,12 @@ const AddressManagement = () => {
         <DialogContent>
           <Typography>Bạn có chắc chắn muốn xoá địa chỉ này không ?</Typography>
         </DialogContent>
-        <DialogActions>
-          <Button color="error" onClick={handleCloseDeleteDialog}>
+        <DialogActions sx={{ p: 3 }}>
+          <Button
+            color="error"
+            variant="outlined"
+            onClick={handleCloseDeleteDialog}
+          >
             Huỷ
           </Button>
           <Button
@@ -257,8 +280,12 @@ const AddressManagement = () => {
             Bạn có chắc chắn muốn khôi phục địa chỉ này không ?
           </Typography>
         </DialogContent>
-        <DialogActions>
-          <Button color="error" onClick={handleCloseRestoreDialog}>
+        <DialogActions sx={{ p: 3 }}>
+          <Button
+            color="error"
+            variant="outlined"
+            onClick={handleCloseRestoreDialog}
+          >
             Huỷ
           </Button>
           <Button

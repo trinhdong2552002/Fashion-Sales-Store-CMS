@@ -77,8 +77,8 @@ const ProductDialogAdd = ({
 
         <ProductFormControl variants={variants} setVariants={setVariants} />
       </DialogContent>
-      <DialogActions>
-        <Button color="error" onClick={onClose}>
+      <DialogActions sx={{ p: 3 }}>
+        <Button color="error" variant="outlined" onClick={onClose}>
           Hủy
         </Button>
         <Button onClick={onSubmit} variant="contained" color="primary">

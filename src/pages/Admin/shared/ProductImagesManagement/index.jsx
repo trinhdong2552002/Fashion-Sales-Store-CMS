@@ -67,7 +67,7 @@ const ProductImagesManagement = () => {
     { field: "fileName", headerName: "Tên file", width: 200 },
     {
       field: "imageUrl",
-      headerName: "Hình ảnh",
+      headerName: "Hình ảnh sản phẩm",
       width: 200,
       renderCell: (params) => (
         <img
@@ -267,8 +267,8 @@ const ProductImagesManagement = () => {
             Bạn có chắc chắn muốn xóa hình ảnh này không ?
           </DialogContentText>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDeleteDialog} color="error">
+        <DialogActions sx={{p: 3}}>
+          <Button onClick={handleCloseDeleteDialog} color="error" variant="outlined">
             Hủy
           </Button>
           <Button
