@@ -17,25 +17,6 @@ export const addressApi = baseApi.injectEndpoints({
         method: "DELETE",
       }),
       invalidatesTags: [TAG_KEYS.ADDRESS],
-      async onQueryStarted({ id }, { dispatch, queryFulfilled }) {
-        const patchResult = dispatch(
-          addressApi.util.updateQueryData("listAddressForAdmin", (draft) => {
-            if (draft) {
-              const address = draft.find((item) => item.id === id);
-              if (address) {
-                address.status = "INACTIVE";
-              }
-              return draft;
-            }
-          })
-        );
-        try {
-          await queryFulfilled;
-        } catch (error) {
-          patchResult.undo();
-          console.log("Error deleting address:", error);
-        }
-      },
     }),
     restoreAddress: builder.mutation({
       query: ({ id }) => ({
@@ -43,25 +24,6 @@ export const addressApi = baseApi.injectEndpoints({
         method: "PATCH",
       }),
       invalidatesTags: [TAG_KEYS.ADDRESS],
-      async onQueryStarted({ id }, { dispatch, queryFulfilled }) {
-        const patchResult = dispatch(
-          addressApi.util.updateQueryData("listAddressForAdmin", (draft) => {
-            if (draft) {
-              const address = draft.find((item) => item.id === id);
-              if (address) {
-                address.status = "ACTIVE";
-              }
-              return draft;
-            }
-          })
-        );
-        try {
-          await queryFulfilled;
-        } catch (error) {
-          patchResult.undo();
-          console.log("Error restoring address:", error);
-        }
-      },
     }),
   }),
 });

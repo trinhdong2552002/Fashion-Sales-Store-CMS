@@ -33,19 +33,6 @@ export const colorApi = baseApi.injectEndpoints({
         method: "DELETE",
       }),
       invalidatesTags: [TAG_KEYS.COLOR],
-      async onQueryStarted({ id }, { dispatch, queryFulfilled }) {
-        const patchResult = dispatch(
-          colorApi.util.updateQueryData("listColors", undefined, (draft) => {
-            draft.items = draft.items.filter((item) => item.id !== id);
-          })
-        );
-        try {
-          await queryFulfilled;
-        } catch (error) {
-          patchResult.undo();
-          console.log("Error deleting color:", error);
-        }
-      },
     }),
     getColorById: builder.query({
       query: (id) => ({

@@ -33,30 +33,6 @@ export const promotionApi = baseApi.injectEndpoints({
         method: "DELETE",
       }),
       invalidatesTags: [TAG_KEYS.PROMOTION],
-      async onQueryStarted({ id }, { dispatch, queryFulfilled }) {
-        // Optimistic Update
-        const patchResult = dispatch(
-          promotionApi.util.updateQueryData(
-            "listPromotions",
-            undefined,
-            (draft) => {
-              if (draft) {
-                const branches = draft.find((item) => item.id === id);
-                if (branches) {
-                  branches.status = "INACTIVE";
-                }
-                return draft;
-              }
-            }
-          )
-        );
-        try {
-          await queryFulfilled;
-        } catch (error) {
-          patchResult.undo();
-          console.log("Error deleting promotion:", error);
-        }
-      },
     }),
     restorePromotion: builder.mutation({
       query: ({ id }) => ({
@@ -64,26 +40,6 @@ export const promotionApi = baseApi.injectEndpoints({
         method: "PATCH",
       }),
       invalidatesTags: [TAG_KEYS.PROMOTION],
-      async onQueryStarted({ id }, { dispatch, queryFulfilled }) {
-        const patchResult = dispatch(
-          promotionApi.util.updateQueryData(
-            "listPromotions",
-            undefined,
-            (draft) => {
-              const index = draft.items.findIndex((item) => item.id === id);
-              if (index !== -1) {
-                draft.items[index].status = "ACTIVE";
-              }
-            }
-          )
-        );
-        try {
-          await queryFulfilled;
-        } catch (error) {
-          patchResult.undo();
-          console.log("Error restoring promotion:", error);
-        }
-      },
     }),
   }),
 });

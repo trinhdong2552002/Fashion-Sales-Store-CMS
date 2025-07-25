@@ -3,59 +3,10 @@ import { DataGrid } from "@mui/x-data-grid";
 import { Typography, Button, Box, IconButton, Chip } from "@mui/material";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import { useListOrdersForAdminQuery } from "@/services/api/order";
-import {
-  Cancel,
-  CheckCircle,
-  Delete,
-  HourglassEmpty,
-  LocalShipping,
-  Refresh,
-  Settings,
-  Visibility,
-} from "@mui/icons-material";
+import { Delete, Refresh, Visibility } from "@mui/icons-material";
 import ErrorDisplay from "@/components/ErrorDisplay";
 import SnackbarComponent from "@/components/Snackbar";
-
-const getOrderStatusColor = (status) => {
-  switch (status) {
-    case "PENDING":
-      return {
-        label: "Chờ xử lý",
-        color: "warning",
-        icon: <HourglassEmpty fontSize="small" />,
-      };
-    case "PROCESSING":
-      return {
-        label: "Đang xử lý",
-        color: "info",
-        icon: <Settings fontSize="small" />,
-      };
-    case "SHIPPED":
-      return {
-        label: "Đã gửi",
-        color: "primary",
-        icon: <LocalShipping fontSize="small" />,
-      };
-    case "DELIVERED":
-      return {
-        label: "Đã giao",
-        color: "success",
-        icon: <CheckCircle fontSize="small" />,
-      };
-    case "CANCELLED":
-      return {
-        label: "Đã hủy",
-        color: "error",
-        icon: <Cancel fontSize="small" />,
-      };
-    default:
-      return {
-        label: status,
-        color: "default",
-        icon: null,
-      };
-  }
-};
+import { orderStatusDisplay } from "@/constants/badgeStatus";
 
 const OrdersManagement = () => {
   const [paginationModel, setPaginationModel] = useState({
@@ -94,7 +45,7 @@ const OrdersManagement = () => {
       headerName: "Trạng thái đơn hàng",
       width: 200,
       renderCell: (params) => {
-        const { label, color, icon } = getOrderStatusColor(params.value);
+        const { label, color, icon } = orderStatusDisplay(params.value);
         return <Chip label={label} color={color} icon={icon} />;
       },
     },

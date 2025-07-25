@@ -35,29 +35,6 @@ export const categoriesApi = baseApi.injectEndpoints({
         method: "DELETE",
       }),
       invalidatesTags: [TAG_KEYS.CATEGORIES],
-      async onQueryStarted({ id }, { dispatch, queryFulfilled }) {
-        // Optimistic Update
-        const patchResult = dispatch(
-          categoriesApi.util.updateQueryData(
-            "listCategoriesForAdmin",
-            (draft) => {
-              if (draft) {
-                const category = draft.find((item) => item.id === id);
-                if (category) {
-                  category.status = "INACTIVE";
-                }
-                return draft;
-              }
-            }
-          )
-        );
-        try {
-          await queryFulfilled;
-        } catch (error) {
-          patchResult.undo();
-          console.log("Error deleting category:", error);
-        }
-      },
     }),
     restoreCategories: builder.mutation({
       query: ({ id }) => ({
@@ -65,28 +42,6 @@ export const categoriesApi = baseApi.injectEndpoints({
         method: "PATCH",
       }),
       invalidatesTags: [TAG_KEYS.CATEGORIES],
-      async onQueryStarted({ id }, { dispatch, queryFulfilled }) {
-        const patchResult = dispatch(
-          categoriesApi.util.updateQueryData(
-            "listCategoriesForAdmin",
-            (draft) => {
-              if (draft) {
-                const category = draft.find((item) => item.id === id);
-                if (category) {
-                  category.status = "ACTIVE";
-                }
-                return draft;
-              }
-            }
-          )
-        );
-        try {
-          await queryFulfilled;
-        } catch (error) {
-          patchResult.undo();
-          console.log("Error restoring category:", error);
-        }
-      },
     }),
   }),
 });

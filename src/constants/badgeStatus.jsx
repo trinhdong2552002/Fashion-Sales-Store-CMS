@@ -1,4 +1,10 @@
-import { Cancel, CheckCircle, HourglassEmpty, LocalShipping, Settings } from "@mui/icons-material";
+import {
+  Cancel,
+  CheckCircle,
+  HourglassEmpty,
+  LocalShipping,
+  Settings,
+} from "@mui/icons-material";
 
 export const statusDisplay = {
   ACTIVE: {

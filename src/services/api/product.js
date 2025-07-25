@@ -31,18 +31,6 @@ export const productApi = baseApi.injectEndpoints({
         },
       }),
       providesTags: [TAG_KEYS.PRODUCT],
-      onQueryStarted: async (arg, { queryFulfilled }) => {
-        try {
-          const { data } = await queryFulfilled;
-          console.log("Transformed product data:", data);
-        } catch (error) {
-          console.error("Error fetching product:", {
-            status: error.error?.status,
-            data: error.error?.data,
-            params: arg,
-          });
-        }
-      },
     }),
 
     updateProduct: builder.mutation({
@@ -66,25 +54,6 @@ export const productApi = baseApi.injectEndpoints({
         method: "DELETE",
       }),
       providesTags: [TAG_KEYS.PRODUCT],
-      async onQueryStarted({ id }, { dispatch, queryFulfilled }) {
-        const patchResult = dispatch(
-          productApi.util.updateQueryData("listProductsForAdmin", (draft) => {
-            if (draft) {
-              const product = draft.find((item) => item.id === id);
-              if (product) {
-                product.status = "INACTIVE";
-              }
-              return draft;
-            }
-          })
-        );
-        try {
-          await queryFulfilled;
-        } catch (error) {
-          patchResult.undo();
-          console.log("Error deleting product:", error);
-        }
-      },
     }),
 
     restoreProduct: builder.mutation({
@@ -93,25 +62,6 @@ export const productApi = baseApi.injectEndpoints({
         method: "PATCH",
       }),
       providesTags: [TAG_KEYS.PRODUCT],
-      async onQueryStarted({ id }, { dispatch, queryFulfilled }) {
-        const patchResult = dispatch(
-          productApi.util.updateQueryData("listProductsForAdmin", (draft) => {
-            if (draft) {
-              const product = draft.find((item) => item.id === id);
-              if (product) {
-                product.status = "INACTIVE";
-              }
-              return draft;
-            }
-          })
-        );
-        try {
-          await queryFulfilled;
-        } catch (error) {
-          patchResult.undo();
-          console.log("Error restoring product:", error);
-        }
-      },
     }),
   }),
 });

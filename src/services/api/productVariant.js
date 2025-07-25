@@ -28,28 +28,6 @@ export const productVariantApi = baseApi.injectEndpoints({
         method: "DELETE",
       }),
       invalidatesTags: [TAG_KEYS.PRODUCT_VARIANT],
-      async onQueryStarted({ id }, { dispatch, queryFulfilled }) {
-        const patchResult = dispatch(
-          productVariantApi.util.updateQueryData(
-            "listAllProduct_VariantsByProduct",
-            (draft) => {
-              if (draft) {
-                const productVariant = draft.find((item) => item.id === id);
-                if (productVariant) {
-                  productVariant.status = "INACTIVE";
-                }
-                return draft;
-              }
-            }
-          )
-        );
-        try {
-          await queryFulfilled;
-        } catch (error) {
-          patchResult.undo();
-          console.log("Error deleting product variant:", error);
-        }
-      },
     }),
 
     restoreProductVariant: builder.mutation({
@@ -58,28 +36,6 @@ export const productVariantApi = baseApi.injectEndpoints({
         method: "PATCH",
       }),
       invalidatesTags: [TAG_KEYS.PRODUCT_VARIANT],
-      async onQueryStarted({ id }, { dispatch, queryFulfilled }) {
-        const patchResult = dispatch(
-          productVariantApi.util.updateQueryData(
-            "listAllProduct_VariantsByProduct",
-            (draft) => {
-              if (draft) {
-                const productVariant = draft.find((item) => item.id === id);
-                if (productVariant) {
-                  productVariant.status = "INACTIVE";
-                }
-                return draft;
-              }
-            }
-          )
-        );
-        try {
-          await queryFulfilled;
-        } catch (error) {
-          patchResult.undo();
-          console.log("Error restore product variant:", error);
-        }
-      },
     }),
   }),
 });

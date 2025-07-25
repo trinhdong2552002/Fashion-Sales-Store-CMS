@@ -11,20 +11,6 @@ export const productImageApi = baseApi.injectEndpoints({
         params: { page, size, fileType },
       }),
       providesTags: [TAG_KEYS.PRODUCT_IMAGE],
-      onQueryStarted: async (arg, { queryFulfilled }) => {
-        try {
-          const { data } = await queryFulfilled;
-          console.log("Transformed images data:", data);
-        } catch (error) {
-          console.error("Error fetching images:", {
-            status: error.error?.status,
-            data: error.error?.data,
-            params: arg,
-          });
-        }
-      },
-      retry: (error) => error.status === 400,
-      retryMax: 2,
     }),
 
     uploadImages: builder.mutation({
