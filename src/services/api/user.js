@@ -3,6 +3,14 @@ import { TAG_KEYS } from "@/constants/tagKeys";
 
 export const userApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
+    listUsersForAdmin: builder.query({
+      query: ({ page, size }) => ({
+        url: "/v1/admin/users",
+        params: { page, size },
+      }),
+      providesTags: [TAG_KEYS.USER],
+    }),
+
     createUserWithRole: builder.mutation({
       query: (userData) => ({
         url: "/v1/admin/users",
@@ -12,37 +20,7 @@ export const userApi = baseApi.injectEndpoints({
       invalidatesTags: [TAG_KEYS.USER],
     }),
 
-    fetchAllUsersForAdmin: builder.query({
-      query: ({
-        pageNo = 1,
-        pageSize = 10,
-        sortBy = "name-asc",
-        search = "",
-        roles = "",
-      } = {}) => ({
-        url: "/v1/admin/users",
-        method: "GET",
-        params: { pageNo, pageSize, sortBy, search, roles },
-      }),
-      providesTags: [TAG_KEYS.USER],
-      transformResponse: (response) => ({
-        page: response.result.page,
-        size: response.result.size,
-        totalPages: response.result.totalPages,
-        totalItems: response.result.totalItems,
-        items: response.result.items,
-      }),
-    }),
-
-    fetchUserById: builder.query({
-      query: (id) => ({
-        url: `/v1/users/${id}`,
-        method: "GET",
-      }),
-      providesTags: [TAG_KEYS.USER],
-    }),
-
-    softDeleteUser: builder.mutation({
+    deleteUser: builder.mutation({
       query: (id) => ({
         url: `/v1/admin/users/${id}`,
         method: "DELETE",
@@ -62,8 +40,7 @@ export const userApi = baseApi.injectEndpoints({
 
 export const {
   useCreateUserWithRoleMutation,
-  useFetchAllUsersForAdminQuery,
-  useFetchUserByIdQuery,
-  useSoftDeleteUserMutation,
+  useListUsersForAdminQuery,
+  useDeleteUserMutation,
   useRestoreUserMutation,
 } = userApi;

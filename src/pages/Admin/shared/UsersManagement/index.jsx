@@ -1,5 +1,4 @@
-import { useState, useEffect } from "react";
-import { DataGrid } from "@mui/x-data-grid";
+import { useState } from "react";
 import {
   Typography,
   Button,
@@ -12,35 +11,37 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Grid,
   Box,
   IconButton,
+  Chip,
 } from "@mui/material";
 import {
-  useFetchAllUsersForAdminQuery,
+  useListUsersForAdminQuery,
   useCreateUserWithRoleMutation,
-  useSoftDeleteUserMutation,
+  useDeleteUserMutation,
   useRestoreUserMutation,
 } from "@/services/api/user";
-import { useGetMyInfoQuery } from "@/services/api/auth";
 import { useListRolesQuery } from "@/services/api/role";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
-import { useNavigate } from "react-router-dom";
+import TableData from "@/components/TableData";
+import ErrorDisplay from "@/components/ErrorDisplay";
+import { PreviewImage } from "@/components/PreviewImage";
 import { Add, Delete, Refresh, Restore } from "@mui/icons-material";
 import SnackbarComponent from "@/components/Snackbar";
+import { statusDisplay } from "/src/constants/badgeStatus";
 
 const UsersManagement = () => {
-  const navigate = useNavigate();
-  const [searchUser, setSearchUser] = useState("");
-  const [filterRoles, setFilterRoles] = useState([]);
+  const [previewImage, setPreviewImage] = useState(null);
+  const [submitted, setSubmitted] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [openRestoreDialog, setOpenRestoreDialog] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
   const [userToRestore, setUserToRestore] = useState(null);
-  const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(10);
-  const [totalRows, setTotalRows] = useState(0);
+  const [paginationModel, setPaginationModel] = useState({
+    page: 0,
+    pageSize: 10,
+  });
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -53,218 +54,148 @@ const UsersManagement = () => {
     password: "",
     roleIds: [],
   });
-
+  const { data: dataRoles } = useListRolesQuery();
   const {
-    data: userInfo,
-    error: userError,
-    isLoading: userLoading,
-  } = useGetMyInfoQuery();
-
-  const {
-    data: usersData,
-    refetch: refetchUsers,
-    isLoading: isFetchingUsers,
-  } = useFetchAllUsersForAdminQuery({
-    pageNo: page + 1,
-    pageSize,
-    search: searchUser,
-    sortBy: "name-asc",
-    roles: filterRoles.length ? filterRoles.join(",") : undefined,
-  });
-  const { data: rolesData } = useListRolesQuery({ pageNo: 1, pageSize: 100 });
+    data: dataUser,
+    isLoading: isLoadingUser,
+    isError: isErrorUser,
+    refetch: refetchUser,
+  } = useListUsersForAdminQuery(
+    {
+      page: paginationModel.page,
+      size: paginationModel.pageSize,
+    },
+    {
+      refetchOnMountOrArgChange: true,
+    }
+  );
 
   const [createUserWithRole] = useCreateUserWithRoleMutation();
-  const [softDeleteUser] = useSoftDeleteUserMutation();
+  const [deleteUser] = useDeleteUserMutation();
   const [restoreUser] = useRestoreUserMutation();
 
-  useEffect(() => {
-    if (userError) {
-      setSnackbar({
-        open: true,
-        message:
-          "Bạn cần đăng nhập để truy cập trang này: " +
-          (userError?.data?.message || "Lỗi không xác định"),
-        severity: "error",
-      });
-      setTimeout(() => navigate("/"), 2000);
-    } else if (userInfo) {
-      const roles = userInfo.result?.roles || [];
-      const hasAdminRole = roles.some(
-        (role) => role.name?.toUpperCase() === "ADMIN"
-      );
-      if (!hasAdminRole) {
-        setSnackbar({
-          open: true,
-          message: `Bạn không có quyền truy cập trang này. Vai trò: ${
-            roles.map((r) => r.name).join(", ") || "Không xác định"
-          }`,
-          severity: "error",
-        });
-        setTimeout(() => navigate("/"), 2000);
-      }
-    }
-  }, [userInfo, userError, userLoading, navigate]);
+  const dataRowUsers = dataUser?.result?.items || [];
+  const totalRows = dataUser?.result?.totalItems || 0;
 
-  useEffect(() => {
-    refetchUsers();
-  }, [searchUser, filterRoles, page, pageSize, refetchUsers]);
-
-  useEffect(() => {
-    if (usersData) {
-      setTotalRows(usersData.totalItems || 0);
-    }
-  }, [usersData]);
-
-  const handleAddUser = async () => {
-    try {
-      await createUserWithRole({
-        name: newUser.name,
-        email: newUser.email,
-        phone: newUser.phone,
-        password: newUser.password,
-        roleIds: newUser.roleIds,
-      }).unwrap();
-      setNewUser({
-        name: "",
-        email: "",
-        phone: "",
-        password: "",
-        roleIds: [],
-      });
-      setOpenDialog(false);
-      setSnackbar({
-        open: true,
-        message: "Thêm người dùng thành công!",
-        severity: "success",
-      });
-      refetchUsers();
-    } catch (error) {
-      const errorMessage = error.data?.message || "Lỗi khi thêm người dùng";
-      setSnackbar({
-        open: true,
-        message: errorMessage,
-        severity: "error",
-      });
-    }
-  };
-
-  const handleDeleteUser = async () => {
-    try {
-      await softDeleteUser(userToDelete).unwrap();
-      setOpenDeleteDialog(false);
-      setUserToDelete(null);
-      setSnackbar({
-        open: true,
-        message: "Xóa người dùng thành công!",
-        severity: "success",
-      });
-      refetchUsers();
-    } catch (error) {
-      const errorMessage = error.data?.message || "Lỗi khi xóa người dùng";
-      setSnackbar({
-        open: true,
-        message: errorMessage,
-        severity: "error",
-      });
-    }
-  };
-
-  const handleRestoreUser = async () => {
-    try {
-      await restoreUser(userToRestore).unwrap();
-      setSnackbar({
-        open: true,
-        message: "Khôi phục người dùng thành công!",
-        severity: "success",
-      });
-      setOpenRestoreDialog(false);
-      setUserToRestore(null);
-      refetchUsers();
-    } catch (error) {
-      setSnackbar({
-        open: true,
-        message: error.data?.message || "Lỗi khi khôi phục người dùng",
-        severity: "error",
-      });
-    }
-  };
-
-  const handleOpenDeleteDialog = (id) => {
-    setUserToDelete(id);
-    setOpenDeleteDialog(true);
-  };
-
-  const handleCloseDeleteDialog = () => {
-    setOpenDeleteDialog(false);
-    setUserToDelete(null);
-  };
-
-  const handleOpenRestoreDialog = (id) => {
-    setUserToRestore(id);
-    setOpenRestoreDialog(true);
-  };
-
-  const handleCloseRestoreDialog = () => {
-    setUserToRestore(null);
-    setOpenRestoreDialog(false);
-  };
-
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
-
-  const handleRefresh = () => {
-    setPage(0);
-    refetchUsers();
-    setSnackbar({
-      open: true,
-      message: "Danh sách người dùng đã được làm mới!",
-      severity: "info",
-    });
-  };
-
-  const columns = [
-    { field: "id", headerName: "ID", width: 100 },
-    { field: "name", headerName: "Tên", width: 200 },
+  const columnsUser = [
+    { field: "id", headerName: "ID", width: 150 },
+    { field: "name", headerName: "Tên người dùng", width: 200 },
     { field: "email", headerName: "Email", width: 200 },
-    { field: "status", headerName: "Trạng thái", width: 150 },
-
+    {
+      field: "status",
+      headerName: "Trạng thái",
+      width: 150,
+      renderCell: (params) => {
+        const display = statusDisplay[params.value] || {
+          label: "Không rõ",
+          color: "default",
+        };
+        return (
+          <Chip
+            label={display.label}
+            color={display.color}
+            variant={display.variant}
+          />
+        );
+      },
+    },
+    {
+      field: "avatarUrl",
+      headerName: "Hình ảnh người dùng",
+      width: 200,
+      renderCell: (params) => (
+        <img
+          src={params.row.avatarUrl}
+          alt={params.row.name}
+          style={{
+            width: 50,
+            height: 50,
+            objectFit: "cover",
+            cursor: "pointer",
+          }}
+          onClick={() => setPreviewImage(params.value)}
+        />
+      ),
+    },
+    {
+      field: "dob",
+      headerName: "Ngày sinh",
+      width: 200,
+      renderCell: (params) => (
+        <div style={{ color: params.value ? "normal" : "#888" }}>
+          {params.value
+            ? new Date(params.row.dob).toLocaleDateString("vi-VN")
+            : "--"}
+        </div>
+      ),
+    },
+    {
+      field: "gender",
+      headerName: "Giới tính",
+      width: 200,
+      renderCell: (params) => (
+        <div style={{ color: params.value ? "normal" : "#888" }}>
+          {params.value === "MALE"
+            ? "Nam"
+            : params.value === "FEMALE"
+            ? "Nữ"
+            : "--"}
+        </div>
+      ),
+    },
     {
       field: "createdBy",
       headerName: "Người tạo",
       width: 200,
-      renderCell: (params) => params.row.createdBy || "N/A",
+      renderCell: (params) => (
+        <div style={{ color: params.value ? "normal" : "#888" }}>
+          {params.row.createdBy || "--"}
+        </div>
+      ),
     },
     {
       field: "updatedBy",
       headerName: "Người cập nhật",
       width: 200,
-      renderCell: (params) => params.row.updatedBy || "N/A",
+      renderCell: (params) => (
+        <div style={{ color: params.value ? "normal" : "#888" }}>
+          {params.row.updatedBy || "--"}
+        </div>
+      ),
     },
     {
       field: "createdAt",
       headerName: "Ngày tạo",
-      width: 150,
-      renderCell: (params) =>
-        params.row.createdAt
-          ? new Date(params.row.createdAt).toLocaleDateString("vi-VN")
-          : "N/A",
+      width: 200,
+      renderCell: (params) => (
+        <div style={{ color: params.value ? "normal" : "#888" }}>
+          {params.row.createdAt
+            ? new Date(params.row.createdAt).toLocaleDateString("vi-VN")
+            : "N/A"}
+        </div>
+      ),
     },
     {
       field: "updatedAt",
       headerName: "Ngày cập nhật",
-      width: 150,
-      renderCell: (params) =>
-        params.row.updatedAt
-          ? new Date(params.row.updatedAt).toLocaleDateString("vi-VN")
-          : "N/A",
+      width: 200,
+      renderCell: (params) => (
+        <div style={{ color: params.value ? "normal" : "#888" }}>
+          {params.row.updatedAt
+            ? new Date(params.row.updatedAt).toLocaleDateString("vi-VN")
+            : "--"}
+        </div>
+      ),
     },
     {
       field: "roles",
       headerName: "Vai trò",
-      width: 150,
-      renderCell: (params) =>
-        params.row?.roles?.map((role) => role.name).join(", ") || "N/A",
+      width: 200,
+      renderCell: (params) => (
+        <div style={{ color: params.value ? "normal" : "#888" }}>
+          {params.row?.roles?.map((role) => role.name).join(", ") || "--"}
+        </div>
+      ),
     },
     {
       field: "actions",
@@ -292,17 +223,123 @@ const UsersManagement = () => {
     },
   ];
 
-  const filteredRows = (usersData?.items || []).filter((user) => {
-    const matchesRoles = filterRoles.length
-      ? user.roles?.some((role) => filterRoles.includes(role.name))
-      : true;
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
 
-    const matchesSearch = searchUser
-      ? user.name?.toLowerCase().includes(searchUser.toLowerCase())
-      : true;
+  const handleOpenDeleteDialog = (id) => {
+    setUserToDelete(id);
+    setOpenDeleteDialog(true);
+  };
 
-    return matchesRoles && matchesSearch;
-  });
+  const handleCloseDeleteDialog = () => {
+    setOpenDeleteDialog(false);
+    setUserToDelete(null);
+  };
+
+  const handleOpenRestoreDialog = (id) => {
+    setUserToRestore(id);
+    setOpenRestoreDialog(true);
+  };
+
+  const handleCloseRestoreDialog = () => {
+    setUserToRestore(null);
+    setOpenRestoreDialog(false);
+  };
+
+  const handleRefresh = () => {
+    refetchUser();
+    setSnackbar({
+      open: true,
+      message: "Danh sách người dùng đã được làm mới!",
+      severity: "info",
+    });
+  };
+
+  const handleAddUser = async () => {
+    setSubmitted(true);
+
+    try {
+      await createUserWithRole({
+        name: newUser.name,
+        email: newUser.email,
+        phone: newUser.phone,
+        password: newUser.password,
+        roleIds: newUser.roleIds,
+      }).unwrap();
+      setNewUser({
+        name: "",
+        email: "",
+        phone: "",
+        password: "",
+        roleIds: [],
+      });
+      setOpenDialog(false);
+      setSnackbar({
+        open: true,
+        message: "Thêm người dùng thành công!",
+        severity: "success",
+      });
+      refetchUser();
+    } catch (error) {
+      const errorMessage = error.data?.message || "Lỗi khi thêm người dùng";
+      setSnackbar({
+        open: true,
+        message: errorMessage,
+        severity: "error",
+      });
+    }
+  };
+
+  const handleDeleteUser = async () => {
+    try {
+      await deleteUser(userToDelete).unwrap();
+      setOpenDeleteDialog(false);
+      setUserToDelete(null);
+      setSnackbar({
+        open: true,
+        message: "Xóa người dùng thành công!",
+        severity: "success",
+      });
+      refetchUser();
+    } catch (error) {
+      const errorMessage = error.data?.message || "Lỗi khi xóa người dùng";
+      setSnackbar({
+        open: true,
+        message: errorMessage,
+        severity: "error",
+      });
+    }
+  };
+
+  const handleRestoreUser = async () => {
+    try {
+      await restoreUser(userToRestore).unwrap();
+      setSnackbar({
+        open: true,
+        message: "Khôi phục người dùng thành công!",
+        severity: "success",
+      });
+      setOpenRestoreDialog(false);
+      setUserToRestore(null);
+      refetchUser();
+    } catch (error) {
+      setSnackbar({
+        open: true,
+        message: error.data?.message || "Lỗi khi khôi phục người dùng",
+        severity: "error",
+      });
+    }
+  };
+
+  if (isErrorUser) {
+    <ErrorDisplay
+      error={{
+        message:
+          "Không tải được danh sách người dùng. Vui lòng kiểm tra kết nối của bạn và thử lại !",
+      }}
+    />;
+  }
 
   return (
     <DashboardLayoutWrapper>
@@ -331,74 +368,15 @@ const UsersManagement = () => {
         </Button>
       </Box>
 
-      <Grid container spacing={2} sx={{ mb: 2 }}>
-        <Grid size={{ xs: 12, sm: 6 }}>
-          <TextField
-            label="Tìm kiếm theo tên"
-            value={searchUser}
-            onChange={(e) => setSearchUser(e.target.value)}
-            fullWidth
-          />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 3 }}>
-          <FormControl fullWidth>
-            <InputLabel>Vai trò</InputLabel>
-            <Select
-              multiple
-              value={filterRoles}
-              onChange={(e) => setFilterRoles(e.target.value)}
-              label="Vai trò"
-              renderValue={(selected) => selected.join(", ")}
-            >
-              {rolesData?.items?.map((role) => (
-                <MenuItem key={role.id} value={role.name}>
-                  {role.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Grid>
-      </Grid>
-      <Box height={600}>
-        <DataGrid
-          sx={{
-            boxShadow: 2,
-            border: 2,
-            borderColor: "primary.light",
-            "& .MuiDataGrid-cell:hover": {
-              color: "primary.main",
-            },
-          }}
-          rows={filteredRows}
-          columns={columns}
-          paginationMode="server"
-          rowCount={totalRows}
-          page={page}
-          pageSize={pageSize}
-          onPageChange={(newPage) => {
-            console.log("Page changed to:", newPage);
-            setPage(newPage);
-          }}
-          onPageSizeChange={(newPageSize) => {
-            console.log("Page size changed to:", newPageSize);
-            setPageSize(newPageSize);
-            setPage(0);
-          }}
-          rowsPerPageOptions={[10, 20, 50]}
-          getRowId={(row) => row.id}
-          disableSelectionOnClick
-          loading={isFetchingUsers}
-          slotProps={{
-            loadingOverlay: {
-              variant: "linear-progress",
-              noRowsVariant: "linear-progress",
-            },
-          }}
-          localeText={{
-            noRowsLabel: "Hiện tại không có người dùng nào",
-          }}
-        />
-      </Box>
+      <TableData
+        rows={dataRowUsers}
+        totalRows={totalRows}
+        columnsData={columnsUser}
+        loading={isLoadingUser}
+        paginationModel={paginationModel}
+        onPaginationModelChange={setPaginationModel}
+        pageSizeOptions={[10, 15, 20]}
+      />
 
       <Dialog fullWidth open={openDialog}>
         <DialogTitle>Thêm người dùng</DialogTitle>
@@ -409,6 +387,10 @@ const UsersManagement = () => {
             onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
             fullWidth
             sx={{ mt: 2 }}
+            error={submitted && !newUser.name}
+            helperText={
+              submitted && !newUser.name ? "name không được để trống" : ""
+            }
           />
           <TextField
             label="Email"
@@ -416,6 +398,10 @@ const UsersManagement = () => {
             onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
             fullWidth
             sx={{ mt: 2 }}
+            error={submitted && !newUser.email}
+            helperText={
+              submitted && !newUser.email ? "email không được để trống" : ""
+            }
           />
           <TextField
             label="Số điện thoại"
@@ -423,6 +409,10 @@ const UsersManagement = () => {
             onChange={(e) => setNewUser({ ...newUser, phone: e.target.value })}
             fullWidth
             sx={{ mt: 2 }}
+            error={submitted && !newUser.phone}
+            helperText={
+              submitted && !newUser.phone ? "phone không được để trống" : ""
+            }
           />
           <TextField
             label="Mật khẩu"
@@ -433,6 +423,12 @@ const UsersManagement = () => {
             fullWidth
             sx={{ mt: 2 }}
             type="password"
+            error={submitted && !newUser.password}
+            helperText={
+              submitted && !newUser.password
+                ? "password không được để trống"
+                : ""
+            }
           />
           <FormControl fullWidth sx={{ mt: 2 }}>
             <InputLabel>Vai trò</InputLabel>
@@ -447,12 +443,13 @@ const UsersManagement = () => {
                 selected
                   .map(
                     (id) =>
-                      rolesData?.items.find((r) => r.id === id)?.name || ""
+                      dataRoles?.result?.items.find((r) => r.id === id)?.name ||
+                      ""
                   )
                   .join(", ")
               }
             >
-              {rolesData?.items?.map((role) => (
+              {dataRoles?.result?.items?.map((role) => (
                 <MenuItem key={role.id} value={role.id}>
                   {role.name}
                 </MenuItem>
@@ -507,6 +504,11 @@ const UsersManagement = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <PreviewImage
+        previewImage={previewImage}
+        setPreviewImage={setPreviewImage}
+      />
 
       <SnackbarComponent snackbar={snackbar} onClose={handleCloseSnackbar} />
     </DashboardLayoutWrapper>
