@@ -1,7 +1,5 @@
-import { Fragment } from "react";
 import { DataGrid } from "@mui/x-data-grid";
-import { Box, IconButton } from "@mui/material";
-import { Delete, Edit, Restore } from "@mui/icons-material";
+import { Box } from "@mui/material";
 
 const TableData = ({
   rows,
@@ -10,7 +8,7 @@ const TableData = ({
   loading,
   paginationModel,
   onPaginationModelChange,
-  pageSizeOptions
+  pageSizeOptions,
 }) => {
   return (
     <Box height={600}>

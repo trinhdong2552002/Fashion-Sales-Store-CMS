@@ -3,11 +3,11 @@ import {
   Box,
   Button,
   FormControl,
+  Grid,
   InputLabel,
   MenuItem,
   Select,
 } from "@mui/material";
-import { Fragment } from "react";
 
 export const ProductVariantToolbar = ({
   handleRefresh,
@@ -18,16 +18,15 @@ export const ProductVariantToolbar = ({
   setPaginationModel,
 }) => {
   return (
-    <Fragment>
-      <Box
-        display={"flex"}
-        alignItems={"center"}
-        justifyContent={"space-between"}
-        sx={{
-          mb: 2,
-          mt: 2,
-        }}
-      >
+    <Grid
+      container
+      sx={{
+        my: 2,
+      }}
+      display={"flex"}
+      alignItems={"center"}
+    >
+      <Grid size={{ md: 3, sm: 12, xs: 12 }}>
         <Button
           variant="outlined"
           onClick={handleRefresh}
@@ -35,28 +34,46 @@ export const ProductVariantToolbar = ({
         >
           Làm mới
         </Button>
+      </Grid>
 
-        <FormControl sx={{ minWidth: 500 }}>
-          <InputLabel>Chọn sản phẩm</InputLabel>
-          <Select
-            value={selectedProductId}
-            onChange={(e) => {
-              setPaginationModel({
-                page: 0,
-                pageSize: paginationModel.pageSize,
-              });
-              setSelectedProductId(e.target.value);
-            }}
-            label="Chọn sản phẩm"
-          >
-            {activeProducts?.map((product) => (
-              <MenuItem key={product.id} value={product.id}>
-                {product.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </Box>
-    </Fragment>
+      <Grid size={{ md: 9, sm: 12, xs: 12 }}>
+        <Box
+          sx={{
+            display: "flex",
+            mt: {
+              sm: 2,
+              xs: 2,
+              md: 0
+            },
+            justifyContent: {
+              xs: "flex-start", // mobile
+              sm: "flex-start", // tablet
+              md: "flex-end", // desktop
+            },
+          }}
+        >
+          <FormControl sx={{ minWidth: 300 }}>
+            <InputLabel>Chọn sản phẩm</InputLabel>
+            <Select
+              value={selectedProductId}
+              onChange={(e) => {
+                setPaginationModel({
+                  page: 0,
+                  pageSize: paginationModel.pageSize,
+                });
+                setSelectedProductId(e.target.value);
+              }}
+              label="Chọn sản phẩm"
+            >
+              {activeProducts?.map((product) => (
+                <MenuItem key={product.id} value={product.id}>
+                  {product.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
+      </Grid>
+    </Grid>
   );
 };
