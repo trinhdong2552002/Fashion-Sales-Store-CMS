@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Typography, IconButton, Chip } from "@mui/material";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import SnackbarComponent from "@/components/Snackbar";
-import ErrorDisplay from "@/components/ErrorDisplay";
 import {
   useListAllProduct_VariantsByProductQuery,
   useUpdateProductVariantMutation,
@@ -50,7 +49,6 @@ const ProductVariantsManagement = () => {
     refetch: refetchProducts,
   } = useListProductsForAdminQuery({
     refetchOnMountOrArgChange: true,
-    refetchOnFocus: true,
   });
 
   const {
@@ -68,13 +66,7 @@ const ProductVariantsManagement = () => {
       : skipToken,
     {
       refetchOnMountOrArgChange: true,
-      refetchOnFocus: true,
     }
-  );
-
-  // Lọc sản phẩm trạng thái theo ACTIVE
-  const activeProducts = dataProducts?.result?.items.filter(
-    (product) => product.status === "ACTIVE"
   );
 
   const dataRowProductVariants = dataProductVariants?.result?.items || [];
@@ -291,8 +283,7 @@ const ProductVariantsManagement = () => {
     return (
       <ErrorDisplay
         error={{
-          message:
-            "Không tải được danh sách sản phẩm hoặc biến thể. Vui lòng kiểm tra kết nối của bạn và thử lại !",
+          message: "Không tải được danh sách sản phẩm hoặc biến thể.",
         }}
       />
     );
@@ -306,7 +297,8 @@ const ProductVariantsManagement = () => {
         handleRefresh={handleRefresh}
         selectedProductId={selectedProductId}
         setSelectedProductId={setSelectedProductId}
-        activeProducts={activeProducts}
+        refetchProducts={refetchProducts}
+        dataProducts={dataProducts}
         paginationModel={paginationModel}
         setPaginationModel={setPaginationModel}
       />

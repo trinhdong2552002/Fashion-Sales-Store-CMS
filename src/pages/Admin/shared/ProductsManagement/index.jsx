@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useState } from "react";
 import { Typography, IconButton, Chip } from "@mui/material";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import {
@@ -19,6 +19,7 @@ import SnackbarComponent from "@/components/Snackbar";
 import TableData from "@/components/TableData";
 import { Delete, Edit, Restore } from "@mui/icons-material";
 import { statusDisplay } from "/src/constants/badgeStatus";
+import { useSearchProductsQuery } from "@/services/api/product";
 
 const ProductsManagement = () => {
   const [openAddDialog, setOpenAddDialog] = useState(false);
@@ -27,8 +28,7 @@ const ProductsManagement = () => {
   const [openRestoreDialog, setOpenRestoreDialog] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [submitted, setSubmitted] = useState(false);
-  const [selectedStatus, setSelectedStatus] = useState("");
-  const [searchText, setSearchText] = useState("");
+  const [search, setSearch] = useState("");
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 10,
@@ -68,39 +68,45 @@ const ProductsManagement = () => {
     }
   );
 
+  // Đang dùng tạm api tìm kiếm sản phẩm cho user, vì lấy danh sách sản phẩm cho admin thiếu field search
+  const { data: dataSearchProducts } = useSearchProductsQuery(
+    {
+      page: paginationModel.page,
+      size: paginationModel.pageSize,
+      search,
+    },
+    {
+      refetchOnMountOrArgChange: true,
+    }
+  );
+
   const [addProduct] = useAddProductMutation();
   const [updateProduct] = useUpdateProductMutation();
   const [deleteProduct] = useDeleteProductMutation();
   const [restoreProduct] = useRestoreProductMutation();
 
-  const { data: dataCategories } = useListCategoriesForAdminQuery({
-    refetchOnMountOrArgChange: true,
-  });
-
-  const filteredProducts = useMemo(() => {
-    let filtered = dataProducts?.result?.items || [];
-
-    // Filter theo status
-    if (selectedStatus) {
-      filtered = filtered.filter(
-        (product) => product.status === selectedStatus
-      );
+  const {
+    data: dataCategories,
+    isLoading: isLoadingCategories,
+    isError: isErrorCategories,
+    refetch: refetchCategories,
+  } = useListCategoriesForAdminQuery(
+    { page: 0, size: 100 },
+    {
+      refetchOnMountOrArgChange: true,
     }
+  );
+  console.log(dataCategories);
 
-    // // Filter theo search text
-    if (searchText) {
-      filtered = filtered.filter(
-        (product) =>
-          product.name.toLowerCase().includes(searchText.toLowerCase()) ||
-          product.description.toLowerCase().includes(searchText.toLowerCase())
-      );
-    }
+  const dataRowProducts =
+    search.length > 0
+      ? dataSearchProducts?.result?.items || []
+      : dataProducts?.result?.items || [];
 
-    return filtered;
-  }, [dataProducts?.result?.items, selectedStatus, searchText]);
-
-  const dataRowProducts = filteredProducts;
-  const totalRows = filteredProducts.length;
+  const totalRows =
+    search.length > 0
+      ? dataSearchProducts?.result?.totalItems || 0
+      : dataProducts?.result?.totalItems || 0;
 
   const columnsProduct = [
     { field: "id", headerName: "ID", width: 100 },
@@ -349,6 +355,18 @@ const ProductsManagement = () => {
     }
   };
 
+  if (isLoadingCategories) return <div>Loading categories...</div>;
+
+  if (isErrorCategories)
+    return (
+      <ErrorDisplay
+        error={{
+          message:
+            "Không thể tải danh mục sản phẩm. Vui lòng thử lại sau hoặc kiểm tra kết nối!",
+        }}
+      />
+    );
+
   if (isErrorProducts)
     return (
       <ErrorDisplay
@@ -364,12 +382,11 @@ const ProductsManagement = () => {
       <Typography variant="h5">Quản lý Sản phẩm</Typography>
 
       <ProductToolbar
-        selectedStatus={selectedStatus}
-        onStatusChange={setSelectedStatus}
-        onSearch={setSearchText}
+        onSearch={setSearch}
         onAddProduct={() => {
           setOpenAddDialog(true);
           setNewProduct({ name: "", description: "", categoryId: "" });
+          refetchCategories();
         }}
         onRefresh={handleRefresh}
       />
@@ -393,7 +410,7 @@ const ProductsManagement = () => {
         variants={variants}
         setVariants={setVariants}
         submitted={submitted}
-        categories={dataCategories}
+        dataCategories={dataCategories}
       />
 
       <ProductDialogEdit
@@ -405,7 +422,7 @@ const ProductsManagement = () => {
         variants={variants}
         setVariants={setVariants}
         submitted={submitted}
-        categories={dataCategories}
+        dataCategories={dataCategories}
       />
 
       <ProductDialogDelete

@@ -60,7 +60,7 @@ const RolesManagement = () => {
       <ErrorDisplay
         error={{
           message:
-            "Không tải được danh sách vai trò. Vui lòng kiểm tra kết nối của bạn và thử lại !",
+            "Không tải được danh sách vai trò.",
         }}
       />
     );

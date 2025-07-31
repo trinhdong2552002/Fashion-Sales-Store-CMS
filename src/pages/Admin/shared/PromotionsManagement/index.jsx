@@ -344,7 +344,7 @@ const PromotionsManagement = () => {
       <ErrorDisplay
         error={{
           message:
-            "Không tải được danh sách khuyến mãi. Vui lòng kiểm tra kết nối của bạn và thử lại !",
+            "Không tải được danh sách khuyến mãi.",
         }}
       />
     );

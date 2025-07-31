@@ -85,7 +85,7 @@ const OrdersManagement = () => {
       <ErrorDisplay
         error={{
           message:
-            "Không tải được danh sách đơn hàng. Vui lòng kiểm tra kết nối của bạn và thử lại !",
+            "Không tải được danh sách đơn hàng.",
         }}
       />
     );

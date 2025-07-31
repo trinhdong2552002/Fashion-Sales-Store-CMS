@@ -306,7 +306,7 @@ const CategoriesManagement = () => {
       <ErrorDisplay
         error={{
           message:
-            "Không tải được danh sách danh mục. Vui lòng kiểm tra kết nối của bạn và thử lại !",
+            "Không tải được danh sách danh mục.",
         }}
       />
     );

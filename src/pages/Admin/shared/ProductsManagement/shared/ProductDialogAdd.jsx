@@ -21,8 +21,11 @@ const ProductDialogAdd = ({
   variants,
   setVariants,
   submitted,
-  categories,
+  dataCategories,
 }) => {
+  const filterActiveCategories = dataCategories?.result?.items?.filter(
+    (activeCategories) => activeCategories.status === "ACTIVE"
+  );
   return (
     <Dialog fullWidth open={open}>
       <DialogTitle>Thêm sản phẩm</DialogTitle>
@@ -67,9 +70,9 @@ const ProductDialogAdd = ({
             }
             label="Danh mục"
           >
-            {categories?.result?.items?.map((cat) => (
-              <MenuItem key={cat.id} value={cat.id}>
-                {cat.name}
+            {filterActiveCategories.map((categories) => (
+              <MenuItem key={categories.id} value={categories.id}>
+                {categories.name}
               </MenuItem>
             ))}
           </Select>

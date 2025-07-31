@@ -15,14 +15,19 @@ import { useListImagesQuery } from "@/services/api/productImage";
 import { Add, Delete } from "@mui/icons-material";
 
 const ProductFormControl = ({ variants, setVariants }) => {
-  const { data: dataColors } = useListColorsQuery({
+  const { data: dataColors, refetch: refetchColor } = useListColorsQuery(
+    { page: 0, size: 100 },
+    {
+      refetchOnMountOrArgChange: true,
+    }
+  );
+
+  const { data: dataSizes, refetch: refetchSize } = useListSizesQuery({
     refetchOnMountOrArgChange: true,
   });
-  const { data: dataSizes } = useListSizesQuery({
-    refetchOnMountOrArgChange: true,
-  });
-  const { data: dataImages } = useListImagesQuery(
-    { fileType: "PRODUCT_IMAGE" },
+
+  const { data: dataImages, refetch: refetchImage } = useListImagesQuery(
+    { page: 0, size: 100, fileType: "PRODUCT_IMAGE" },
     {
       refetchOnMountOrArgChange: true,
     }
@@ -45,6 +50,9 @@ const ProductFormControl = ({ variants, setVariants }) => {
         imageId: "",
       },
     ]);
+    refetchColor();
+    refetchSize();
+    refetchImage();
   };
 
   const handleRemoveVariant = (index) => {

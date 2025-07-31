@@ -1,29 +1,16 @@
 import {
   Grid,
   TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   InputAdornment,
   IconButton,
   Button,
+  Box,
 } from "@mui/material";
 import { Search, Refresh, Add } from "@mui/icons-material";
 import { Fragment, useState } from "react";
 
-const ProductToolbar = ({
-  selectedStatus,
-  onStatusChange,
-  onSearch,
-  onAddProduct,
-  onRefresh,
-}) => {
+const ProductToolbar = ({ onSearch, onAddProduct, onRefresh }) => {
   const [searchValue, setSearchValue] = useState("");
-
-  const handleStatusChange = (e) => {
-    onStatusChange(e.target.value);
-  };
 
   const handleSearchChange = (e) => {
     setSearchValue(e.target.value);
@@ -41,49 +28,30 @@ const ProductToolbar = ({
 
   return (
     <Fragment>
-      <Grid
-        container
-        spacing={4}
+      <Box
         display="flex"
         direction="row"
         justifyContent="flex-start"
         alignItems="center"
       >
-        <Grid size={{ xs: 12, sm: 12, md: 6, lg: 5 }}>
-          <TextField
-            fullWidth
-            variant="standard"
-            value={searchValue}
-            onChange={handleSearchChange}
-            onKeyDown={handleKeyDown}
-            label="Tìm kiếm sản phẩm"
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="start">
-                  <IconButton aria-label="search" onClick={handleSearchSubmit}>
-                    <Search />
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-          />
-        </Grid>
-
-        <Grid size={{ xs: 12, sm: 12, md: 6, lg: 3 }}>
-          <FormControl fullWidth>
-            <InputLabel>Trạng thái</InputLabel>
-            <Select
-              value={selectedStatus}
-              onChange={handleStatusChange}
-              label="Trạng thái"
-            >
-              <MenuItem value="">Tất cả</MenuItem>
-              <MenuItem value="ACTIVE">ACTIVE</MenuItem>
-              <MenuItem value="INACTIVE">INACTIVE</MenuItem>
-            </Select>
-          </FormControl>
-        </Grid>
-      </Grid>
+        <TextField
+          sx={{ minWidth: 500 }}
+          variant="standard"
+          value={searchValue}
+          onChange={handleSearchChange}
+          onKeyDown={handleKeyDown}
+          label="Tìm kiếm sản phẩm"
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="start">
+                <IconButton aria-label="search" onClick={handleSearchSubmit}>
+                  <Search />
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+        />
+      </Box>
 
       <Grid
         container

@@ -12,9 +12,9 @@ export const productApi = baseApi.injectEndpoints({
     }),
 
     searchProducts: builder.query({
-      query: (page, size) => ({
+      query: ({ page, size, search }) => ({
         url: `/v1/public/products/search`,
-        params: { page, size },
+        params: { page, size, search },
       }),
       providesTags: [TAG_KEYS.PRODUCT],
     }),
@@ -30,7 +30,7 @@ export const productApi = baseApi.injectEndpoints({
           variants: product.variants,
         },
       }),
-      providesTags: [TAG_KEYS.PRODUCT],
+      invalidatesTags: [TAG_KEYS.PRODUCT],
     }),
 
     updateProduct: builder.mutation({
@@ -45,7 +45,7 @@ export const productApi = baseApi.injectEndpoints({
         },
       }),
 
-      providesTags: [TAG_KEYS.PRODUCT],
+      invalidatesTags: [TAG_KEYS.PRODUCT],
     }),
 
     deleteProduct: builder.mutation({
@@ -53,7 +53,7 @@ export const productApi = baseApi.injectEndpoints({
         url: `/v1/admin/products/${id}`,
         method: "DELETE",
       }),
-      providesTags: [TAG_KEYS.PRODUCT],
+      invalidatesTags: [TAG_KEYS.PRODUCT],
     }),
 
     restoreProduct: builder.mutation({
@@ -61,7 +61,7 @@ export const productApi = baseApi.injectEndpoints({
         url: `/v1/admin/products/${id}/restore`,
         method: "PATCH",
       }),
-      providesTags: [TAG_KEYS.PRODUCT],
+      invalidatesTags: [TAG_KEYS.PRODUCT],
     }),
   }),
 });

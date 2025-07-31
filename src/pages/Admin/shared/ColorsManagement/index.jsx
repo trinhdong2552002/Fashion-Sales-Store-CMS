@@ -200,7 +200,7 @@ const ColorsManagement = () => {
       <ErrorDisplay
         error={{
           message:
-            "Không tải được danh sách màu sắc. Vui lòng kiểm tra kết nối của bạn và thử lại !",
+            "Không tải được danh sách màu sắc.",
         }}
       />
     );

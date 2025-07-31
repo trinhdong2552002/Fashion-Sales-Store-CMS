@@ -197,7 +197,7 @@ const AddressManagement = () => {
       <ErrorDisplay
         error={{
           message:
-            "Không tải được danh sách địa chỉ. Vui lòng kiểm tra kết nối của bạn và thử lại !",
+            "Không tải được danh sách địa chỉ.",
         }}
       />
     );
