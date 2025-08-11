@@ -23,9 +23,11 @@ const ProductDialogAdd = ({
   submitted,
   dataCategories,
 }) => {
-  const filterActiveCategories = dataCategories?.result?.items?.filter(
-    (activeCategories) => activeCategories.status === "ACTIVE"
-  );
+  // Lấy danh sách categories trạng thái "ACTIVE"
+  const filterActiveCategories =
+    dataCategories?.result?.items?.filter(
+      (activeCategories) => activeCategories.status === "ACTIVE"
+    ) || [];
   return (
     <Dialog fullWidth open={open}>
       <DialogTitle>Thêm sản phẩm</DialogTitle>
