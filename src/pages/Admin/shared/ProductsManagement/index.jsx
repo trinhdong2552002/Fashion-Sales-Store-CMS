@@ -87,7 +87,6 @@ const ProductsManagement = () => {
 
   const {
     data: dataCategories,
-    isLoading: isLoadingCategories,
     isError: isErrorCategories,
     refetch: refetchCategories,
   } = useListCategoriesForAdminQuery(
@@ -354,8 +353,6 @@ const ProductsManagement = () => {
       });
     }
   };
-
-  if (isLoadingCategories) return <div>Loading categories...</div>;
 
   if (isErrorCategories)
     return (
