@@ -10,7 +10,7 @@ import {
   Box,
   Typography,
 } from "@mui/material";
-import styles from "./index.module.css";
+// import styles from "./index.module.css";
 import { Fragment, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
@@ -250,9 +250,9 @@ const Login = () => {
                   alignItems: "center",
                 }}
               >
-                <Link className={styles.forgotPassword} to="/forgot-password">
+                {/* <Link className={styles.forgotPassword} to="/forgot-password">
                   Quên mật khẩu ?
-                </Link>
+                </Link> */}
 
                 <Button
                   variant="contained"

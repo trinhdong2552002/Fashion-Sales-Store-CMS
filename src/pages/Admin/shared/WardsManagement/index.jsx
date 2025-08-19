@@ -39,8 +39,8 @@ const WardsManagement = () => {
     refetch: refetchDataWards,
   } = useListWardsQuery(
     {
-      page: paginationModel.page,
-      size: paginationModel.pageSize,
+      pageNo: paginationModel.page + 1,
+      pageSize: paginationModel.pageSize,
     },
     {
       refetchOnMountOrArgChange: true,
@@ -49,7 +49,7 @@ const WardsManagement = () => {
 
   const { data: dataDistricts, isError: isErrorDistricts } =
     useListDistrictsQuery(
-      { page: 0, size: 1000 },
+      { pageNo: 1, pageSize: 1000 },
       {
         refetchOnMountOrArgChange: true,
       }
@@ -64,8 +64,8 @@ const WardsManagement = () => {
     selectedDistrictId
       ? {
           id: selectedDistrictId,
-          page: paginationModel.page,
-          size: paginationModel.pageSize,
+          pageNo: paginationModel.page + 1,
+          pageSize: paginationModel.pageSize,
         }
       : skipToken,
     {

@@ -4,15 +4,15 @@ import { TAG_KEYS } from "@/constants/tagKeys";
 export const categoriesApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     listCategoriesForAdmin: builder.query({
-      query: ({ page, size }) => ({
-        url: "/v1/admin/categories",
-        params: { page, size },
+      query: ({ pageNo, pageSize }) => ({
+        url: "/v1/categories/admin",
+        params: { pageNo, pageSize },
       }),
       providesTags: [TAG_KEYS.CATEGORIES],
     }),
     addCategories: builder.mutation({
       query: (category) => ({
-        url: "/v1/admin/categories",
+        url: "/v1/categories",
         method: "POST",
         data: {
           name: category.name,
@@ -23,7 +23,7 @@ export const categoriesApi = baseApi.injectEndpoints({
     }),
     updateCategories: builder.mutation({
       query: ({ id, ...category }) => ({
-        url: `/v1/admin/categories/${id}`,
+        url: `/v1/categories/${id}`,
         method: "PUT",
         data: category,
       }),
@@ -31,14 +31,14 @@ export const categoriesApi = baseApi.injectEndpoints({
     }),
     deleteCategories: builder.mutation({
       query: ({ id }) => ({
-        url: `/v1/admin/categories/${id}`,
+        url: `/v1/categories/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: [TAG_KEYS.CATEGORIES],
     }),
     restoreCategories: builder.mutation({
       query: ({ id }) => ({
-        url: `/v1/admin/categories/${id}/restore`,
+        url: `/v1/categories/${id}/restore`,
         method: "PATCH",
       }),
       invalidatesTags: [TAG_KEYS.CATEGORIES],

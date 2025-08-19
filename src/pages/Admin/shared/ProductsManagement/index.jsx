@@ -17,18 +17,24 @@ import ProductDialogDelete from "./shared/ProductDialogDelete";
 import ProductDialogRestore from "./shared/ProductDialogRestore";
 import SnackbarComponent from "@/components/Snackbar";
 import TableData from "@/components/TableData";
-import { Delete, Edit, Restore } from "@mui/icons-material";
+import { Delete, Edit, Restore, Visibility } from "@mui/icons-material";
 import { statusDisplay } from "/src/constants/badgeStatus";
-import { useSearchProductsQuery } from "@/services/api/product";
+import { useListColorsQuery } from "@/services/api/color";
+import { useListSizesQuery } from "@/services/api/size";
+import { useListImagesQuery } from "../../../../services/api/productImage";
+import ProductDialogDetail from "./shared/ProductDialogDetail";
+// import { useSearchProductsQuery } from "@/services/api/product";
 
 const ProductsManagement = () => {
   const [openAddDialog, setOpenAddDialog] = useState(false);
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [openRestoreDialog, setOpenRestoreDialog] = useState(false);
+  const [openDetailDialog, setOpenDetailDialog] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [submitted, setSubmitted] = useState(false);
-  const [search, setSearch] = useState("");
+  // const [search, setSearch] = useState("");
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 10,
@@ -36,17 +42,13 @@ const ProductsManagement = () => {
   const [newProduct, setNewProduct] = useState({
     name: "",
     description: "",
+    price: "",
+    quantity: "",
     categoryId: "",
+    colorIds: [],
+    sizeIds: [],
+    imageIds: [],
   });
-  const [variants, setVariants] = useState([
-    {
-      price: "",
-      quantity: "",
-      colorId: "",
-      sizeId: "",
-      imageId: "",
-    },
-  ]);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -60,52 +62,66 @@ const ProductsManagement = () => {
     refetch: refetchProducts,
   } = useListProductsForAdminQuery(
     {
-      page: paginationModel.page,
-      size: paginationModel.pageSize,
+      pageNo: paginationModel.page + 1,
+      pageSize: paginationModel.pageSize,
     },
     {
       refetchOnMountOrArgChange: true,
     }
   );
 
-  // Đang dùng tạm api tìm kiếm sản phẩm cho user, vì lấy danh sách sản phẩm cho admin thiếu field search
-  const { data: dataSearchProducts } = useSearchProductsQuery(
-    {
-      page: paginationModel.page,
-      size: paginationModel.pageSize,
-      search,
-    },
-    {
-      refetchOnMountOrArgChange: true,
-    }
-  );
+  // TODO: Need search product for admin
+  // const { data: dataSearchProducts } = useSearchProductsQuery(
+  //   {
+  //     page: paginationModel.page,
+  //     size: paginationModel.pageSize,
+  //     search,
+  //   },
+  //   {
+  //     refetchOnMountOrArgChange: true,
+  //   }
+  // );
 
   const [addProduct] = useAddProductMutation();
   const [updateProduct] = useUpdateProductMutation();
   const [deleteProduct] = useDeleteProductMutation();
   const [restoreProduct] = useRestoreProductMutation();
 
-  const {
-    data: dataCategories,
-    isError: isErrorCategories,
-    refetch: refetchCategories,
-  } = useListCategoriesForAdminQuery(
-    { page: 0, size: 100 },
+  const { data: dataCategories, refetch: refetchCategories } =
+    useListCategoriesForAdminQuery(
+      { pageNo: 1, pageSize: 100 },
+      {
+        refetchOnMountOrArgChange: true,
+      }
+    );
+
+  const { data: dataColors, refetch: refetchColors } = useListColorsQuery(
+    { pageNo: 1, pageSize: 100 },
     {
       refetchOnMountOrArgChange: true,
     }
   );
-  console.log(dataCategories);
 
-  const dataRowProducts =
-    search.length > 0
-      ? dataSearchProducts?.result?.items || []
-      : dataProducts?.result?.items || [];
+  const { data: dataSizes } = useListSizesQuery({
+    refetchOnMountOrArgChange: true,
+  });
 
-  const totalRows =
-    search.length > 0
-      ? dataSearchProducts?.result?.totalItems || 0
-      : dataProducts?.result?.totalItems || 0;
+  const { data: dataImages, refetch: refetchImages } = useListImagesQuery(
+    { pageNo: 1, pageSize: 100 },
+    {
+      refetchOnMountOrArgChange: true,
+    }
+  );
+
+  const dataRowProducts = dataProducts?.result?.items || [];
+  // search.length > 0
+  //   ? dataSearchProducts?.result?.items || []
+  //   : dataProducts?.result?.items || [];
+
+  const totalRows = dataProducts?.result?.totalItems || 0;
+  // search.length > 0
+  //   ? dataSearchProducts?.result?.totalItems || 0
+  //   : dataProducts?.result?.totalItems || 0;
 
   const columnsProduct = [
     { field: "id", headerName: "ID", width: 100 },
@@ -160,9 +176,14 @@ const ProductsManagement = () => {
       width: 200,
       renderCell: (params) => (
         <Fragment>
+          <IconButton onClick={() => handleOpenDetailDialog(params.row.id)}>
+            <Visibility color="success" />
+          </IconButton>
+
           <IconButton onClick={() => handleEditProduct(params.row.id)}>
             <Edit color="primary" />
           </IconButton>
+
           {params.row.status === "INACTIVE" ? (
             <IconButton onClick={() => handleOpenRestoreDialog(params.row.id)}>
               <Restore color="success" />
@@ -216,7 +237,6 @@ const ProductsManagement = () => {
     try {
       await addProduct({
         ...newProduct,
-        variants,
       }).unwrap();
       setSnackbar({
         open: true,
@@ -226,17 +246,14 @@ const ProductsManagement = () => {
       setNewProduct({
         name: "",
         description: "",
+        price: "",
+        quantity: "",
         categoryId: "",
+        colorIds: [],
+        sizeIds: [],
+        imageIds: [],
       });
-      setVariants([
-        {
-          price: "",
-          quantity: "",
-          colorId: "",
-          sizeId: "",
-          imageId: "",
-        },
-      ]);
+
       setOpenAddDialog(false);
       setSubmitted(false);
       refetchProducts();
@@ -255,20 +272,39 @@ const ProductsManagement = () => {
     console.log("Product to edit:", productToEdit);
 
     if (productToEdit) {
+      // Extract category ID
+      const categoryId =
+        productToEdit.category?.id || productToEdit.categoryId || "";
+
+      // Extract color IDs from colors array
+      const colorIds =
+        productToEdit.colors?.map((color) => color.id) ||
+        productToEdit.colorIds ||
+        [];
+
+      // Extract size IDs from sizes array
+      const sizeIds =
+        productToEdit.sizes?.map((size) => size.id) ||
+        productToEdit.sizeIds ||
+        [];
+
+      // Extract image IDs from images array
+      const imageIds =
+        productToEdit.images?.map((image) => image.id) ||
+        productToEdit.imageIds ||
+        [];
+
       setNewProduct({
-        name: productToEdit.name,
-        description: productToEdit.description,
-        categoryId: productToEdit.categoryId,
+        name: productToEdit.name || "",
+        description: productToEdit.description || "",
+        price: productToEdit.price || "",
+        quantity: productToEdit.quantity || "",
+        categoryId: categoryId,
+        colorIds: colorIds,
+        sizeIds: sizeIds,
+        imageIds: imageIds,
       });
-      setVariants(
-        productToEdit.variants.map((variant) => ({
-          price: variant.price,
-          quantity: variant.quantity,
-          colorId: variant.colorId,
-          sizeId: variant.sizeId,
-          imageId: variant.imageUrl,
-        })) || []
-      );
+
       setSelectedProductId(id);
       setOpenEditDialog(true);
     }
@@ -281,23 +317,23 @@ const ProductsManagement = () => {
       await updateProduct({
         id: selectedProductId,
         ...newProduct,
-        variants,
       });
       setSnackbar({
         open: true,
         message: "Cập nhật sản phẩm thành công!",
         severity: "success",
       });
-      setNewProduct({ name: "", description: "", categoryId: "" });
-      setVariants([
-        {
-          price: "",
-          quantity: "",
-          colorId: "",
-          sizeId: "",
-          imageId: "",
-        },
-      ]);
+      setNewProduct({
+        name: "",
+        description: "",
+        price: "",
+        quantity: "",
+        categoryId: "",
+        colorIds: [],
+        sizeIds: [],
+        imageIds: [],
+      });
+
       setSelectedProductId(null);
       setOpenEditDialog(false);
       setSubmitted(false);
@@ -354,15 +390,11 @@ const ProductsManagement = () => {
     }
   };
 
-  if (isErrorCategories)
-    return (
-      <ErrorDisplay
-        error={{
-          message:
-            "Không thể tải danh mục sản phẩm. Vui lòng thử lại sau hoặc kiểm tra kết nối!",
-        }}
-      />
-    );
+  const handleOpenDetailDialog = (id) => {
+    const product = dataRowProducts.find((item) => item.id === id);
+    setSelectedProduct(product);
+    setOpenDetailDialog(true);
+  };
 
   if (isErrorProducts)
     return (
@@ -379,11 +411,22 @@ const ProductsManagement = () => {
       <Typography variant="h5">Quản lý Sản phẩm</Typography>
 
       <ProductToolbar
-        onSearch={setSearch}
+        // onSearch={setSearch}
         onAddProduct={() => {
           setOpenAddDialog(true);
-          setNewProduct({ name: "", description: "", categoryId: "" });
+          setNewProduct({
+            name: "",
+            description: "",
+            price: "",
+            quantity: "",
+            categoryId: "",
+            colorIds: [],
+            sizeIds: [],
+            imageIds: [],
+          });
           refetchCategories();
+          refetchColors();
+          refetchImages();
         }}
         onRefresh={handleRefresh}
       />
@@ -404,10 +447,11 @@ const ProductsManagement = () => {
         onSubmit={handleAddProduct}
         product={newProduct}
         setProduct={setNewProduct}
-        variants={variants}
-        setVariants={setVariants}
         submitted={submitted}
         dataCategories={dataCategories}
+        dataColors={dataColors}
+        dataSizes={dataSizes}
+        dataImages={dataImages}
       />
 
       <ProductDialogEdit
@@ -416,10 +460,11 @@ const ProductsManagement = () => {
         onSubmit={handleUpdateProduct}
         product={newProduct}
         setProduct={setNewProduct}
-        variants={variants}
-        setVariants={setVariants}
         submitted={submitted}
         dataCategories={dataCategories}
+        dataColors={dataColors}
+        dataSizes={dataSizes}
+        dataImages={dataImages}
       />
 
       <ProductDialogDelete
@@ -432,6 +477,12 @@ const ProductsManagement = () => {
         open={openRestoreDialog}
         onClose={handleCloseRestoreDialog}
         onConfirm={handleRestoreProduct}
+      />
+
+      <ProductDialogDetail
+        open={openDetailDialog}
+        onClose={() => setOpenDetailDialog(false)}
+        product={selectedProduct}
       />
 
       <SnackbarComponent snackbar={snackbar} onClose={handleCloseSnackbar} />

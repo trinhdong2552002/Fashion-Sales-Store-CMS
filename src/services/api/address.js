@@ -4,23 +4,23 @@ import { TAG_KEYS } from "/src/constants/tagKeys.js";
 export const addressApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     listAddressForAdmin: builder.query({
-      query: ({ page, size }) => ({
-        url: `/v1/admin/addresses`,
+      query: ({ pageNo, pageSize }) => ({
+        url: `/v1/addresses`,
         method: "GET",
-        params: { page, size },
+        params: { pageNo, pageSize },
       }),
       providesTags: [TAG_KEYS.ADDRESS],
     }),
     deleteAddress: builder.mutation({
       query: ({ id }) => ({
-        url: `/v1/admin/addresses/${id}`,
+        url: `/v1/addresses/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: [TAG_KEYS.ADDRESS],
     }),
     restoreAddress: builder.mutation({
       query: ({ id }) => ({
-        url: `/v1/admin/addresses/${id}/restore`,
+        url: `/v1/addresses/${id}/restore`,
         method: "PATCH",
       }),
       invalidatesTags: [TAG_KEYS.ADDRESS],

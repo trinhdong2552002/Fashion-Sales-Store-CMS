@@ -4,16 +4,16 @@ import { TAG_KEYS } from "@/constants/tagKeys";
 export const userApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     listUsersForAdmin: builder.query({
-      query: ({ page, size }) => ({
-        url: "/v1/admin/users",
-        params: { page, size },
+      query: ({ pageNo, pageSize }) => ({
+        url: "/v1/users",
+        params: { pageNo, pageSize },
       }),
       providesTags: [TAG_KEYS.USER],
     }),
 
     createUserWithRole: builder.mutation({
       query: (userData) => ({
-        url: "/v1/admin/users",
+        url: "/v1/users",
         method: "POST",
         data: userData,
       }),
@@ -22,7 +22,7 @@ export const userApi = baseApi.injectEndpoints({
 
     deleteUser: builder.mutation({
       query: (id) => ({
-        url: `/v1/admin/users/${id}`,
+        url: `/v1/users/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: [TAG_KEYS.USER],
@@ -30,7 +30,7 @@ export const userApi = baseApi.injectEndpoints({
 
     restoreUser: builder.mutation({
       query: (id) => ({
-        url: `/v1/admin/users/${id}/restore`,
+        url: `/v1/users/${id}/restore`,
         method: "PATCH",
       }),
       invalidatesTags: [TAG_KEYS.USER],

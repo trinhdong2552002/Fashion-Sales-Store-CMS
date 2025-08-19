@@ -5,19 +5,19 @@ import { TAG_KEYS } from "/src/constants/tagKeys.js";
 export const provinceApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     listProvinces: builder.query({
-      query: ({ page, size }) => ({
-        url: `/v1/private/provinces`,
+      query: ({ pageNo, pageSize }) => ({
+        url: `/v1/provinces`,
         method: "GET",
-        params: { page, size },
+        params: { pageNo, pageSize },
       }),
       providesTags: [TAG_KEYS.PROVINCE],
     }),
 
     listDistrictsByProvince: builder.query({
-      query: ({ id, page, size }) => ({
-        url: `/v1/private/provinces/${id}/districts`,
+      query: ({ id, pageBo, pageSize }) => ({
+        url: `/v1/provinces/${id}/districts`,
         method: "GET",
-        params: { page, size },
+        params: { pageBo, pageSize },
       }),
       providesTags: [TAG_KEYS.PROVINCE],
     }),

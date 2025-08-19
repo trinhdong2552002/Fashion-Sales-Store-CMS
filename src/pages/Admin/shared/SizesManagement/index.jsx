@@ -26,8 +26,8 @@ const SizesManagement = () => {
     refetch,
   } = useListSizesQuery(
     {
-      page: paginationModel.page,
-      size: paginationModel.pageSize,
+      pageNo: paginationModel.page + 1,
+      pageSize: paginationModel.pageSize,
     },
     {
       refetchOnMountOrArgChange: true,

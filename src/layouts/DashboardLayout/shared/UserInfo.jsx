@@ -65,13 +65,14 @@ const UserInfo = ({ isMobile = false, drawerWidth }) => {
 
   const handleLogout = async () => {
     try {
-      if (!localStorage.getItem("accessToken")) {
-        throw new Error("accessToken is required for logout");
+      const accessToken = localStorage.getItem("accessToken");
+      if (accessToken) {
+        try {
+          await logout({ accessToken }).unwrap();
+        } catch (err) {
+          console.log("Logout failed", err);
+        }
       }
-      const response = await logout({
-        accessToken: localStorage.getItem("accessToken"),
-      }).unwrap();
-      console.log("Logout response:", response);
 
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
