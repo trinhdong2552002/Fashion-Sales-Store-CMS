@@ -31,7 +31,7 @@ const BranchesManagement = () => {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [openRestoreDialog, setOpenRestoreDialog] = useState(false);
   const [openAddDialog, setOpenAddDialog] = useState(false);
-  const [openUpdateDialog, setOpenUpdateDialog] = useState(false);
+  const [openEditDialog, setOpenEditDialog] = useState(false);
   const [selectedBranchesId, setSelectedBranchesId] = useState(null);
   const [submitted, setSubmitted] = useState(false);
   const [paginationModel, setPaginationModel] = useState({
@@ -55,7 +55,7 @@ const BranchesManagement = () => {
     error: errorBranches,
     refetch,
   } = useListBranchesForAdminQuery(
-    { page: paginationModel.page, size: paginationModel.pageSize },
+    { pageNo: paginationModel.page + 1, pageSize: paginationModel.pageSize },
     {
       refetchOnMountOrArgChange: true,
     }
@@ -194,13 +194,13 @@ const BranchesManagement = () => {
   const handleDeleteBranches = async () => {
     try {
       await deleteBranches({ id: selectedBranchesId }).unwrap();
-      setOpenDeleteDialog(false);
-      setSelectedBranchesId(null);
       setSnackbar({
         open: true,
         message: "Xóa chi nhánh thành công!",
         severity: "success",
       });
+      setOpenDeleteDialog(false);
+      setSelectedBranchesId(null);
       refetch();
     } catch (error) {
       const errorMessage = error?.data?.message;
@@ -220,6 +220,8 @@ const BranchesManagement = () => {
         message: "Khôi phục chi nhánh thành công!",
         severity: "success",
       });
+      setOpenRestoreDialog(false);
+      setSelectedBranchesId(null);
       refetch();
     } catch (error) {
       const errorMessage = error?.data?.message;
@@ -229,8 +231,6 @@ const BranchesManagement = () => {
         severity: "error",
       });
     }
-    setOpenRestoreDialog(false);
-    setSelectedBranchesId(null);
   };
 
   const handleAddBranches = async (data) => {
@@ -271,7 +271,7 @@ const BranchesManagement = () => {
         phone: branchesToEdit.phone,
       });
       setSelectedBranchesId(id);
-      setOpenUpdateDialog(true);
+      setOpenEditDialog(true);
     }
   };
 
@@ -289,9 +289,9 @@ const BranchesManagement = () => {
         message: "Cập nhật chi nhánh thành công!",
       });
       setNewBranches({ name: "", location: "", phone: "" });
-      setOpenUpdateDialog(false);
-      setSubmitted(false);
       setSelectedBranchesId(null);
+      setOpenEditDialog(false);
+      setSubmitted(false);
       refetch();
     } catch (error) {
       const errorMessage = error?.data?.message;
@@ -309,8 +309,7 @@ const BranchesManagement = () => {
         error={
           errorBranches
             ? {
-                message:
-                  "Không tải được danh sách chi nhánh.",
+                message: "Không tải được danh sách chi nhánh.",
               }
             : null
         }
@@ -433,7 +432,11 @@ const BranchesManagement = () => {
           />
         </DialogContent>
         <DialogActions sx={{ p: 3 }}>
-          <Button color="error" variant="outlined" onClick={() => setOpenAddDialog(false)}>
+          <Button
+            color="error"
+            variant="outlined"
+            onClick={() => setOpenAddDialog(false)}
+          >
             Hủy
           </Button>
           <Button
@@ -447,7 +450,7 @@ const BranchesManagement = () => {
       </Dialog>
 
       {/* TODO: Dialog update branches */}
-      <Dialog fullWidth open={openUpdateDialog}>
+      <Dialog fullWidth open={openEditDialog}>
         <DialogTitle>Cập nhật chi nhánh</DialogTitle>
         <DialogContent>
           <TextField
@@ -496,7 +499,7 @@ const BranchesManagement = () => {
           <Button
             color="error"
             variant="outlined"
-            onClick={() => setOpenUpdateDialog(false)}
+            onClick={() => setOpenEditDialog(false)}
           >
             Hủy
           </Button>

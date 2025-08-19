@@ -25,8 +25,8 @@ const OrdersManagement = () => {
     isError: isErrorOrders,
     refetch,
   } = useListOrdersForAdminQuery({
-    page: paginationModel.page,
-    size: paginationModel.pageSize,
+    pageNo: paginationModel.page + 1, 
+    pageSize: paginationModel.pageSize,
   });
 
   const dataRowOrders = dataOrders?.result?.items || [];

@@ -37,8 +37,8 @@ const DistrictsManagement = () => {
     refetch: refetchDistricts,
   } = useListDistrictsQuery(
     {
-      page: paginationModel.page,
-      size: paginationModel.pageSize,
+      pageNo: paginationModel.page + 1,
+      pageSize: paginationModel.pageSize,
     },
     {
       refetchOnMountOrArgChange: true,
@@ -48,8 +48,8 @@ const DistrictsManagement = () => {
   const { data: dataProvinces, isError: isErrorProvinces } =
     useListProvincesQuery(
       {
-        page: 0,
-        size: 100,
+        pageNo: 1,
+        pageSize: 100,
       },
       {
         refetchOnMountOrArgChange: true,

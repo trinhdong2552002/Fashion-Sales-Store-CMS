@@ -62,8 +62,8 @@ const UsersManagement = () => {
     refetch: refetchUser,
   } = useListUsersForAdminQuery(
     {
-      page: paginationModel.page,
-      size: paginationModel.pageSize,
+      pageNo: paginationModel.page + 1,
+      pageSize: paginationModel.pageSize,
     },
     {
       refetchOnMountOrArgChange: true,
@@ -201,25 +201,37 @@ const UsersManagement = () => {
       field: "actions",
       headerName: "Hành động",
       width: 200,
-      renderCell: (params) => (
-        <>
-          {params.row?.status === "INACTIVE" ? (
-            <IconButton
-              onClick={() => handleOpenRestoreDialog(params.row.id)}
-              color="success"
-            >
-              <Restore />
-            </IconButton>
-          ) : (
-            <IconButton
-              onClick={() => handleOpenDeleteDialog(params.row.id)}
-              color="error"
-            >
-              <Delete />
-            </IconButton>
-          )}
-        </>
-      ),
+      renderCell: (params) => {
+        const isAdmin = params.row?.roles?.some(
+          (role) => role.name?.toUpperCase() === "ADMIN"
+        );
+        if (isAdmin) {
+          return (
+            <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+              <Typography>Không thể xóa Admin</Typography>
+            </Box>
+          );
+        }
+        return (
+          <>
+            {params.row?.status === "INACTIVE" ? (
+              <IconButton
+                onClick={() => handleOpenRestoreDialog(params.row.id)}
+                color="success"
+              >
+                <Restore />
+              </IconButton>
+            ) : (
+              <IconButton
+                onClick={() => handleOpenDeleteDialog(params.row.id)}
+                color="error"
+              >
+                <Delete />
+              </IconButton>
+            )}
+          </>
+        );
+      },
     },
   ];
 
@@ -292,15 +304,32 @@ const UsersManagement = () => {
   };
 
   const handleDeleteUser = async () => {
-    try {
-      await deleteUser(userToDelete).unwrap();
-      setOpenDeleteDialog(false);
-      setUserToDelete(null);
+    const user = dataRowUsers.find((u) => u.id === userToDelete);
+    const isAdmin = user?.roles?.some(
+      (role) => role.name?.toLowerCase() === "admin"
+    );
+    if (isAdmin) {
       setSnackbar({
         open: true,
-        message: "Xóa người dùng thành công!",
-        severity: "success",
+        message: "Không thể xóa người dùng có vai trò Admin!",
+        severity: "error",
       });
+      setOpenDeleteDialog(false);
+      setUserToDelete(null);
+      return;
+    }
+    try {
+      const response = await deleteUser(userToDelete).unwrap();
+      if (response) {
+        setOpenDeleteDialog(false);
+        setUserToDelete(null);
+        setSnackbar({
+          open: true,
+          message: "Xóa người dùng thành công!",
+          severity: "success",
+        });
+      }
+
       refetchUser();
     } catch (error) {
       const errorMessage = error.data?.message || "Lỗi khi xóa người dùng";
@@ -335,8 +364,7 @@ const UsersManagement = () => {
   if (isErrorUser) {
     <ErrorDisplay
       error={{
-        message:
-          "Không tải được danh sách người dùng.",
+        message: "Không tải được danh sách người dùng.",
       }}
     />;
   }

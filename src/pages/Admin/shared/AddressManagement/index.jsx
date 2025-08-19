@@ -43,8 +43,8 @@ const AddressManagement = () => {
     refetch,
   } = useListAddressForAdminQuery(
     {
-      page: paginationModel.page,
-      size: paginationModel.pageSize,
+      pageNo: paginationModel.page + 1,
+      pageSize: paginationModel.pageSize,
     },
     {
       refetchOnMountOrArgChange: true,

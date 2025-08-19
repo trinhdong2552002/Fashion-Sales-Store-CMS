@@ -4,9 +4,9 @@ import { TAG_KEYS } from "/src/constants/tagKeys.js";
 export const wardApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     listWards: builder.query({
-      query: ({ page, size }) => ({
-        url: `/v1/private/wards`,
-        params: { page, size },
+      query: ({ pageNo, pageSize }) => ({
+        url: `/v1/wards`,
+        params: { pageNo, pageSize },
       }),
       providesTags: [TAG_KEYS.WARD],
     }),

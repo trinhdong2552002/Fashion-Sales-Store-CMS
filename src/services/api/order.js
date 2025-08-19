@@ -4,9 +4,9 @@ import { TAG_KEYS } from "/src/constants/tagKeys.js";
 export const orderApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     listOrdersForAdmin: builder.query({
-      query: ({ page, size }) => ({
-        url: `v1/admin/orders`,
-        params: { page, size },
+      query: ({ pageNo, pageSize }) => ({
+        url: `v1/orders`,
+        params: { pageNo, pageSize },
       }),
       providesTags: [TAG_KEYS.ORDER],
     }),

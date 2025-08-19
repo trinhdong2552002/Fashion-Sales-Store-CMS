@@ -5,13 +5,13 @@ export const axiosBaseQuery =
   () =>
   async ({ url, method, data, params, headers }) => {
     const publicEndpoints = [
-      "/v1/public/auth/login",
-      "/v1/public/auth/forgot-password",
-      "/v1/public/auth/forgot-password/verify-code",
-      "/v1/public/auth/forgot-password/reset-password",
-      "/v1/public/sizes",
-      "/v1/public/colors",
-      "/v1/public/products/search",
+      "/v1/auth/login",
+      // "/v1/auth/forgot-password",
+      // "/v1/auth/forgot-password/verify-code",
+      // "/v1/public/auth/forgot-password/reset-password",
+      // "/v1/public/sizes",
+      // "/v1/public/colors",
+      // "/v1/public/products/search",
     ];
 
     const token = localStorage.getItem("accessToken");

@@ -31,7 +31,7 @@ const App = () => {
       <Routes>
         <Route index element={<Login />} />
 
-        {/* Route Login */}
+{/*         
         <Route path="/forgot-password" element={<ForgotPasswordLayout />}>
           <Route index element={<ForgotPassword />} />
           <Route
@@ -39,7 +39,7 @@ const App = () => {
             element={<ForgotPasswordVerify />}
           />
           <Route path="reset-password" element={<ResetPassword />} />
-        </Route>
+        </Route> */}
 
         {/* Route admin */}
         <Route path="/admin" element={<AdminLayout />}>

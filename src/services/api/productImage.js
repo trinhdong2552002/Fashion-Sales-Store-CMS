@@ -5,29 +5,31 @@ import { TAG_KEYS } from "/src/constants/tagKeys.js";
 export const productImageApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     listImages: builder.query({
-      query: ({ page, size, fileType }) => ({
-        url: `/v1/admin/files/all`,
+      query: ({ pageNo, pageSize }) => ({
+        url: "/v1/file/all",
         method: "GET",
-        params: { page, size, fileType },
+        params: { pageNo, pageSize },
       }),
       providesTags: [TAG_KEYS.PRODUCT_IMAGE],
     }),
 
-    uploadImages: builder.mutation({
-      async queryFn(files) {
+    uploadImage: builder.mutation({
+      async queryFn(file) {
+        // Now accepts single file, not array
         const formData = new FormData();
-        for (let file of files) {
-          formData.append("files", file);
-        }
+
+        // Change from "files" to "fileImage" to match backend
+        formData.append("fileImage", file);
 
         try {
           const token = localStorage.getItem("accessToken");
           const response = await axios.post(
-            `${import.meta.env.VITE_API_URL}/v1/admin/files/upload/images`,
+            `${import.meta.env.VITE_API_URL}/v1/file/upload/image`,
             formData,
             {
               headers: {
                 Authorization: `Bearer ${token}`,
+                // Don't set Content-Type manually, let browser set it with boundary
               },
             }
           );
@@ -47,7 +49,7 @@ export const productImageApi = baseApi.injectEndpoints({
 
     deleteImage: builder.mutation({
       query: (id) => ({
-        url: `/v1/admin/files/delete/${id}`,
+        url: `/v1/file/delete/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: [TAG_KEYS.PRODUCT_IMAGE],
@@ -57,7 +59,7 @@ export const productImageApi = baseApi.injectEndpoints({
 
 export const {
   useListImagesQuery,
-  useUploadImagesMutation,
+  useUploadImageMutation,
   useLazyListImagesQuery,
   useDeleteImageMutation,
 } = productImageApi;

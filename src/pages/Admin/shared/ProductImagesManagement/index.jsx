@@ -14,7 +14,7 @@ import {
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import {
   useListImagesQuery,
-  useUploadImagesMutation,
+  useUploadImageMutation,
   useDeleteImageMutation,
 } from "@/services/api/productImage";
 import { useGetMyInfoQuery } from "@/services/api/auth";
@@ -47,16 +47,15 @@ const ProductImagesManagement = () => {
     refetch,
   } = useListImagesQuery(
     {
-      page: paginationModel.page,
-      size: paginationModel.pageSize,
-      fileType: "PRODUCT_IMAGE",
+      pageNo: paginationModel.page + 1,
+      pageSize: paginationModel.pageSize,
     },
     { skip: userLoading },
     { refetchOnMountOrArgChange: true }
   );
   console.log("dataImages", dataImages);
 
-  const [uploadImage] = useUploadImagesMutation();
+  const [uploadImage] = useUploadImageMutation();
   const [deleteImage] = useDeleteImageMutation();
 
   const dataRowImages = dataImages?.result?.items || [];
@@ -113,30 +112,42 @@ const ProductImagesManagement = () => {
     },
   ];
 
-  const handleUploadImage = async (e) => {
-    const files = e.target.files;
-    if (!files.length) return;
+const handleUploadImage = async (e) => {
+  const file = e.target.files[0]; // Single file only
+  if (!file) return;
 
-    setIsUploadingImage(true);
-    try {
-      await uploadImage(files).unwrap();
-      setSnackbar({
-        open: true,
-        message: "Upload hình ảnh thành công!",
-        severity: "success",
-      });
-      refetch();
-    } catch (error) {
-      setSnackbar({
-        open: true,
-        message: "Upload hình ảnh thất bại!",
-        severity: "error",
-      });
-      console.error("Lỗi upload:", error);
-    } finally {
-      setIsUploadingImage(false);
-    }
-  };
+  // Validate file type
+  if (!file.type.startsWith('image/')) {
+    setSnackbar({
+      open: true,
+      message: "Vui lòng chọn một file hình ảnh!",
+      severity: "error",
+    });
+    return;
+  }
+
+  setIsUploadingImage(true);
+  try {
+    // Pass single file, not array
+    await uploadImage(file).unwrap();
+    setSnackbar({
+      open: true,
+      message: "Upload hình ảnh thành công!",
+      severity: "success",
+    });
+    refetch();
+    e.target.value = ''; // Clear input
+  } catch (error) {
+    setSnackbar({
+      open: true,
+      message: error?.data?.message || "Upload hình ảnh thất bại!",
+      severity: "error",
+    });
+    console.error("Lỗi upload:", error);
+  } finally {
+    setIsUploadingImage(false);
+  }
+};
 
   const handleDeleteImage = async () => {
     try {
@@ -181,8 +192,7 @@ const ProductImagesManagement = () => {
     return (
       <ErrorDisplay
         error={{
-          message:
-            "Không tải được danh sách hình ảnh sản phẩm.",
+          message: "Không tải được danh sách hình ảnh sản phẩm.",
         }}
       />
     );
@@ -215,7 +225,6 @@ const ProductImagesManagement = () => {
           <input
             type="file"
             accept="image/*"
-            multiple
             hidden
             onChange={handleUploadImage}
           />
@@ -267,8 +276,12 @@ const ProductImagesManagement = () => {
             Bạn có chắc chắn muốn xóa hình ảnh này không ?
           </DialogContentText>
         </DialogContent>
-        <DialogActions sx={{p: 3}}>
-          <Button onClick={handleCloseDeleteDialog} color="error" variant="outlined">
+        <DialogActions sx={{ p: 3 }}>
+          <Button
+            onClick={handleCloseDeleteDialog}
+            color="error"
+            variant="outlined"
+          >
             Hủy
           </Button>
           <Button

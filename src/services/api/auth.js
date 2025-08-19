@@ -8,7 +8,7 @@ export const authApi = baseApi.injectEndpoints({
     // Đăng nhập
     login: builder.mutation({
       query: (credentials) => ({
-        url: "/v1/public/auth/login",
+        url: "/v1/auth/login",
         method: "POST",
         data: {
           email: credentials.email,
@@ -34,43 +34,43 @@ export const authApi = baseApi.injectEndpoints({
     }),
 
     // Quên mật khẩu
-    forgotPassword: builder.mutation({
-      query: (credentials) => ({
-        url: "/v1/public/auth/forgot-password",
-        method: "POST",
-        data: {
-          email: credentials.email,
-        },
-      }),
-      invalidatesTags: [TAG_KEYS.AUTH],
-    }),
+    // forgotPassword: builder.mutation({
+    //   query: (credentials) => ({
+    //     url: "/v1/auth/forgot-password",
+    //     method: "POST",
+    //     data: {
+    //       email: credentials.email,
+    //     },
+    //   }),
+    //   invalidatesTags: [TAG_KEYS.AUTH],
+    // }),
 
     // Xác thực mật khẩu
-    forgotPasswordVerify: builder.mutation({
-      query: (credentials) => ({
-        url: "/v1/public/auth/forgot-password/verify-code",
-        method: "POST",
-        data: {
-          email: credentials.email,
-          verificationCode: credentials.verificationCode,
-        },
-      }),
-      invalidatesTags: [TAG_KEYS.AUTH],
-    }),
+    // forgotPasswordVerify: builder.mutation({
+    //   query: (credentials) => ({
+    //     url: "/v1/auth/forgot-password/verify-code",
+    //     method: "POST",
+    //     data: {
+    //       email: credentials.email,
+    //       verificationCode: credentials.verificationCode,
+    //     },
+    //   }),
+    //   invalidatesTags: [TAG_KEYS.AUTH],
+    // }),
 
     // Đặt lại mật khẩu
-    resetPassword: builder.mutation({
-      query: (credentials) => ({
-        url: "/v1/public/auth/forgot-password/reset-password",
-        method: "POST",
-        data: {
-          forgotPasswordToken: credentials.forgotPasswordToken,
-          newPassword: credentials.newPassword,
-          confirmPassword: credentials.confirmPassword,
-        },
-      }),
-      invalidatesTags: [TAG_KEYS.AUTH],
-    }),
+    // resetPassword: builder.mutation({
+    //   query: (credentials) => ({
+    //     url: "/v1/auth/forgot-password/reset-password",
+    //     method: "POST",
+    //     data: {
+    //       forgotPasswordToken: credentials.forgotPasswordToken,
+    //       newPassword: credentials.newPassword,
+    //       confirmPassword: credentials.confirmPassword,
+    //     },
+    //   }),
+    //   invalidatesTags: [TAG_KEYS.AUTH],
+    // }),
 
     // Đăng xuất
     logout: builder.mutation({
@@ -80,7 +80,7 @@ export const authApi = baseApi.injectEndpoints({
         }
 
         return {
-          url: "/v1/private/auth/logout",
+          url: "/v1/auth/logout",
           method: "POST",
           data: {
             accessToken: credentials.accessToken,
@@ -93,7 +93,7 @@ export const authApi = baseApi.injectEndpoints({
     // refreshToken
     refreshToken: builder.mutation({
       query: (credentials) => ({
-        url: "/v1/public/auth/refresh-token",
+        url: "/v1/auth/refresh-token",
         method: "POST",
         data: {
           refreshToken: credentials.refreshToken,
@@ -104,7 +104,7 @@ export const authApi = baseApi.injectEndpoints({
 
     getMyInfo: builder.query({
       query: () => ({
-        url: "/v1/private/auth/myInfo",
+        url: "/v1/auth/myInfo",
       }),
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
         try {
