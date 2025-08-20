@@ -78,7 +78,14 @@ const AddressManagement = () => {
       width: 200,
       renderCell: (params) => params.row?.province?.name || "—-",
     },
-    { field: "isDefault", headerName: "Địa chỉ mặc định", width: 200 },
+    {
+      field: "isDefault",
+      headerName: "Địa chỉ mặc định",
+      width: 200,
+      renderCell: (params) => (
+        <>{params?.row?.isDefault === true ? "Mặc định" : "Không"}</>
+      ),
+    },
     {
       field: "status",
       headerName: "Trạng thái",
@@ -196,8 +203,7 @@ const AddressManagement = () => {
     return (
       <ErrorDisplay
         error={{
-          message:
-            "Không tải được danh sách địa chỉ.",
+          message: "Không tải được danh sách địa chỉ.",
         }}
       />
     );

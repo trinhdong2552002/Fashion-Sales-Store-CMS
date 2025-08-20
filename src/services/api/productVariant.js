@@ -5,15 +5,17 @@ import { TAG_KEYS } from "/src/constants/tagKeys.js";
 export const productVariantApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     listAllProduct_VariantsByProduct: builder.query({
-      query: ({ page, size, id }) => ({
-        url: `/v1/admin/products/${id}/product-variants/admin`,
-        params: { page, size },
+      query: ({ pageNo, pageSize, id }) => ({
+        // TODO: Dùng tạm của user hiện admin đang lỗi
+        // url: `/v1/products/${id}/product-variants/admin`,
+        url: `/v1/products/${id}/product-variants`,
+        params: { pageNo, pageSize },
       }),
       providesTags: [TAG_KEYS.PRODUCT_VARIANT],
     }),
     updateProductVariant: builder.mutation({
       query: ({ id, price, quantity }) => ({
-        url: `/v1/admin/product-variants/${id}`,
+        url: `/v1/product-variants/${id}`,
         method: "PUT",
         data: {
           price,
@@ -24,19 +26,20 @@ export const productVariantApi = baseApi.injectEndpoints({
     }),
     deleteProductVariant: builder.mutation({
       query: ({ id }) => ({
-        url: `/v1/admin/product-variants/${id}`,
+        url: `/v1/product-variants/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: [TAG_KEYS.PRODUCT_VARIANT],
     }),
 
-    restoreProductVariant: builder.mutation({
-      query: ({ id }) => ({
-        url: `/v1/admin/product-variants/${id}/restore`,
-        method: "PATCH",
-      }),
-      invalidatesTags: [TAG_KEYS.PRODUCT_VARIANT],
-    }),
+    // TODO: BE cũ hiện tại ko support restore khi xoá biến thể coi như đã xoá cứng
+    // restoreProductVariant: builder.mutation({
+    //   query: ({ id }) => ({
+    //     url: `/v1/product-variants/${id}/restore`,
+    //     method: "PATCH",
+    //   }),
+    //   invalidatesTags: [TAG_KEYS.PRODUCT_VARIANT],
+    // }),
   }),
 });
 
@@ -44,5 +47,5 @@ export const {
   useListAllProduct_VariantsByProductQuery,
   useUpdateProductVariantMutation,
   useDeleteProductVariantMutation,
-  useRestoreProductVariantMutation,
+  // useRestoreProductVariantMutation,
 } = productVariantApi;

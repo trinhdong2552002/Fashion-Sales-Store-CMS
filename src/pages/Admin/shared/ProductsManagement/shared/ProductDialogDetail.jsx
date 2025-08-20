@@ -18,23 +18,23 @@ const ProductDialogDetail = ({ open, onClose, product }) => {
       <DialogContent>
         <Box sx={{ p: 2 }}>
           {/* Product Name */}
-          <Typography variant="body1" gutterBottom>
+          <Typography component={"div"} variant="body1" gutterBottom>
             <strong>Tên sản phẩm:</strong> {product?.name || "N/A"}
           </Typography>
 
           {/* Description */}
-          <Typography variant="body1" gutterBottom>
+          <Typography component={"div"} variant="body1" gutterBottom>
             <strong>Mô tả:</strong> {product?.description || "Không có mô tả"}
           </Typography>
 
           {/* Category */}
-          <Typography variant="body1" gutterBottom>
+          <Typography component={"div"} variant="body1" gutterBottom>
             <strong>Danh mục:</strong>{" "}
             {product?.category?.name || "Không có danh mục"}
           </Typography>
 
           {/* Price */}
-          <Typography variant="body1" gutterBottom>
+          <Typography component={"div"} variant="body1" gutterBottom>
             <strong>Giá:</strong>{" "}
             {product?.price
               ? `${product.price.toLocaleString("vi-VN")} VND`
@@ -42,34 +42,34 @@ const ProductDialogDetail = ({ open, onClose, product }) => {
           </Typography>
 
           {/* Quantity */}
-          <Typography variant="body1" gutterBottom>
+          <Typography component={"div"} variant="body1" gutterBottom>
             <strong>Số lượng:</strong> {product?.quantity || 0}
           </Typography>
 
           {/* Availability */}
-          <Typography variant="body1" gutterBottom>
+          <Typography component={"div"} variant="body1" gutterBottom>
             <strong>Trạng thái:</strong>{" "}
             {product?.isAvailable ? "Có sẵn" : "Không có sẵn"}
           </Typography>
 
           {/* Average Rating */}
-          <Typography variant="body1" gutterBottom>
+          <Typography component={"div"} variant="body1" gutterBottom>
             <strong>Đánh giá trung bình:</strong>{" "}
             {product?.averageRating || "N/A"}
           </Typography>
 
           {/* Sold Quantity */}
-          <Typography variant="body1" gutterBottom>
+          <Typography component={"div"} variant="body1" gutterBottom>
             <strong>Số lượng đã bán:</strong> {product?.soldQuantity || 0}
           </Typography>
 
           {/* Total Reviews */}
-          <Typography variant="body1" gutterBottom>
+          <Typography component={"div"} variant="body1" gutterBottom>
             <strong>Tổng đánh giá:</strong> {product?.totalReviews || 0}
           </Typography>
 
           {/* Colors */}
-          <Typography variant="body1" gutterBottom>
+          <Typography component={"div"} variant="body1" gutterBottom>
             <strong>Màu sắc:</strong>
             {product?.colors?.length > 0 ? (
               <Box sx={{ mt: 1 }}>
@@ -89,7 +89,7 @@ const ProductDialogDetail = ({ open, onClose, product }) => {
           </Typography>
 
           {/* Sizes */}
-          <Typography variant="body1" gutterBottom>
+          <Typography component={"div"} variant="body1" gutterBottom>
             <strong>Kích thước:</strong>
             {product?.sizes?.length > 0 ? (
               <Box sx={{ mt: 1 }}>
@@ -109,12 +109,12 @@ const ProductDialogDetail = ({ open, onClose, product }) => {
           </Typography>
 
           {/* Images */}
-          <Typography variant="body1" gutterBottom>
+          <Typography component={"div"} variant="body1" gutterBottom>
             <strong>Hình ảnh:</strong>
             {product?.images?.length > 0 ? (
               <Grid container spacing={2} sx={{ mt: 1 }}>
                 {product.images.map((image) => (
-                  <Grid item xs={12} sm={6} md={4} key={image.id}>
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }} key={image.id}>
                     <img
                       src={image.imageUrl}
                       alt={image.fileName}
@@ -142,8 +142,8 @@ const ProductDialogDetail = ({ open, onClose, product }) => {
           </Typography>
         </Box>
       </DialogContent>
-      <DialogActions sx={{m: 2}}>
-        <Button onClick={onClose} color="primary" variant="outlined">
+      <DialogActions sx={{ m: 2 }}>
+        <Button onClick={onClose} color="success" variant="contained">
           Đóng
         </Button>
       </DialogActions>
