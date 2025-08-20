@@ -88,7 +88,16 @@ const PromotionsManagement = () => {
         </div>
       ),
     },
-    { field: "discountPercent", headerName: "Giảm giá (%)", width: 150 },
+    {
+      field: "discountPercent",
+      headerName: "Giảm giá",
+      width: 150,
+      renderCell: (params) => (
+        <div>
+          {params.row.discountPercent}{"%"}
+        </div>
+      ),
+    },
     {
       field: "startDate",
       headerName: "Ngày bắt đầu",
@@ -343,8 +352,7 @@ const PromotionsManagement = () => {
     return (
       <ErrorDisplay
         error={{
-          message:
-            "Không tải được danh sách khuyến mãi.",
+          message: "Không tải được danh sách khuyến mãi.",
         }}
       />
     );

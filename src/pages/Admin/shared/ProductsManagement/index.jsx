@@ -136,7 +136,14 @@ const ProductsManagement = () => {
         </div>
       ),
     },
-    { field: "isAvailable", headerName: "Có sẵn", width: 150 },
+    {
+      field: "isAvailable",
+      headerName: "Sản phẩm có sẵn",
+      width: 150,
+      renderCell: (params) => (
+        <>{params.row.isAvailable === true ? "Có sẵn" : "Không có sẵn"}</>
+      ),
+    },
     { field: "averageRating", headerName: "Đánh giá trung bình", width: 150 },
     { field: "soldQuantity", headerName: "Số lượng đã bán", width: 150 },
     { field: "totalReviews", headerName: "Tổng đánh giá", width: 150 },
