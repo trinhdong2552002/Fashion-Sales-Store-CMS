@@ -207,7 +207,13 @@ const UsersManagement = () => {
         );
         if (isAdmin) {
           return (
-            <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
               <Typography>Không thể xóa Admin</Typography>
             </Box>
           );
@@ -381,6 +387,9 @@ const UsersManagement = () => {
       >
         <Button
           variant="outlined"
+          sx={{
+            fontSize: "1rem",
+          }}
           onClick={handleRefresh}
           startIcon={<Refresh />}
         >
@@ -489,6 +498,7 @@ const UsersManagement = () => {
           <Button
             color="error"
             variant="outlined"
+            sx={{ mr: 1 }}
             onClick={() => setOpenDialog(false)}
           >
             Hủy
@@ -510,6 +520,7 @@ const UsersManagement = () => {
           <Button
             color="error"
             variant="outlined"
+            sx={{ mr: 1 }}
             onClick={handleCloseDeleteDialog}
           >
             Hủy
@@ -531,6 +542,7 @@ const UsersManagement = () => {
           <Button
             color="error"
             variant="outlined"
+            sx={{ mr: 1 }}
             onClick={handleCloseRestoreDialog}
           >
             Hủy

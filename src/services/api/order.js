@@ -10,7 +10,16 @@ export const orderApi = baseApi.injectEndpoints({
       }),
       providesTags: [TAG_KEYS.ORDER],
     }),
+
+    deleteOrderById: builder.mutation({
+      query: ({id}) => ({
+        url: `v1/orders/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: [TAG_KEYS.ORDER],
+    }),
   }),
 });
 
-export const { useListOrdersForAdminQuery } = orderApi;
+export const { useListOrdersForAdminQuery, useDeleteOrderByIdMutation } =
+  orderApi;

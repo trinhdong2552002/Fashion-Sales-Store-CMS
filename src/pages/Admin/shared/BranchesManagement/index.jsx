@@ -435,6 +435,7 @@ const BranchesManagement = () => {
           <Button
             color="error"
             variant="outlined"
+            sx={{ mr: 1 }}
             onClick={() => setOpenAddDialog(false)}
           >
             Hủy
@@ -499,6 +500,7 @@ const BranchesManagement = () => {
           <Button
             color="error"
             variant="outlined"
+            sx={{ mr: 1 }}
             onClick={() => setOpenEditDialog(false)}
           >
             Hủy
@@ -518,9 +520,10 @@ const BranchesManagement = () => {
         </DialogContent>
         <DialogActions sx={{ p: 3 }}>
           <Button
-            onClick={handleCloseDeleteDialog}
             color="error"
             variant="outlined"
+            sx={{ mr: 1 }}
+            onClick={handleCloseDeleteDialog}
           >
             Hủy
           </Button>
@@ -546,6 +549,7 @@ const BranchesManagement = () => {
           <Button
             color="error"
             variant="outlined"
+            sx={{ mr: 1 }}
             onClick={handleCloseRestoreDialog}
           >
             Huỷ

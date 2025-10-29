@@ -12,13 +12,13 @@ export const productApi = baseApi.injectEndpoints({
     }),
 
     // TODO: Need search product for admin
-    // searchProducts: builder.query({
-    //   query: ({ pageNo, pageSize, search }) => ({
-    //     url: "/v1/products/search",
-    //     params: { pageNo, pageSize, search },
-    //   }),
-    //   providesTags: [TAG_KEYS.PRODUCT],
-    // }),
+    searchProducts: builder.query({
+      query: ({ pageNo, pageSize, search }) => ({
+        url: "/v1/products/search",
+        params: { pageNo, pageSize, search },
+      }),
+      providesTags: [TAG_KEYS.PRODUCT],
+    }),
 
     addProduct: builder.mutation({
       query: (product) => ({
@@ -68,7 +68,7 @@ export const productApi = baseApi.injectEndpoints({
 
 export const {
   useListProductsForAdminQuery,
-  // useSearchProductsQuery,
+  useSearchProductsQuery,
   useAddProductMutation,
   useUpdateProductMutation,
   useDeleteProductMutation,
