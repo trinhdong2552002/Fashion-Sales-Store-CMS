@@ -1,14 +1,27 @@
 import { useState } from "react";
 import { DataGrid } from "@mui/x-data-grid";
-import { Typography, Button, Box, IconButton, Chip } from "@mui/material";
+import {
+  Typography,
+  Button,
+  Box,
+  IconButton,
+  Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+} from "@mui/material";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import { useListOrdersForAdminQuery } from "@/services/api/order";
 import { Delete, Refresh, Visibility } from "@mui/icons-material";
 import ErrorDisplay from "@/components/ErrorDisplay";
 import SnackbarComponent from "@/components/Snackbar";
-import { orderStatusDisplay } from "@/constants/badgeStatus";
+import { orderStatusDisplay } from "/src/constants/badgeStatus";
+import { useDeleteOrderByIdMutation } from "@/services/api/order";
 
 const OrdersManagement = () => {
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 10,
@@ -25,9 +38,11 @@ const OrdersManagement = () => {
     isError: isErrorOrders,
     refetch,
   } = useListOrdersForAdminQuery({
-    pageNo: paginationModel.page + 1, 
+    pageNo: paginationModel.page + 1,
     pageSize: paginationModel.pageSize,
   });
+
+  const [deleteOrderById] = useDeleteOrderByIdMutation();
 
   const dataRowOrders = dataOrders?.result?.items || [];
   const totalRows = dataOrders?.result?.totalItems || 0;
@@ -45,7 +60,9 @@ const OrdersManagement = () => {
       headerName: "Trạng thái đơn hàng",
       width: 200,
       renderCell: (params) => {
-        const { label, color, icon } = orderStatusDisplay(params.value);
+        const status = params.value;
+        const { label, color, icon } =
+          orderStatusDisplay[status] || orderStatusDisplay.default;
         return <Chip label={label} color={color} icon={icon} />;
       },
     },
@@ -54,18 +71,28 @@ const OrdersManagement = () => {
       field: "action",
       headerName: "Hành động",
       width: 200,
-      renderCell: () => (
+      renderCell: (params) => (
         <>
           <IconButton>
             <Visibility color="primary" />
           </IconButton>
-          <IconButton color="error">
-            <Delete />
+          <IconButton onClick={() => handleOpenDeleteDialog(params.row.id)}>
+            <Delete color="error" />
           </IconButton>
         </>
       ),
     },
   ];
+
+  const handleOpenDeleteDialog = (id) => {
+    setSelectedOrderId(id);
+    setOpenDeleteDialog(true);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setSelectedOrderId(null);
+    setOpenDeleteDialog(false);
+  };
 
   const handleCloseSnackbar = () => {
     setSnackbar({ ...snackbar, open: false });
@@ -80,12 +107,24 @@ const OrdersManagement = () => {
     });
   };
 
+  const handleDeleteOrder = async () => {
+    try {
+      await deleteOrderById({ id: selectedOrderId }).unwrap();
+    } catch (error) {
+      const errorMessage = error?.data?.message;
+      setSnackbar({
+        open: true,
+        severity: "error",
+        message: errorMessage,
+      });
+    }
+  };
+
   if (isErrorOrders)
     return (
       <ErrorDisplay
         error={{
-          message:
-            "Không tải được danh sách đơn hàng.",
+          message: "Không tải được danh sách đơn hàng.",
         }}
       />
     );
@@ -137,6 +176,27 @@ const OrdersManagement = () => {
           pageSizeOptions={[10, 15, 20]}
         />
       </Box>
+
+      <Dialog open={openDeleteDialog}>
+        <DialogTitle>Xác nhận xoá ?</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Bạn có chắc chắn muốn xoá đơn hàng này không ?
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ p: 3 }}>
+          <Button
+            color="error"
+            variant="outlined"
+            onClick={handleCloseDeleteDialog}
+          >
+            Huỷ
+          </Button>
+          <Button variant="contained" color="error" onClick={handleDeleteOrder}>
+            Xoá
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <SnackbarComponent snackbar={snackbar} onClose={handleCloseSnackbar} />
     </DashboardLayoutWrapper>

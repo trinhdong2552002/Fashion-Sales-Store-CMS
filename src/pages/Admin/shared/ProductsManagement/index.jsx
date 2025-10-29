@@ -23,7 +23,7 @@ import { useListColorsQuery } from "@/services/api/color";
 import { useListSizesQuery } from "@/services/api/size";
 import { useListImagesQuery } from "../../../../services/api/productImage";
 import ProductDialogDetail from "./shared/ProductDialogDetail";
-// import { useSearchProductsQuery } from "@/services/api/product";
+import { useSearchProductsQuery } from "@/services/api/product";
 
 const ProductsManagement = () => {
   const [openAddDialog, setOpenAddDialog] = useState(false);
@@ -34,7 +34,7 @@ const ProductsManagement = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [submitted, setSubmitted] = useState(false);
-  // const [search, setSearch] = useState("");
+  const [search, setSearch] = useState("");
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 10,
@@ -71,16 +71,16 @@ const ProductsManagement = () => {
   );
 
   // TODO: Need search product for admin
-  // const { data: dataSearchProducts } = useSearchProductsQuery(
-  //   {
-  //     page: paginationModel.page,
-  //     size: paginationModel.pageSize,
-  //     search,
-  //   },
-  //   {
-  //     refetchOnMountOrArgChange: true,
-  //   }
-  // );
+  const { data: dataSearchProducts } = useSearchProductsQuery(
+    {
+      page: paginationModel.page,
+      size: paginationModel.pageSize,
+      search,
+    },
+    {
+      refetchOnMountOrArgChange: true,
+    }
+  );
 
   const [addProduct] = useAddProductMutation();
   const [updateProduct] = useUpdateProductMutation();
@@ -114,14 +114,14 @@ const ProductsManagement = () => {
   );
 
   const dataRowProducts = dataProducts?.result?.items || [];
-  // search.length > 0
-  //   ? dataSearchProducts?.result?.items || []
-  //   : dataProducts?.result?.items || [];
+  search.length > 0
+    ? dataSearchProducts?.result?.items || []
+    : dataProducts?.result?.items || [];
 
   const totalRows = dataProducts?.result?.totalItems || 0;
-  // search.length > 0
-  //   ? dataSearchProducts?.result?.totalItems || 0
-  //   : dataProducts?.result?.totalItems || 0;
+  search.length > 0
+    ? dataSearchProducts?.result?.totalItems || 0
+    : dataProducts?.result?.totalItems || 0;
 
   const columnsProduct = [
     { field: "id", headerName: "ID", width: 100 },
@@ -418,7 +418,7 @@ const ProductsManagement = () => {
       <Typography variant="h5">Quản lý Sản phẩm</Typography>
 
       <ProductToolbar
-        // onSearch={setSearch}
+        onSearch={setSearch}
         onAddProduct={() => {
           setOpenAddDialog(true);
           setNewProduct({

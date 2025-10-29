@@ -4,7 +4,7 @@ import { TAG_KEYS } from "/src/constants/tagKeys.js";
 
 export const productVariantApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    listAllProduct_VariantsByProduct: builder.query({
+    listAllProductVariantsByProduct: builder.query({
       query: ({ pageNo, pageSize, id }) => ({
         // TODO: Dùng tạm của user hiện admin đang lỗi
         // url: `/v1/products/${id}/product-variants/admin`,
@@ -44,7 +44,7 @@ export const productVariantApi = baseApi.injectEndpoints({
 });
 
 export const {
-  useListAllProduct_VariantsByProductQuery,
+  useListAllProductVariantsByProductQuery,
   useUpdateProductVariantMutation,
   useDeleteProductVariantMutation,
   // useRestoreProductVariantMutation,

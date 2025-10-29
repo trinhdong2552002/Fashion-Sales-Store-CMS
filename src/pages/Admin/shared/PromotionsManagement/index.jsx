@@ -94,7 +94,8 @@ const PromotionsManagement = () => {
       width: 150,
       renderCell: (params) => (
         <div>
-          {params.row.discountPercent}{"%"}
+          {params.row.discountPercent}
+          {"%"}
         </div>
       ),
     },
@@ -519,6 +520,7 @@ const PromotionsManagement = () => {
           <Button
             color="error"
             variant="outlined"
+            sx={{ mr: 1 }}
             onClick={() => setOpenAddDialog(false)}
           >
             Hủy
@@ -622,6 +624,7 @@ const PromotionsManagement = () => {
           <Button
             color="error"
             variant="outlined"
+            sx={{ mr: 1 }}
             onClick={() => setOpenEditDialog(false)}
           >
             Hủy
@@ -643,6 +646,7 @@ const PromotionsManagement = () => {
           <Button
             color="error"
             variant="outlined"
+            sx={{ mr: 1 }}
             onClick={handleCloseDeleteDialog}
           >
             Hủy
@@ -668,6 +672,7 @@ const PromotionsManagement = () => {
           <Button
             color="error"
             variant="outlined"
+            sx={{ mr: 1 }}
             onClick={handleCloseRestoreDialog}
           >
             Hủy

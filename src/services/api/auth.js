@@ -33,45 +33,6 @@ export const authApi = baseApi.injectEndpoints({
       invalidatesTags: [TAG_KEYS.AUTH],
     }),
 
-    // Quên mật khẩu
-    // forgotPassword: builder.mutation({
-    //   query: (credentials) => ({
-    //     url: "/v1/auth/forgot-password",
-    //     method: "POST",
-    //     data: {
-    //       email: credentials.email,
-    //     },
-    //   }),
-    //   invalidatesTags: [TAG_KEYS.AUTH],
-    // }),
-
-    // Xác thực mật khẩu
-    // forgotPasswordVerify: builder.mutation({
-    //   query: (credentials) => ({
-    //     url: "/v1/auth/forgot-password/verify-code",
-    //     method: "POST",
-    //     data: {
-    //       email: credentials.email,
-    //       verificationCode: credentials.verificationCode,
-    //     },
-    //   }),
-    //   invalidatesTags: [TAG_KEYS.AUTH],
-    // }),
-
-    // Đặt lại mật khẩu
-    // resetPassword: builder.mutation({
-    //   query: (credentials) => ({
-    //     url: "/v1/auth/forgot-password/reset-password",
-    //     method: "POST",
-    //     data: {
-    //       forgotPasswordToken: credentials.forgotPasswordToken,
-    //       newPassword: credentials.newPassword,
-    //       confirmPassword: credentials.confirmPassword,
-    //     },
-    //   }),
-    //   invalidatesTags: [TAG_KEYS.AUTH],
-    // }),
-
     // Đăng xuất
     logout: builder.mutation({
       query: (credentials) => {

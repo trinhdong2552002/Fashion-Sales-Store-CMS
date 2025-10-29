@@ -3,7 +3,7 @@ import { Typography, IconButton, Chip } from "@mui/material";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import SnackbarComponent from "@/components/Snackbar";
 import {
-  useListAllProduct_VariantsByProductQuery,
+  useListAllProductVariantsByProductQuery,
   useUpdateProductVariantMutation,
   useDeleteProductVariantMutation,
   // useRestoreProductVariantMutation,
@@ -50,14 +50,16 @@ const ProductVariantsManagement = () => {
     refetch: refetchProducts,
   } = useListProductsForAdminQuery({
     refetchOnMountOrArgChange: true,
-  });
+     pageNo: 1,
+    pageSize: 1000,
+  }, );
 
   const {
     data: dataProductVariants,
     isLoading: isLoadingProductVariant,
     isError: isErrorProductVariant,
     refetch: refetchProductVariants,
-  } = useListAllProduct_VariantsByProductQuery(
+  } = useListAllProductVariantsByProductQuery(
     selectedProductId
       ? {
           id: selectedProductId,

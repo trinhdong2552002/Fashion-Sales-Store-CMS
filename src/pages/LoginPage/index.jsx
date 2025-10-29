@@ -5,22 +5,20 @@ import {
   InputAdornment,
   Stack,
   TextField,
-  ThemeProvider,
-  useTheme,
   Box,
   Typography,
+  CircularProgress,
 } from "@mui/material";
-// import styles from "./index.module.css";
 import { Fragment, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useLoginMutation } from "@/services/api/auth";
-import customTheme from "@/components/CustemTheme";
+
 import SnackbarComponent from "@/components/Snackbar";
 import { useLazyGetMyInfoQuery } from "@/services/api/auth";
+import cms from "@/assets/images/cms.png";
 
 const Login = () => {
-  const outerTheme = useTheme();
   const navigate = useNavigate();
 
   const [showPassword, setShowPassword] = useState(false);
@@ -110,7 +108,7 @@ const Login = () => {
         }}
       >
         <img
-          src="/src/assets/images/cms.png"
+          src={cms}
           alt="CMS"
           width={100}
           height={100}
@@ -178,69 +176,65 @@ const Login = () => {
                   margin: "30px 0",
                 }}
               >
-                <ThemeProvider theme={customTheme(outerTheme)}>
-                  <TextField
-                    id="email"
-                    label="Email"
-                    variant="standard"
-                    disabled={isLoginLoading}
-                    {...register("email", {
-                      required: "Email không được để trống",
-                      pattern: {
-                        value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                        message: "Email không hợp lệ",
-                      },
-                    })}
-                    error={!!errors.email}
-                    helperText={errors.email?.message}
-                    FormHelperTextProps={{
-                      sx: { fontSize: "0.9rem", color: "red" },
-                    }}
-                    sx={{ mb: 4 }}
-                  />
-                </ThemeProvider>
+                <TextField
+                  id="email"
+                  label="Email"
+                  variant="standard"
+                  disabled={isLoginLoading}
+                  {...register("email", {
+                    required: "Email không được để trống",
+                    pattern: {
+                      value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                      message: "Email không hợp lệ",
+                    },
+                  })}
+                  error={!!errors.email}
+                  helperText={errors.email?.message}
+                  FormHelperTextProps={{
+                    sx: { fontSize: "0.9rem", color: "red" },
+                  }}
+                  sx={{ mb: 4 }}
+                />
 
-                <ThemeProvider theme={customTheme(outerTheme)}>
-                  <TextField
-                    id="password"
-                    label="Mật khẩu"
-                    type={showPassword ? "text" : "password"}
-                    variant="standard"
-                    disabled={isLoginLoading}
-                    {...register("password", {
-                      required: "Mật khẩu không được để trống",
-                      minLength: {
-                        value: 6,
-                        message: "Mật khẩu phải có ít nhất 6 ký tự",
-                      },
-                    })}
-                    error={!!errors.password}
-                    helperText={errors.password?.message}
-                    FormHelperTextProps={{
-                      sx: { fontSize: "0.9rem", color: "red" },
-                    }}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <IconButton
-                            aria-label={
-                              showPassword
-                                ? "hide the password"
-                                : "display the password"
-                            }
-                            onClick={handleClickShowPassword}
-                            onMouseDown={handleMouseDownPassword}
-                            onMouseUp={handleMouseUpPassword}
-                            edge="end"
-                            disabled={isLoginLoading}
-                          >
-                            {showPassword ? <VisibilityOff /> : <Visibility />}
-                          </IconButton>
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                </ThemeProvider>
+                <TextField
+                  id="password"
+                  label="Mật khẩu"
+                  type={showPassword ? "text" : "password"}
+                  variant="standard"
+                  disabled={isLoginLoading}
+                  {...register("password", {
+                    required: "Mật khẩu không được để trống",
+                    minLength: {
+                      value: 6,
+                      message: "Mật khẩu phải có ít nhất 6 ký tự",
+                    },
+                  })}
+                  error={!!errors.password}
+                  helperText={errors.password?.message}
+                  FormHelperTextProps={{
+                    sx: { fontSize: "0.9rem", color: "red" },
+                  }}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          aria-label={
+                            showPassword
+                              ? "hide the password"
+                              : "display the password"
+                          }
+                          onClick={handleClickShowPassword}
+                          onMouseDown={handleMouseDownPassword}
+                          onMouseUp={handleMouseUpPassword}
+                          edge="end"
+                          disabled={isLoginLoading}
+                        >
+                          {showPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
               </Box>
 
               <Box
@@ -250,30 +244,33 @@ const Login = () => {
                   alignItems: "center",
                 }}
               >
-                {/* <Link className={styles.forgotPassword} to="/forgot-password">
-                  Quên mật khẩu ?
-                </Link> */}
-
                 <Button
                   variant="contained"
                   fullWidth
                   sx={{
-                    p: {
-                      md: "10px 80px",
-                      sm: "10px 80px",
-                      xs: "10px 60px",
-                    },
                     mt: 3,
-                    fontSize: {
-                      md: "1.2rem",
-                      sm: "1.2rem",
-                      xs: "1rem",
-                    },
+                    fontSize: "1.2rem",
                   }}
                   type="submit"
                   disabled={isLoginLoading}
                 >
-                  Đăng nhập
+                  {isLoginLoading ? (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <CircularProgress
+                        size={34}
+                        color="inherit"
+                        sx={{ mr: 1 }}
+                      />
+                    </Box>
+                  ) : (
+                    "Đăng nhập"
+                  )}
                 </Button>
               </Box>
             </form>
