@@ -14,19 +14,14 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useLoginMutation } from "@/services/api/auth";
 
-import SnackbarComponent from "@/components/Snackbar";
 import { useLazyGetMyInfoQuery } from "@/services/api/auth";
 import cms from "@/assets/images/cms.png";
+import { useSnackbar } from "@/components/Snackbar";
 
 const Login = () => {
   const navigate = useNavigate();
-
+  const { showSnackbar } = useSnackbar();
   const [showPassword, setShowPassword] = useState(false);
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: "",
-    severity: "success",
-  });
   const [login, { isLoading: isLoginLoading }] = useLoginMutation();
   const [triggerMyInfo] = useLazyGetMyInfoQuery();
 
@@ -46,19 +41,6 @@ const Login = () => {
     event.preventDefault();
   };
 
-  const handleShowSnackbar = (success, message = "") => {
-    setSnackbar({
-      open: true,
-      message:
-        message || (success ? "Đăng nhập thành công" : "Đăng nhập thất bại !"),
-      severity: success ? "success" : "error",
-    });
-  };
-
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
-
   const handleLogin = async (data) => {
     try {
       const response = await login({
@@ -75,11 +57,11 @@ const Login = () => {
         }
 
         if (role !== "ADMIN") {
-          throw new Error("Bạn không có quyền truy cập vào trang quản trị !");
+          throw new Error("Bạn không có quyền truy cập vào trang quản trị!");
         }
 
         if (role === "ADMIN" && "USER") {
-          handleShowSnackbar(true, "Đăng nhập với quyền ADMIN");
+          showSnackbar("Đăng nhập thành công!", "success");
           setTimeout(() => {
             navigate("/admin/dashboard");
           }, 1000);
@@ -91,10 +73,10 @@ const Login = () => {
         await triggerMyInfo();
       }
     } catch (error) {
-      const messageError =
-        error?.message || error?.data?.message || "Đăng nhập thất bại !";
-      handleShowSnackbar(false, messageError);
-      console.log("Login failed:", error);
+      if (error && error.data && error.data.message) {
+        showSnackbar(error.data.message, "error");
+        return;
+      }
     }
   };
 
@@ -277,8 +259,6 @@ const Login = () => {
           </Box>
         </Box>
       </Stack>
-
-      <SnackbarComponent snackbar={snackbar} onClose={handleCloseSnackbar} />
     </Fragment>
   );
 };

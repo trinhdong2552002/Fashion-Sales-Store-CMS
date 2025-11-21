@@ -13,7 +13,6 @@ import {
   IconButton,
   Chip,
 } from "@mui/material";
-
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import {
   useListBranchesForAdminQuery,
@@ -24,10 +23,11 @@ import {
 } from "@/services/api/branches";
 import { Add, Delete, Edit, Refresh, Restore } from "@mui/icons-material";
 import ErrorDisplay from "@/components/ErrorDisplay";
-import SnackbarComponent from "@/components/Snackbar";
 import { statusDisplay } from "/src/constants/badgeStatus";
+import { useSnackbar } from "@/components/Snackbar";
 
 const BranchesManagement = () => {
+  const { showSnackbar } = useSnackbar();
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [openRestoreDialog, setOpenRestoreDialog] = useState(false);
   const [openAddDialog, setOpenAddDialog] = useState(false);
@@ -43,17 +43,12 @@ const BranchesManagement = () => {
     location: "",
     phone: "",
   });
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: "",
-    severity: "success",
-  });
 
   const {
     data: dataBranches,
     isLoading: isLoadingBranches,
     error: errorBranches,
-    refetch,
+    refetch: refetchBranches,
   } = useListBranchesForAdminQuery(
     { pageNo: paginationModel.page + 1, pageSize: paginationModel.pageSize },
     {
@@ -158,10 +153,6 @@ const BranchesManagement = () => {
     },
   ];
 
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
-
   const handleOpenDeleteDialog = (id) => {
     setSelectedBranchesId(id);
     setOpenDeleteDialog(true);
@@ -183,53 +174,35 @@ const BranchesManagement = () => {
   };
 
   const handleRefresh = () => {
-    refetch();
-    setSnackbar({
-      open: true,
-      message: "Danh sách chi nhánh đã được làm mới!",
-      severity: "info",
-    });
+    refetchBranches();
+    showSnackbar("Danh sách chi nhánh đã được làm mới!", "info");
   };
 
   const handleDeleteBranches = async () => {
     try {
       await deleteBranches({ id: selectedBranchesId }).unwrap();
-      setSnackbar({
-        open: true,
-        message: "Xóa chi nhánh thành công!",
-        severity: "success",
-      });
+      showSnackbar("Xoá chi nhánh thành công!", "success");
       setOpenDeleteDialog(false);
       setSelectedBranchesId(null);
-      refetch();
+      refetchBranches();
     } catch (error) {
-      const errorMessage = error?.data?.message;
-      setSnackbar({
-        open: true,
-        message: errorMessage,
-        severity: "error",
-      });
+      if (error && error.data && error.data.message) {
+        showSnackbar(error.data.message, "error");
+      }
     }
   };
 
   const handleRestoreBranches = async () => {
     try {
       await restoreBranches({ id: selectedBranchesId }).unwrap();
-      setSnackbar({
-        open: true,
-        message: "Khôi phục chi nhánh thành công!",
-        severity: "success",
-      });
+      showSnackbar("Khôi phục chi nhánh thành công!", "success");
       setOpenRestoreDialog(false);
       setSelectedBranchesId(null);
-      refetch();
+      refetchBranches();
     } catch (error) {
-      const errorMessage = error?.data?.message;
-      setSnackbar({
-        open: true,
-        message: errorMessage,
-        severity: "error",
-      });
+      if (error && error.data && error.data.message) {
+        showSnackbar(error.data.message, "error");
+      }
     }
   };
 
@@ -242,22 +215,15 @@ const BranchesManagement = () => {
         location: data?.location,
         phone: data?.phone,
       }).unwrap();
-      setSnackbar({
-        open: true,
-        message: "Thêm chi nhánh thành công!",
-        severity: "success",
-      });
+      showSnackbar("Thêm chi nhánh thành công!", "success");
       setNewBranches({ name: "", location: "", phone: "" });
       setOpenAddDialog(false);
       setSubmitted(false);
-      refetch();
+      refetchBranches();
     } catch (error) {
-      const errorMessage = error?.data?.message;
-      setSnackbar({
-        open: true,
-        severity: "error",
-        message: errorMessage,
-      });
+      if (error && error.data && error.data.message) {
+        showSnackbar(error.data.message, "error");
+      }
     }
   };
 
@@ -283,23 +249,16 @@ const BranchesManagement = () => {
         id: selectedBranchesId,
         ...newBranches,
       }).unwrap();
-      setSnackbar({
-        open: true,
-        severity: "success",
-        message: "Cập nhật chi nhánh thành công!",
-      });
+      showSnackbar("Cập nhật chi nhánh thành công!", "success");
       setNewBranches({ name: "", location: "", phone: "" });
       setSelectedBranchesId(null);
       setOpenEditDialog(false);
       setSubmitted(false);
-      refetch();
+      refetchBranches();
     } catch (error) {
-      const errorMessage = error?.data?.message;
-      setSnackbar({
-        open: true,
-        severity: "error",
-        message: errorMessage,
-      });
+      if (error && error.data && error.data.message) {
+        showSnackbar(error.data.message, "error");
+      }
     }
   };
 
@@ -563,8 +522,6 @@ const BranchesManagement = () => {
           </Button>
         </DialogActions>
       </Dialog>
-
-      <SnackbarComponent snackbar={snackbar} onClose={handleCloseSnackbar} />
     </DashboardLayoutWrapper>
   );
 };

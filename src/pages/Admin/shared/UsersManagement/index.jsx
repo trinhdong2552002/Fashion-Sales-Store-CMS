@@ -27,10 +27,11 @@ import TableData from "@/components/TableData";
 import ErrorDisplay from "@/components/ErrorDisplay";
 import { PreviewImage } from "@/components/PreviewImage";
 import { Add, Delete, Refresh, Restore } from "@mui/icons-material";
-import SnackbarComponent from "@/components/Snackbar";
 import { statusDisplay } from "/src/constants/badgeStatus";
+import { useSnackbar } from "@/components/Snackbar";
 
 const UsersManagement = () => {
+  const { showSnackbar } = useSnackbar();
   const [previewImage, setPreviewImage] = useState(null);
   const [submitted, setSubmitted] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
@@ -41,11 +42,6 @@ const UsersManagement = () => {
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 10,
-  });
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: "",
-    severity: "success",
   });
   const [newUser, setNewUser] = useState({
     name: "",
@@ -241,10 +237,6 @@ const UsersManagement = () => {
     },
   ];
 
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
-
   const handleOpenDeleteDialog = (id) => {
     setUserToDelete(id);
     setOpenDeleteDialog(true);
@@ -267,11 +259,7 @@ const UsersManagement = () => {
 
   const handleRefresh = () => {
     refetchUser();
-    setSnackbar({
-      open: true,
-      message: "Danh sách người dùng đã được làm mới!",
-      severity: "info",
-    });
+    showSnackbar("Danh sách người dùng đã được làm mới!", "info");
   };
 
   const handleAddUser = async () => {
@@ -293,19 +281,12 @@ const UsersManagement = () => {
         roleIds: [],
       });
       setOpenDialog(false);
-      setSnackbar({
-        open: true,
-        message: "Thêm người dùng thành công!",
-        severity: "success",
-      });
+      showSnackbar("Thêm người dùng thành công!", "success");
       refetchUser();
     } catch (error) {
-      const errorMessage = error.data?.message || "Lỗi khi thêm người dùng";
-      setSnackbar({
-        open: true,
-        message: errorMessage,
-        severity: "error",
-      });
+      if (error && error.data && error.data.message) {
+        showSnackbar(error.data.message, "error");
+      }
     }
   };
 
@@ -315,11 +296,7 @@ const UsersManagement = () => {
       (role) => role.name?.toLowerCase() === "admin"
     );
     if (isAdmin) {
-      setSnackbar({
-        open: true,
-        message: "Không thể xóa người dùng có vai trò Admin!",
-        severity: "error",
-      });
+      showSnackbar("Không thể xóa người dùng Admin!", "error");
       setOpenDeleteDialog(false);
       setUserToDelete(null);
       return;
@@ -329,41 +306,28 @@ const UsersManagement = () => {
       if (response) {
         setOpenDeleteDialog(false);
         setUserToDelete(null);
-        setSnackbar({
-          open: true,
-          message: "Xóa người dùng thành công!",
-          severity: "success",
-        });
+        showSnackbar("Xóa người dùng thành công!", "success");
       }
 
       refetchUser();
     } catch (error) {
-      const errorMessage = error.data?.message || "Lỗi khi xóa người dùng";
-      setSnackbar({
-        open: true,
-        message: errorMessage,
-        severity: "error",
-      });
+      if (error && error.data && error.data.message) {
+        showSnackbar(error.data.message, "error");
+      }
     }
   };
 
   const handleRestoreUser = async () => {
     try {
       await restoreUser(userToRestore).unwrap();
-      setSnackbar({
-        open: true,
-        message: "Khôi phục người dùng thành công!",
-        severity: "success",
-      });
+      showSnackbar("Khôi phục người dùng thành công!", "success");
       setOpenRestoreDialog(false);
       setUserToRestore(null);
       refetchUser();
     } catch (error) {
-      setSnackbar({
-        open: true,
-        message: error.data?.message || "Lỗi khi khôi phục người dùng",
-        severity: "error",
-      });
+      if (error && error.data && error.data.message) {
+        showSnackbar(error.data.message, "error");
+      }
     }
   };
 
@@ -561,8 +525,6 @@ const UsersManagement = () => {
         previewImage={previewImage}
         setPreviewImage={setPreviewImage}
       />
-
-      <SnackbarComponent snackbar={snackbar} onClose={handleCloseSnackbar} />
     </DashboardLayoutWrapper>
   );
 };

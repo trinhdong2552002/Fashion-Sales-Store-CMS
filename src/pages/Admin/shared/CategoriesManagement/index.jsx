@@ -22,10 +22,11 @@ import {
 } from "@/services/api/categories";
 import { Add, Delete, Edit, Refresh, Restore } from "@mui/icons-material";
 import ErrorDisplay from "@/components/ErrorDisplay";
-import SnackbarComponent from "@/components/Snackbar";
 import { statusDisplay } from "/src/constants/badgeStatus";
+import { useSnackbar } from "@/components/Snackbar";
 
 const CategoriesManagement = () => {
+  const { showSnackbar } = useSnackbar();
   const [openAddDialog, setOpenAddDialog] = useState(false);
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
@@ -40,17 +41,12 @@ const CategoriesManagement = () => {
     name: "",
     description: "",
   });
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    severity: "success",
-    message: "",
-  });
 
   const {
     data: dataCategories,
     isLoading: isLoadingCategories,
     isError: isErrorCategories,
-    refetch,
+    refetch: refetchCategories,
   } = useListCategoriesForAdminQuery(
     {
       pageNo: paginationModel.page + 1,
@@ -158,10 +154,6 @@ const CategoriesManagement = () => {
     },
   ];
 
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
-
   const handleOpenDeleteDialog = (id) => {
     setSelectedCategoriesId(id);
     setOpenDeleteDialog(true);
@@ -183,12 +175,8 @@ const CategoriesManagement = () => {
   };
 
   const handleRefresh = () => {
-    refetch();
-    setSnackbar({
-      open: true,
-      message: "Danh sách danh mục đã được làm mới!",
-      severity: "info",
-    });
+    refetchCategories();
+    showSnackbar("Danh sách danh mục đã được làm mới!", "success");
   };
 
   const handleAddCategories = async () => {
@@ -199,22 +187,16 @@ const CategoriesManagement = () => {
         name: newCategories.name,
         description: newCategories.description,
       }).unwrap();
-      setSnackbar({
-        open: true,
-        severity: "success",
-        message: "Thêm danh mục thành công !",
-      });
+      showSnackbar("Thêm danh mục thành công !", "success");
       setNewCategories({ name: "", description: "" });
       setOpenAddDialog(false);
       setSubmitted(false);
-      refetch();
+      refetchCategories();
     } catch (error) {
-      const errorMessage = error?.data?.message;
-      setSnackbar({
-        open: true,
-        severity: "error",
-        message: errorMessage,
-      });
+      if (error && error.data && error.data.message) {
+        showSnackbar(error.data.message, "error");
+        return;
+      }
     }
   };
 
@@ -239,65 +221,47 @@ const CategoriesManagement = () => {
         id: selectedCategoriesId,
         ...newCategories,
       }).unwrap();
-      setSnackbar({
-        open: true,
-        severity: "success",
-        message: "Cập nhật danh mục thành công !",
-      });
+      showSnackbar("Cập nhật danh mục thành công !", "success");
       setNewCategories({ name: "", description: "" });
       setSelectedCategoriesId(null);
       setOpenEditDialog(false);
       setSubmitted(false);
-      refetch();
+      refetchCategories();
     } catch (error) {
-      const errorMessage = error?.data?.message;
-      setSnackbar({
-        open: true,
-        severity: "error",
-        message: errorMessage,
-      });
+      if (error && error.data && error.data.message) {
+        showSnackbar(error.data.message, "error");
+        return;
+      }
     }
   };
 
   const handleDeleteCategories = async () => {
     try {
       await deleteCategories({ id: selectedCategoriesId }).unwrap();
-      setSnackbar({
-        open: true,
-        severity: "success",
-        message: "Xoá danh mục thành công!",
-      });
+      showSnackbar("Xoá danh mục thành công !", "success");
       setOpenDeleteDialog(false);
       setSelectedCategoriesId(null);
-      refetch();
+      refetchCategories();
     } catch (error) {
-      const errorMessage = error?.data?.message;
-      setSnackbar({
-        open: true,
-        severity: "error",
-        message: errorMessage,
-      });
+      if (error && error.data && error.data.message) {
+        showSnackbar(error.data.message, "error");
+        return;
+      }
     }
   };
 
   const handleRestoreCategories = async () => {
     try {
       await restoreCategories({ id: selectedCategoriesId }).unwrap();
-      setSnackbar({
-        open: true,
-        severity: "success",
-        message: "Khôi phục danh mục thành công !",
-      });
+      showSnackbar("Khôi phục danh mục thành công !", "success");
       setOpenRestoreDialog(false);
       setSelectedCategoriesId(null);
-      refetch();
+      refetchCategories();
     } catch (error) {
-      const errorMessage = error?.data?.message;
-      setSnackbar({
-        open: true,
-        severity: "error",
-        message: errorMessage,
-      });
+      if (error && error.data && error.data.message) {
+        showSnackbar(error.data.message, "error");
+        return;
+      }
     }
   };
 
@@ -305,8 +269,7 @@ const CategoriesManagement = () => {
     return (
       <ErrorDisplay
         error={{
-          message:
-            "Không tải được danh sách danh mục.",
+          message: "Không tải được danh sách danh mục.",
         }}
       />
     );
@@ -521,8 +484,6 @@ const CategoriesManagement = () => {
           </Button>
         </DialogActions>
       </Dialog>
-
-      <SnackbarComponent snackbar={snackbar} onClose={handleCloseSnackbar} />
     </DashboardLayoutWrapper>
   );
 };

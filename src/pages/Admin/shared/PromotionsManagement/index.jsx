@@ -22,25 +22,21 @@ import {
 } from "@/services/api/promotion";
 import { Add, Delete, Edit, Refresh, Restore } from "@mui/icons-material";
 import ErrorDisplay from "@/components/ErrorDisplay";
-import SnackbarComponent from "@/components/Snackbar";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
 import { statusDisplay } from "/src/constants/badgeStatus";
+import { useSnackbar } from "@/components/Snackbar";
 
 const PromotionsManagement = () => {
+  const { showSnackbar } = useSnackbar();
   const [openAddDialog, setOpenAddDialog] = useState(false);
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [openRestoreDialog, setOpenRestoreDialog] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [selectedPromotionId, setSelectedPromotionId] = useState(null);
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    severity: "success",
-    message: "",
-  });
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 10,
@@ -54,10 +50,10 @@ const PromotionsManagement = () => {
   });
 
   const {
-    data: dataPromotions,
-    isLoading: isLoadingPromotions,
-    isError: isErrorPromotions,
-    refetch,
+    data: dataPromotion,
+    isLoading: isLoadingPromotion,
+    isError: isErrorPromotion,
+    refetch: refetchPromotion,
   } = useListPromotionsQuery(
     {
       pageNo: paginationModel.page + 1,
@@ -72,8 +68,8 @@ const PromotionsManagement = () => {
   const [deletePromotion] = useDeletePromotionMutation();
   const [restorePromotion] = useRestorePromotionMutation();
 
-  const dataRowPromotions = dataPromotions?.result?.items || [];
-  const totalRows = dataPromotions?.result?.totalItems || 0;
+  const dataRowPromotions = dataPromotion?.result?.items || [];
+  const totalRows = dataPromotion?.result?.totalItems || 0;
 
   const columnsPromotion = [
     { field: "id", headerName: "ID", width: 150 },
@@ -186,10 +182,6 @@ const PromotionsManagement = () => {
     },
   ];
 
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
-
   const handleOpenDeleteDialog = (id) => {
     setSelectedPromotionId(id);
     setOpenDeleteDialog(true);
@@ -211,12 +203,8 @@ const PromotionsManagement = () => {
   };
 
   const handleRefresh = () => {
-    refetch();
-    setSnackbar({
-      open: true,
-      message: "Danh sách khuyến mãi đã được làm mới!",
-      severity: "info",
-    });
+    refetchPromotion();
+    showSnackbar("Danh sách khuyến mãi đã được làm mới!", "info");
   };
 
   const handleAddPromotion = async () => {
@@ -229,11 +217,7 @@ const PromotionsManagement = () => {
         startDate: newPromotion.startDate.format("YYYY-MM-DD"),
         endDate: newPromotion.endDate.format("YYYY-MM-DD"),
       }).unwrap();
-      setSnackbar({
-        open: true,
-        severity: "success",
-        message: "Thêm khuyến mãi thành công!",
-      });
+      showSnackbar("Thêm khuyến mãi thành công!", "success");
       setNewPromotion({
         code: "",
         description: "",
@@ -243,14 +227,11 @@ const PromotionsManagement = () => {
       });
       setOpenAddDialog(false);
       setSubmitted(false);
-      refetch();
+      refetchPromotion();
     } catch (error) {
-      const errorMessage = error?.data?.message;
-      setSnackbar({
-        open: true,
-        severity: "error",
-        message: errorMessage,
-      });
+      if (error && error.data && error.data.message) {
+        showSnackbar(error.data.message, "error");
+      }
     }
   };
 
@@ -281,11 +262,7 @@ const PromotionsManagement = () => {
         startDate: newPromotion.startDate.format("YYYY-MM-DD"),
         endDate: newPromotion.endDate.format("YYYY-MM-DD"),
       }).unwrap();
-      setSnackbar({
-        open: true,
-        severity: "success",
-        message: "Cập nhật khuyến mãi thành công!",
-      });
+      showSnackbar("Cập nhật khuyến mãi thành công!", "success");
       setNewPromotion({
         code: "",
         description: "",
@@ -296,60 +273,43 @@ const PromotionsManagement = () => {
       setSelectedPromotionId(null);
       setOpenEditDialog(false);
       setSubmitted(false);
-      refetch();
+      refetchPromotion();
     } catch (error) {
-      const errorMessage = error?.data?.message;
-      setSnackbar({
-        open: true,
-        severity: "error",
-        message: errorMessage,
-      });
+      if (error && error.data && error.data.message) {
+        showSnackbar(error.data.message, "error");
+      }
     }
   };
 
   const handleDeletePromotion = async () => {
     try {
       await deletePromotion({ id: selectedPromotionId }).unwrap();
-      setSnackbar({
-        open: true,
-        severity: "success",
-        message: "Xóa khuyến mãi thành công!",
-      });
+      showSnackbar("Xóa khuyến mãi thành công!", "success");
       setOpenDeleteDialog(false);
       setSelectedPromotionId(null);
-      refetch();
+      refetchPromotion();
     } catch (error) {
-      const errorMessage = error?.data?.message;
-      setSnackbar({
-        open: true,
-        severity: "error",
-        message: errorMessage,
-      });
+      if (error && error.data && error.data.message) {
+        showSnackbar(error.data.message, "error");
+      }
     }
   };
 
   const handleRestorePromotion = async () => {
     try {
       await restorePromotion({ id: selectedPromotionId }).unwrap();
-      setSnackbar({
-        open: true,
-        severity: "success",
-        message: "Khôi phục khuyến mãi thành công!",
-      });
+      showSnackbar("Khôi phục khuyến mãi thành công!", "success");
       setOpenRestoreDialog(false);
       setSelectedPromotionId(null);
-      refetch();
+      refetchPromotion();
     } catch (error) {
-      const errorMessage = error?.data?.message;
-      setSnackbar({
-        open: true,
-        severity: "error",
-        message: errorMessage,
-      });
+      if (error && error.data && error.data.message) {
+        showSnackbar(error.data.message, "error");
+      }
     }
   };
 
-  if (isErrorPromotions)
+  if (isErrorPromotion)
     return (
       <ErrorDisplay
         error={{
@@ -405,7 +365,7 @@ const PromotionsManagement = () => {
           }}
           columns={columnsPromotion}
           rows={dataRowPromotions}
-          loading={isLoadingPromotions}
+          loading={isLoadingPromotion}
           disableSelectionOnClick
           slotProps={{
             loadingOverlay: {
@@ -686,8 +646,6 @@ const PromotionsManagement = () => {
           </Button>
         </DialogActions>
       </Dialog>
-
-      <SnackbarComponent snackbar={snackbar} onClose={handleCloseSnackbar} />
     </DashboardLayoutWrapper>
   );
 };

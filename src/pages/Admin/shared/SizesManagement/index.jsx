@@ -1,29 +1,24 @@
 import { useState } from "react";
 import { DataGrid } from "@mui/x-data-grid";
-import { Alert, Box, Button, Snackbar, Typography } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import { useListSizesQuery } from "@/services/api/size";
 import { Refresh } from "@mui/icons-material";
 import ErrorDisplay from "@/components/ErrorDisplay";
-import SnackbarComponent from "@/components/Snackbar";
+import { useSnackbar } from "@/components/Snackbar";
 
 const SizesManagement = () => {
+  const { showSnackbar } = useSnackbar();
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 10,
   });
 
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    severity: "success",
-    message: "",
-  });
-
   const {
-    data: dataSizes,
-    isLoading: isLoadingSizes,
-    isError: isErrorSizes,
-    refetch,
+    data: dataSize,
+    isLoading: isLoadingSize,
+    isError: isErrorSize,
+    refetch: refetchSize,
   } = useListSizesQuery(
     {
       pageNo: paginationModel.page + 1,
@@ -34,33 +29,24 @@ const SizesManagement = () => {
     }
   );
 
-  const dataRowSizes = dataSizes?.result?.items || [];
-  const totalRows = dataSizes?.result?.totalItems || 0;
+  const dataRowSizes = dataSize?.result?.items || [];
+  const totalRows = dataSize?.result?.totalItems || 0;
 
   const columnsSize = [
     { field: "id", headerName: "ID", width: 150 },
     { field: "name", headerName: "Tên kích thước", width: 200 },
   ];
 
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
-
   const handleRefresh = () => {
-    refetch();
-    setSnackbar({
-      open: true,
-      message: "Danh sách kích thước đã được làm mới !",
-      severity: "info",
-    });
+    refetchSize();
+    showSnackbar("Danh sách kích thước đã được làm mới!", "info");
   };
 
-  if (isErrorSizes)
+  if (isErrorSize)
     return (
       <ErrorDisplay
         error={{
-          message:
-            "Không tải được danh sách kích thước.",
+          message: "Không tải được danh sách kích thước.",
         }}
       />
     );
@@ -91,7 +77,7 @@ const SizesManagement = () => {
           columns={columnsSize}
           rows={dataRowSizes}
           disableSelectionOnClick
-          loading={isLoadingSizes}
+          loading={isLoadingSize}
           slotProps={{
             loadingOverlay: {
               variant: "linear-progress",
@@ -109,8 +95,6 @@ const SizesManagement = () => {
           pageSizeOptions={[10, 15, 20]}
         />
       </Box>
-
-      <SnackbarComponent snackbar={snackbar} onClose={handleCloseSnackbar} />
     </DashboardLayoutWrapper>
   );
 };
