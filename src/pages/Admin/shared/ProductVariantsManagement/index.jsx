@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Typography, IconButton, Chip } from "@mui/material";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
-import SnackbarComponent from "@/components/Snackbar";
 import {
   useListAllProductVariantsByProductQuery,
   useUpdateProductVariantMutation,
@@ -19,8 +18,10 @@ import { ProductVariantDialogEdit } from "./shared/ProductVariantDialogEdit";
 import { PreviewImage } from "@/components/PreviewImage";
 import { statusDisplay } from "/src/constants/badgeStatus";
 import ErrorDisplay from "@/components/ErrorDisplay";
+import { useSnackbar } from "@/components/Snackbar";
 
 const ProductVariantsManagement = () => {
+  const { showSnackbar } = useSnackbar();
   const [previewImage, setPreviewImage] = useState(null);
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [selectedProductVariantId, setSelectedProductVariantId] =
@@ -37,22 +38,17 @@ const ProductVariantsManagement = () => {
     price: "",
     quantity: "",
   });
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: "",
-    severity: "success",
-  });
 
   const {
     data: dataProducts,
     isLoading: isLoadingProduct,
     isError: isErrorProduct,
-    refetch: refetchProducts,
+    refetch: refetchProduct,
   } = useListProductsForAdminQuery({
     refetchOnMountOrArgChange: true,
-     pageNo: 1,
+    pageNo: 1,
     pageSize: 1000,
-  }, );
+  });
 
   const {
     data: dataProductVariants,
@@ -109,7 +105,7 @@ const ProductVariantsManagement = () => {
         );
       },
     },
-     {
+    {
       field: "product",
       headerName: "Tên sản phẩm",
       width: 550,
@@ -148,18 +144,14 @@ const ProductVariantsManagement = () => {
               <Restore />
             </IconButton>
           ) : ( */}
-            <IconButton onClick={() => handleOpenDeleteDialog(params.row.id)}>
-              <Delete color="error" />
-            </IconButton>
+          <IconButton onClick={() => handleOpenDeleteDialog(params.row.id)}>
+            <Delete color="error" />
+          </IconButton>
           {/* )} */}
         </>
       ),
     },
   ];
-
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
 
   const handleOpenDeleteDialog = (id) => {
     setSelectedProductVariantId(id);
@@ -182,12 +174,8 @@ const ProductVariantsManagement = () => {
   // };
 
   const handleRefresh = () => {
-    refetchProducts();
-    setSnackbar({
-      open: true,
-      message: "Danh sách biến thể sản phẩm đã được làm mới!",
-      severity: "info",
-    });
+    refetchProduct();
+    showSnackbar("Danh sách biến thể sản phẩm đã được làm mới!", "success");
   };
 
   const handleEditProductVariant = (id) => {
@@ -212,11 +200,7 @@ const ProductVariantsManagement = () => {
         id: selectedProductVariantId,
         ...newProductVariant,
       }).unwrap();
-      setSnackbar({
-        open: true,
-        message: "Cập nhật biến thể thành công!",
-        severity: "success",
-      });
+      showSnackbar("Cập nhật biến thể sản phẩm thành công!", "success");
       setNewProductVariant({
         price: "",
         quantity: "",
@@ -226,33 +210,23 @@ const ProductVariantsManagement = () => {
       // setSubmitted(false);
       refetchProductVariants();
     } catch (error) {
-      const errorMessage = error.data?.message;
-      setSnackbar({
-        open: true,
-        message: errorMessage,
-        severity: "error",
-      });
+      if (error && error.data && error.data.message) {
+        showSnackbar(error.data.message, "error");
+      }
     }
   };
 
   const handleDeleteProductVariant = async () => {
     try {
       await deleteProductVariant({ id: selectedProductVariantId }).unwrap();
-      setSnackbar({
-        open: true,
-        message: "Xóa sản phẩm thành công!",
-        severity: "success",
-      });
+      showSnackbar("Xóa biến thể sản phẩm thành công!", "success");
       setOpenDeleteDialog(false);
       setSelectedProductVariantId(null);
       refetchProductVariants();
     } catch (error) {
-      const errorMessage = error.data?.message;
-      setSnackbar({
-        open: true,
-        message: errorMessage,
-        severity: "error",
-      });
+      if (error && error.data && error.data.message) {
+        showSnackbar(error.data.message, "error");
+      }
     }
   };
 
@@ -295,7 +269,7 @@ const ProductVariantsManagement = () => {
         handleRefresh={handleRefresh}
         selectedProductId={selectedProductId}
         setSelectedProductId={setSelectedProductId}
-        refetchProducts={refetchProducts}
+        refetchProduct={refetchProduct}
         dataProducts={dataProducts}
         paginationModel={paginationModel}
         setPaginationModel={setPaginationModel}
@@ -336,7 +310,6 @@ const ProductVariantsManagement = () => {
         previewImage={previewImage}
         setPreviewImage={setPreviewImage}
       />
-      <SnackbarComponent snackbar={snackbar} onClose={handleCloseSnackbar} />
     </DashboardLayoutWrapper>
   );
 };

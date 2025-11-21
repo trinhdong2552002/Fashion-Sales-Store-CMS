@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import {
   Typography,
@@ -20,9 +20,10 @@ import {
 } from "@/services/api/color";
 import { Add, Delete, Edit, Refresh } from "@mui/icons-material";
 import ErrorDisplay from "@/components/ErrorDisplay";
-import SnackbarComponent from "@/components/Snackbar";
+import { useSnackbar } from "@/components/Snackbar";
 
 const ColorsManagement = () => {
+  const { showSnackbar } = useSnackbar();
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [openAddDialog, setOpenAddDialog] = useState(false);
   const [openUpdateDialog, setOpenUpdateDialog] = useState(false);
@@ -33,17 +34,12 @@ const ColorsManagement = () => {
     pageSize: 10,
   });
   const [newColor, setNewColor] = useState({ name: "" });
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    severity: "success",
-    message: "",
-  });
 
   const {
     data: dataColor,
     isLoading: isLoadingColor,
     isError: isErrorColor,
-    refetch,
+    refetch: refetchColor,
   } = useListColorsQuery(
     {
       pageNo: paginationModel.page + 1,
@@ -83,10 +79,6 @@ const ColorsManagement = () => {
     },
   ];
 
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
-
   const handleOpenDeleteDialog = (id) => {
     setSelectedColorId(id);
     setOpenDeleteDialog(true);
@@ -98,12 +90,8 @@ const ColorsManagement = () => {
   };
 
   const handleRefresh = () => {
-    refetch();
-    setSnackbar({
-      open: true,
-      severity: "info",
-      message: "Danh sách màu sắc đã được làm mới!",
-    });
+    refetchColor();
+    showSnackbar("Danh sách màu sắc đã được làm mới!", "info");
   };
 
   const handleAddColor = async (data) => {
@@ -113,22 +101,15 @@ const ColorsManagement = () => {
       await addColor({
         name: data?.name,
       }).unwrap();
-      setSnackbar({
-        open: true,
-        message: "Thêm màu sắc thành công!",
-        severity: "success",
-      });
+      showSnackbar("Thêm màu sắc thành công!", "success");
       setNewColor({ name: "" });
       setOpenAddDialog(false);
       setSubmitted(false);
-      refetch();
+      refetchColor();
     } catch (error) {
-      const errorMessage = error?.data?.message;
-      setSnackbar({
-        open: true,
-        severity: "error",
-        message: errorMessage,
-      });
+      if (error && error.data && error.data.message) {
+        showSnackbar(error.data.message, "error");
+      }
     }
   };
 
@@ -154,44 +135,30 @@ const ColorsManagement = () => {
         id: selectedColorId,
         ...newColor,
       }).unwrap();
-      setSnackbar({
-        open: true,
-        severity: "success",
-        message: "Cập nhật màu sắc thành công!",
-      });
+      showSnackbar("Cập nhật màu sắc thành công!", "success");
       setNewColor({ name: "" });
       setOpenUpdateDialog(false);
       setSubmitted(false);
       setSelectedColorId(null);
-      refetch();
+      refetchColor();
     } catch (error) {
-      const errorMessage = error?.data?.message;
-      setSnackbar({
-        open: true,
-        severity: "error",
-        message: errorMessage,
-      });
+      if (error && error.data && error.data.message) {
+        showSnackbar(error.data.message, "error");
+      }
     }
   };
 
   const handleDeleteColor = async () => {
     try {
       await deleteColor({ id: selectedColorId }).unwrap();
-      setSnackbar({
-        open: true,
-        severity: "success",
-        message: "Xóa màu sắc thành công!",
-      });
+      showSnackbar("Xóa màu sắc thành công!", "success");
       setOpenDeleteDialog(false);
       setSelectedColorId(null);
-      refetch();
+      refetchColor();
     } catch (error) {
-      const errorMessage = error?.data?.message;
-      setSnackbar({
-        open: true,
-        message: errorMessage,
-        severity: "error",
-      });
+      if (error && error.data && error.data.message) {
+        showSnackbar(error.data.message, "error");
+      }
     }
   };
 
@@ -199,8 +166,7 @@ const ColorsManagement = () => {
     return (
       <ErrorDisplay
         error={{
-          message:
-            "Không tải được danh sách màu sắc.",
+          message: "Không tải được danh sách màu sắc.",
         }}
       />
     );
@@ -351,8 +317,6 @@ const ColorsManagement = () => {
           </Button>
         </DialogActions>
       </Dialog>
-
-      <SnackbarComponent snackbar={snackbar} onClose={handleCloseSnackbar} />
     </DashboardLayoutWrapper>
   );
 };

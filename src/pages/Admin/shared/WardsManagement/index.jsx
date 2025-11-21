@@ -18,18 +18,14 @@ import {
 } from "@/services/api/district";
 import { skipToken } from "@reduxjs/toolkit/query";
 import ErrorDisplay from "@/components/ErrorDisplay";
-import SnackbarComponent from "@/components/Snackbar";
+import { useSnackbar } from "@/components/Snackbar";
 
 const WardsManagement = () => {
+  const { showSnackbar } = useSnackbar();
   const [selectedDistrictId, setSelectedDistrictId] = useState("");
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 20,
-  });
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    severity: "success",
-    message: "",
   });
 
   const {
@@ -96,21 +92,13 @@ const WardsManagement = () => {
     { field: "name", headerName: "Tên phường / xã", width: 200 },
   ];
 
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
-
   const handleRefresh = () => {
     if (selectedDistrictId) {
       refetchDataWardsByDistrict();
     } else {
       refetchDataWards();
     }
-    setSnackbar({
-      open: true,
-      message: "Danh sách phường / xã đã được làm mới!",
-      severity: "info",
-    });
+    showSnackbar("Danh sách phường/xã đã được làm mới!", "info");
   };
 
   if (isErrorWards || isErrorWardsByDistrict || isErrorDistricts) {
@@ -195,8 +183,6 @@ const WardsManagement = () => {
           pageSizeOptions={[20, 50, 100]}
         />
       </Box>
-
-      <SnackbarComponent snackbar={snackbar} onClose={handleCloseSnackbar} />
     </DashboardLayoutWrapper>
   );
 };

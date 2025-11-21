@@ -5,28 +5,23 @@ import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import { useListProvincesQuery } from "@/services/api/province";
 import { Refresh } from "@mui/icons-material";
 import ErrorDisplay from "@/components/ErrorDisplay";
-import SnackbarComponent from "@/components/Snackbar";
+import { useSnackbar } from "@/components/Snackbar";
 
 const ProvincesManagement = () => {
+  const { showSnackbar } = useSnackbar();
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 10,
   });
 
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    severity: "success",
-    message: "",
-  });
-
   const {
-    data: dataProvinces,
-    isLoading: isLoadingProvinces,
-    isError: isErrorProvinces,
-    refetch,
+    data: dataProvince,
+    isLoading: isLoadingProvince,
+    isError: isErrorProvince,
+    refetch: refetchProvince,
   } = useListProvincesQuery(
     {
-      pageNo: paginationModel.page + 1, 
+      pageNo: paginationModel.page + 1,
       pageSize: paginationModel.pageSize,
     },
     {
@@ -34,33 +29,24 @@ const ProvincesManagement = () => {
     }
   );
 
-  const dataRowProvinces = dataProvinces?.result?.items || [];
-  const totalRows = dataProvinces?.result?.totalItems || 0;
+  const dataRowProvinces = dataProvince?.result?.items || [];
+  const totalRows = dataProvince?.result?.totalItems || 0;
 
   const columnsProvince = [
     { field: "id", headerName: "ID", width: 150 },
     { field: "name", headerName: "Tên tỉnh / thành phố", width: 200 },
   ];
 
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
-
   const handleRefresh = () => {
-    refetch();
-    setSnackbar({
-      open: true,
-      message: "Danh sách tỉnh / thành phố đã được làm mới !",
-      severity: "info",
-    });
+    refetchProvince();
+    showSnackbar("Danh sách tỉnh/thành phố đã được làm mới!", "info");
   };
 
-  if (isErrorProvinces)
+  if (isErrorProvince)
     return (
       <ErrorDisplay
         error={{
-          message:
-            "Không tải được danh sách tỉnh / thành phố.",
+          message: "Không tải được danh sách tỉnh / thành phố.",
         }}
       />
     );
@@ -90,7 +76,7 @@ const ProvincesManagement = () => {
           columns={columnsProvince}
           rows={dataRowProvinces}
           disableSelectionOnClick
-          loading={isLoadingProvinces}
+          loading={isLoadingProvince}
           slotProps={{
             loadingOverlay: {
               variant: "linear-progress",
@@ -108,8 +94,6 @@ const ProvincesManagement = () => {
           pageSizeOptions={[10, 15, 20]}
         />
       </Box>
-
-      <SnackbarComponent snackbar={snackbar} onClose={handleCloseSnackbar} />
     </DashboardLayoutWrapper>
   );
 };

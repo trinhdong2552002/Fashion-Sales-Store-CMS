@@ -10,7 +10,6 @@ import {
   DialogContentText,
   DialogActions,
 } from "@mui/material";
-
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import {
   useListImagesQuery,
@@ -21,45 +20,41 @@ import { useGetMyInfoQuery } from "@/services/api/auth";
 import { useState } from "react";
 import { AddPhotoAlternate, Delete, Refresh } from "@mui/icons-material";
 import ErrorDisplay from "@/components/ErrorDisplay";
-import SnackbarComponent from "@/components/Snackbar";
 import { PreviewImage } from "@/components/PreviewImage";
+import { useSnackbar } from "@/components/Snackbar";
 
 const ProductImagesManagement = () => {
+  const { showSnackbar } = useSnackbar();
   const [previewImage, setPreviewImage] = useState(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 15,
   });
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: "",
-    severity: "success",
-  });
+
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [imageIdToDelete, setImageIdToDelete] = useState(null);
 
-  const { isLoading: userLoading } = useGetMyInfoQuery();
+  const { isLoading: isLoadingUser } = useGetMyInfoQuery();
   const {
-    data: dataImages,
-    isLoading: isLoadingImages,
-    isError: isErrorImages,
-    refetch,
+    data: dataImage,
+    isLoading: isLoadingImage,
+    isError: isErrorImage,
+    refetch: refetchImage,
   } = useListImagesQuery(
     {
       pageNo: paginationModel.page + 1,
       pageSize: paginationModel.pageSize,
     },
-    { skip: userLoading },
+    { skip: isLoadingUser },
     { refetchOnMountOrArgChange: true }
   );
-  console.log("dataImages", dataImages);
 
   const [uploadImage] = useUploadImageMutation();
   const [deleteImage] = useDeleteImageMutation();
 
-  const dataRowImages = dataImages?.result?.items || [];
-  const totalRows = dataImages?.result?.totalItems || 0;
+  const dataRowImages = dataImage?.result?.items || [];
+  const totalRows = dataImage?.result?.totalItems || 0;
 
   const columnsImage = [
     { field: "id", headerName: "ID", width: 150 },
@@ -112,61 +107,43 @@ const ProductImagesManagement = () => {
     },
   ];
 
-const handleUploadImage = async (e) => {
-  const file = e.target.files[0]; // Single file only
-  if (!file) return;
+  const handleUploadImage = async (e) => {
+    const file = e.target.files[0]; // Single file only
+    if (!file) return;
 
-  // Validate file type
-  if (!file.type.startsWith('image/')) {
-    setSnackbar({
-      open: true,
-      message: "Vui lòng chọn một file hình ảnh!",
-      severity: "error",
-    });
-    return;
-  }
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      showSnackbar("Vui lòng chọn một file hình ảnh!", "warning");
+      return;
+    }
 
-  setIsUploadingImage(true);
-  try {
-    // Pass single file, not array
-    await uploadImage(file).unwrap();
-    setSnackbar({
-      open: true,
-      message: "Upload hình ảnh thành công!",
-      severity: "success",
-    });
-    refetch();
-    e.target.value = ''; // Clear input
-  } catch (error) {
-    setSnackbar({
-      open: true,
-      message: error?.data?.message || "Upload hình ảnh thất bại!",
-      severity: "error",
-    });
-    console.error("Lỗi upload:", error);
-  } finally {
-    setIsUploadingImage(false);
-  }
-};
+    setIsUploadingImage(true);
+    try {
+      // Pass single file, not array
+      await uploadImage(file).unwrap();
+      showSnackbar("Tải lên hình ảnh thành công!", "success");
+      refetchImage();
+      e.target.value = ""; // Clear input
+    } catch (error) {
+      if (error && error.data && error.data.message) {
+        showSnackbar(error.data.message, "error");
+      }
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
 
   const handleDeleteImage = async () => {
     try {
       await deleteImage(imageIdToDelete).unwrap();
-      setSnackbar({
-        open: true,
-        message: "Xóa hình ảnh thành công!",
-        severity: "success",
-      });
+      showSnackbar("Xóa hình ảnh thành công!", "success");
       setOpenDeleteDialog(false);
       setImageIdToDelete(null);
-      refetch();
+      refetchImage();
     } catch (error) {
-      const errorMessage = error.data?.message || "Lỗi khi xóa hình ảnh";
-      setSnackbar({
-        open: true,
-        message: errorMessage,
-        severity: "error",
-      });
+      if (error && error.data && error.data.message) {
+        showSnackbar(error.data.message, "error");
+      }
     }
   };
 
@@ -176,19 +153,11 @@ const handleUploadImage = async (e) => {
   };
 
   const handleRefresh = () => {
-    refetch();
-    setSnackbar({
-      open: true,
-      message: "Danh sách hình ảnh sản phẩm đã được làm mới!",
-      severity: "info",
-    });
+    refetchImage();
+    showSnackbar("Danh sách hình ảnh sản phẩm đã được làm mới!", "info");
   };
 
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
-
-  if (isErrorImages)
+  if (isErrorImage)
     return (
       <ErrorDisplay
         error={{
@@ -245,7 +214,7 @@ const handleUploadImage = async (e) => {
           rows={dataRowImages}
           rowsPerPageOptions={[10, 20, 50]}
           rowCount={totalRows}
-          loading={isLoadingImages}
+          loading={isLoadingImage}
           disableSelectionOnClick
           slotProps={{
             loadingOverlay: {
@@ -299,7 +268,6 @@ const handleUploadImage = async (e) => {
         previewImage={previewImage}
         setPreviewImage={setPreviewImage}
       />
-      <SnackbarComponent snackbar={snackbar} onClose={handleCloseSnackbar} />
     </DashboardLayoutWrapper>
   );
 };

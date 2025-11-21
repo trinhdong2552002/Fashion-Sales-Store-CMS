@@ -19,10 +19,11 @@ import {
   useRestoreAddressMutation,
 } from "@/services/api/address";
 import ErrorDisplay from "@/components/ErrorDisplay";
-import SnackbarComponent from "@/components/Snackbar";
 import { statusDisplay } from "/src/constants/badgeStatus";
+import { useSnackbar } from "@/components/Snackbar";
 
 const AddressManagement = () => {
+  const { showSnackbar } = useSnackbar();
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [openRestoreDialog, setOpenRestoreDialog] = useState(false);
   const [selectedCategoriesId, setSelectedCategoriesId] = useState(null);
@@ -30,17 +31,12 @@ const AddressManagement = () => {
     page: 0,
     pageSize: 10,
   });
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    severity: "success",
-    message: "",
-  });
 
   const {
     data: dataAddress,
     isLoading: isLoadingAddress,
     isError: isErrorAddress,
-    refetch,
+    refetch: refetchAddress,
   } = useListAddressForAdminQuery(
     {
       pageNo: paginationModel.page + 1,
@@ -124,10 +120,6 @@ const AddressManagement = () => {
     },
   ];
 
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
-
   const handleOpenDeleteDialog = (id) => {
     setSelectedCategoriesId(id);
     setOpenDeleteDialog(true);
@@ -149,53 +141,35 @@ const AddressManagement = () => {
   };
 
   const handleRefresh = () => {
-    refetch();
-    setSnackbar({
-      open: true,
-      message: "Danh sách phường / xã đã được làm mới !",
-      severity: "info",
-    });
+    refetchAddress();
+    showSnackbar("Làm mới danh sách địa chỉ thành công!", "success");
   };
 
   const handleDeleteCategories = async () => {
     try {
       await deleteAddress({ id: selectedCategoriesId }).unwrap();
-      setSnackbar({
-        open: true,
-        severity: "success",
-        message: "Xoá địa chỉ thành công!",
-      });
+      showSnackbar("Xoá địa chỉ thành công!", "success");
       setOpenDeleteDialog(false);
       setSelectedCategoriesId(null);
-      refetch();
+      refetchAddress();
     } catch (error) {
-      const errorMessage = error?.data?.message;
-      setSnackbar({
-        open: true,
-        severity: "error",
-        message: errorMessage,
-      });
+      if (error && error.data && error.data.message) {
+        showSnackbar(error.data.message, "error");
+      }
     }
   };
 
   const handleRestoreCategories = async () => {
     try {
       await restoreAddress({ id: selectedCategoriesId }).unwrap();
-      setSnackbar({
-        open: true,
-        severity: "success",
-        message: "Khôi phục địa chỉ thành công !",
-      });
+      showSnackbar("Khôi phục địa chỉ thành công!", "success");
       setOpenRestoreDialog(false);
       setSelectedCategoriesId(null);
-      refetch();
+      refetchAddress();
     } catch (error) {
-      const errorMessage = error?.data?.message;
-      setSnackbar({
-        open: true,
-        severity: "error",
-        message: errorMessage,
-      });
+      if (error && error.data && error.data.message) {
+        showSnackbar(error.data.message, "error");
+      }
     }
   };
 
@@ -303,8 +277,6 @@ const AddressManagement = () => {
           </Button>
         </DialogActions>
       </Dialog>
-
-      <SnackbarComponent snackbar={snackbar} onClose={handleCloseSnackbar} />
     </DashboardLayoutWrapper>
   );
 };

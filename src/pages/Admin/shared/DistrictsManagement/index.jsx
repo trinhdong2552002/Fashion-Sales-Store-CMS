@@ -16,25 +16,21 @@ import { useListDistrictsByProvinceQuery } from "@/services/api/province";
 import { useListProvincesQuery } from "@/services/api/province";
 import { skipToken } from "@reduxjs/toolkit/query";
 import ErrorDisplay from "@/components/ErrorDisplay";
-import SnackbarComponent from "@/components/Snackbar";
+import { useSnackbar } from "@/components/Snackbar";
 
 const DistrictsManagement = () => {
+  const { showSnackbar } = useSnackbar();
   const [selectedProvinceId, setSelectedProvinceId] = useState("");
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 20,
   });
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    severity: "success",
-    message: "",
-  });
 
   const {
-    data: dataDistricts,
-    isLoading: isLoadingDistricts,
-    isError: isErrorDistricts,
-    refetch: refetchDistricts,
+    data: dataDistrict,
+    isLoading: isLoadingDistrict,
+    isError: isErrorDistrict,
+    refetch: refetchDistrict,
   } = useListDistrictsQuery(
     {
       pageNo: paginationModel.page + 1,
@@ -45,7 +41,7 @@ const DistrictsManagement = () => {
     }
   );
 
-  const { data: dataProvinces, isError: isErrorProvinces } =
+  const { data: dataProvince, isError: isErrorProvince } =
     useListProvincesQuery(
       {
         pageNo: 1,
@@ -76,45 +72,36 @@ const DistrictsManagement = () => {
 
   const isLoading = selectedProvinceId
     ? isLoadingDistrictsByProvince
-    : isLoadingDistricts;
+    : isLoadingDistrict;
 
   const dataRowDistricts =
     (selectedProvinceId
       ? dataDistrictsByProvince?.result?.items
-      : dataDistricts?.result?.items) || [];
+      : dataDistrict?.result?.items) || [];
 
   const totalRows = selectedProvinceId
     ? dataDistrictsByProvince?.result?.totalItems
-    : dataDistricts?.result?.totalItems || 0;
+    : dataDistrict?.result?.totalItems || 0;
 
   const columnsDistrict = [
     { field: "id", headerName: "ID", width: 150 },
     { field: "name", headerName: "Tên quận / huyện", width: 200 },
   ];
 
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
-
   const handleRefresh = () => {
     if (selectedProvinceId) {
       refetchDataDistrictsByProvince();
     } else {
-      refetchDistricts();
+      refetchDistrict();
     }
-    setSnackbar({
-      open: true,
-      message: "Danh sách quận / huyện đã được làm mới !",
-      severity: "info",
-    });
+    showSnackbar("Danh sách quận/huyện đã được làm mới!", "info");
   };
 
-  if (isErrorDistricts || isErrorDistrictsByProvince || isErrorProvinces) {
+  if (isErrorDistrict || isErrorDistrictsByProvince || isErrorProvince) {
     return (
       <ErrorDisplay
         error={{
-          message:
-            "Không tải được dữ liệu.",
+          message: "Không tải được dữ liệu.",
         }}
       />
     );
@@ -151,7 +138,7 @@ const DistrictsManagement = () => {
               setSelectedProvinceId(e.target.value);
             }}
           >
-            {dataProvinces?.result?.items?.map((province) => (
+            {dataProvince?.result?.items?.map((province) => (
               <MenuItem key={province.id} value={province.id}>
                 {province.name}
               </MenuItem>
@@ -192,8 +179,6 @@ const DistrictsManagement = () => {
           pageSizeOptions={[20, 50, 100]}
         />
       </Box>
-
-      <SnackbarComponent snackbar={snackbar} onClose={handleCloseSnackbar} />
     </DashboardLayoutWrapper>
   );
 };

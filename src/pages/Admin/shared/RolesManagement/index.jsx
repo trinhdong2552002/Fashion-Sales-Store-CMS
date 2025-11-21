@@ -5,24 +5,20 @@ import { useListRolesQuery } from "@/services/api/role";
 import { useState } from "react";
 import { Refresh } from "@mui/icons-material";
 import ErrorDisplay from "@/components/ErrorDisplay";
-import SnackbarComponent from "@/components/Snackbar";
+import { useSnackbar } from "@/components/Snackbar";
 
 const RolesManagement = () => {
+  const { showSnackbar } = useSnackbar();
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 10,
   });
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    severity: "success",
-    message: "",
-  });
 
   const {
-    data: dataRoles,
-    isLoading: isLoadingRoles,
-    isError: isErrorRoles,
-    refetch,
+    data: dataRole,
+    isLoading: isLoadingRole,
+    isError: isErrorRole,
+    refetch: refetchRole,
   } = useListRolesQuery(
     {
       page: paginationModel.page,
@@ -33,8 +29,8 @@ const RolesManagement = () => {
     }
   );
 
-  const dataRowRoles = dataRoles?.result?.items || [];
-  const totalRows = dataRoles?.result?.totalItems || 0;
+  const dataRowRoles = dataRole?.result?.items || [];
+  const totalRows = dataRole?.result?.totalItems || 0;
 
   const columnsRoles = [
     { field: "id", headerName: "ID", width: 150 },
@@ -42,20 +38,12 @@ const RolesManagement = () => {
     { field: "description", headerName: "Mô tả vai trò", width: 200 },
   ];
 
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
-
   const handleRefresh = () => {
-    refetch();
-    setSnackbar({
-      open: true,
-      message: "Danh sách vai trò đã được làm mới!",
-      severity: "info",
-    });
+    refetchRole();
+    showSnackbar("Danh sách vai trò đã được làm mới!", "info");
   };
 
-  if (isErrorRoles)
+  if (isErrorRole)
     return (
       <ErrorDisplay
         error={{
@@ -89,7 +77,7 @@ const RolesManagement = () => {
           }}
           columns={columnsRoles}
           rows={dataRowRoles}
-          loading={isLoadingRoles}
+          loading={isLoadingRole}
           disableSelectionOnClick
           slotProps={{
             loadingOverlay: {
@@ -110,8 +98,6 @@ const RolesManagement = () => {
           pageSizeOptions={[10, 15, 20]}
         />
       </Box>
-
-      <SnackbarComponent snackbar={snackbar} onClose={handleCloseSnackbar} />
     </DashboardLayoutWrapper>
   );
 };

@@ -15,17 +15,18 @@ import ProductDialogAdd from "./shared/ProductDialogAdd";
 import ProductDialogEdit from "./shared/ProductDialogEdit";
 import ProductDialogDelete from "./shared/ProductDialogDelete";
 import ProductDialogRestore from "./shared/ProductDialogRestore";
-import SnackbarComponent from "@/components/Snackbar";
 import TableData from "@/components/TableData";
 import { Delete, Edit, Restore, Visibility } from "@mui/icons-material";
 import { statusDisplay } from "/src/constants/badgeStatus";
 import { useListColorsQuery } from "@/services/api/color";
 import { useListSizesQuery } from "@/services/api/size";
-import { useListImagesQuery } from "../../../../services/api/productImage";
+import { useListImagesQuery } from "@/services/api/productImage";
 import ProductDialogDetail from "./shared/ProductDialogDetail";
 import { useSearchProductsQuery } from "@/services/api/product";
+import { useSnackbar } from "@/components/Snackbar";
 
 const ProductsManagement = () => {
+  const { showSnackbar } = useSnackbar();
   const [openAddDialog, setOpenAddDialog] = useState(false);
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
@@ -48,11 +49,6 @@ const ProductsManagement = () => {
     colorIds: [],
     sizeIds: [],
     imageIds: [],
-  });
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: "",
-    severity: "success",
   });
 
   const {
@@ -205,10 +201,6 @@ const ProductsManagement = () => {
     },
   ];
 
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
-
   const handleOpenDeleteDialog = (id) => {
     setSelectedProductId(id);
     setOpenDeleteDialog(true);
@@ -231,11 +223,7 @@ const ProductsManagement = () => {
 
   const handleRefresh = () => {
     refetchProducts();
-    setSnackbar({
-      open: true,
-      message: "Danh sách sản phẩm đã được làm mới!",
-      severity: "info",
-    });
+    showSnackbar("Làm mới danh sách sản phẩm thành công!", "info");
   };
 
   const handleAddProduct = async () => {
@@ -245,11 +233,7 @@ const ProductsManagement = () => {
       await addProduct({
         ...newProduct,
       }).unwrap();
-      setSnackbar({
-        open: true,
-        message: "Thêm sản phẩm thành công!",
-        severity: "success",
-      });
+      showSnackbar("Thêm sản phẩm thành công!", "success");
       setNewProduct({
         name: "",
         description: "",
@@ -265,12 +249,10 @@ const ProductsManagement = () => {
       setSubmitted(false);
       refetchProducts();
     } catch (error) {
-      const errorMessage = error?.data?.message;
-      setSnackbar({
-        open: true,
-        severity: "error",
-        message: errorMessage,
-      });
+      if (error && error.data && error.data.message) {
+        showSnackbar(error.data.message, "error");
+        return;
+      }
     }
   };
 
@@ -325,11 +307,7 @@ const ProductsManagement = () => {
         id: selectedProductId,
         ...newProduct,
       });
-      setSnackbar({
-        open: true,
-        message: "Cập nhật sản phẩm thành công!",
-        severity: "success",
-      });
+      showSnackbar("Cập nhật sản phẩm thành công!", "success");
       setNewProduct({
         name: "",
         description: "",
@@ -346,54 +324,40 @@ const ProductsManagement = () => {
       setSubmitted(false);
       refetchProducts();
     } catch (error) {
-      const errorMessage = error?.data?.message;
-      setSnackbar({
-        open: true,
-        severity: "error",
-        message: errorMessage,
-      });
+      if (error && error.data && error.data.message) {
+        showSnackbar(error.data.message, "error");
+        return;
+      }
     }
   };
 
   const handleDeleteProduct = async () => {
     try {
       await deleteProduct({ id: selectedProductId }).unwrap();
-      setSnackbar({
-        open: true,
-        message: "Xóa sản phẩm thành công!",
-        severity: "success",
-      });
+      showSnackbar("Xóa sản phẩm thành công!", "success");
       setOpenDeleteDialog(false);
       setSelectedProductId(null);
       refetchProducts();
     } catch (error) {
-      const errorMessage = error?.data?.message;
-      setSnackbar({
-        open: true,
-        severity: "error",
-        message: errorMessage,
-      });
+      if (error && error.data && error.data.message) {
+        showSnackbar(error.data.message, "error");
+        return;
+      }
     }
   };
 
   const handleRestoreProduct = async () => {
     try {
       await restoreProduct({ id: selectedProductId }).unwrap();
-      setSnackbar({
-        open: true,
-        message: "Khôi phục sản phẩm thành công!",
-        severity: "success",
-      });
+      showSnackbar("Khôi phục sản phẩm thành công!", "success");
       setOpenRestoreDialog(false);
       setSelectedProductId(null);
       refetchProducts();
     } catch (error) {
-      const errorMessage = error?.data?.message;
-      setSnackbar({
-        open: true,
-        severity: "error",
-        message: errorMessage,
-      });
+      if (error && error.data && error.data.message) {
+        showSnackbar(error.data.message, "error");
+        return;
+      }
     }
   };
 
@@ -491,8 +455,6 @@ const ProductsManagement = () => {
         onClose={() => setOpenDetailDialog(false)}
         product={selectedProduct}
       />
-
-      <SnackbarComponent snackbar={snackbar} onClose={handleCloseSnackbar} />
     </DashboardLayoutWrapper>
   );
 };

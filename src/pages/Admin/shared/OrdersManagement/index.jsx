@@ -15,28 +15,24 @@ import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import { useListOrdersForAdminQuery } from "@/services/api/order";
 import { Delete, Refresh, Visibility } from "@mui/icons-material";
 import ErrorDisplay from "@/components/ErrorDisplay";
-import SnackbarComponent from "@/components/Snackbar";
 import { orderStatusDisplay } from "/src/constants/badgeStatus";
 import { useDeleteOrderByIdMutation } from "@/services/api/order";
+import { useSnackbar } from "@/components/Snackbar";
 
 const OrdersManagement = () => {
+  const { showSnackbar } = useSnackbar();
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 10,
   });
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    severity: "success",
-    message: "",
-  });
 
   const {
-    data: dataOrders,
-    isLoading: isLoadingOrders,
-    isError: isErrorOrders,
-    refetch,
+    data: dataOrder,
+    isLoading: isLoadingOrder,
+    isError: isErrorOrder,
+    refetchOrder: refetchOrder,
   } = useListOrdersForAdminQuery({
     pageNo: paginationModel.page + 1,
     pageSize: paginationModel.pageSize,
@@ -44,8 +40,8 @@ const OrdersManagement = () => {
 
   const [deleteOrderById] = useDeleteOrderByIdMutation();
 
-  const dataRowOrders = dataOrders?.result?.items || [];
-  const totalRows = dataOrders?.result?.totalItems || 0;
+  const dataRowOrders = dataOrder?.result?.items || [];
+  const totalRows = dataOrder?.result?.totalItems || 0;
 
   const columnsOrder = [
     { field: "id", headerName: "ID", width: 150 },
@@ -94,33 +90,23 @@ const OrdersManagement = () => {
     setOpenDeleteDialog(false);
   };
 
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
-
   const handleRefresh = () => {
-    refetch();
-    setSnackbar({
-      open: true,
-      severity: "info",
-      message: "Danh sách đơn hàng đã được làm mới!",
-    });
+    refetchOrder();
+    showSnackbar("Danh sách đơn hàng đã được làm mới!", "success");
   };
 
   const handleDeleteOrder = async () => {
     try {
       await deleteOrderById({ id: selectedOrderId }).unwrap();
     } catch (error) {
-      const errorMessage = error?.data?.message;
-      setSnackbar({
-        open: true,
-        severity: "error",
-        message: errorMessage,
-      });
+      if (error && error.data && error.data.message) {
+        showSnackbar(error.data.message, "error");
+        return;
+      }
     }
   };
 
-  if (isErrorOrders)
+  if (isErrorOrder)
     return (
       <ErrorDisplay
         error={{
@@ -155,7 +141,7 @@ const OrdersManagement = () => {
           }}
           columns={columnsOrder}
           rows={dataRowOrders}
-          loading={isLoadingOrders}
+          loading={isLoadingOrder}
           disableSelectionOnClick
           slotProps={{
             loadingOverlay: {
@@ -197,8 +183,6 @@ const OrdersManagement = () => {
           </Button>
         </DialogActions>
       </Dialog>
-
-      <SnackbarComponent snackbar={snackbar} onClose={handleCloseSnackbar} />
     </DashboardLayoutWrapper>
   );
 };
