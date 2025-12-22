@@ -1,4 +1,4 @@
-# 🛡️ Fashion Store - Admin CMS Dashboard
+# 🛡️ Fashion Sales Store - Admin CMS Dashboard
 
 > The Management Dashboard for Fashion Sales Store. Allows administrators to manage products, orders, users, and view sales statistics.
 
