@@ -16,7 +16,6 @@ export const ProductVariantToolbar = ({
   dataProducts,
   refetchProducts,
 }) => {
-  // Lọc sản phẩm trạng thái theo ACTIVE
   const activeProducts = dataProducts?.result?.items.filter(
     (product) => product.status === "ACTIVE"
   );
@@ -62,8 +61,7 @@ export const ProductVariantToolbar = ({
               onChange={(e) => {
                 setSelectedProductId(e.target.value);
               }}
-              // Khi select component refetch ngay lập tức
-              onOpen={() => refetchProducts()}
+              onOpen={() => refetchProducts}
               label="Chọn sản phẩm"
             >
               {activeProducts?.map((product) => (
