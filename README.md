@@ -3,7 +3,7 @@
 > The Management Dashboard for Fashion Sales Store. Allows administrators to manage products, orders, users, and view sales statistics.
 
 ### 🔗 Live Demo & API
-* **Live App:** [https://fashion-sales-store.site.name.vn](https://fashion-sales-store.site.name.vn)
+* **Live App:** [https://fashion-sales-store-cms.site.name.vn](https://fashion-sales-store-cms.site.name.vn)
 * **Backend API:** [Swagger UI Link](https://springadamstore-production.up.railway.app/adamstore/swagger-ui/index.html)
 
 ---
