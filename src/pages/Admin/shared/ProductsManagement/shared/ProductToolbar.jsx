@@ -1,29 +1,15 @@
-import {
-  Grid,
-  TextField,
-  InputAdornment,
-  IconButton,
-  Button,
-  Box,
-} from "@mui/material";
-import { Search, Refresh, Add } from "@mui/icons-material";
-import { Fragment, useState } from "react";
+import { TextField, Button, Box } from "@mui/material";
+import { Refresh, Add } from "@mui/icons-material";
+import { Fragment } from "react";
 
-const ProductToolbar = ({ onSearch, onAddProduct, onRefresh }) => {
-  const [searchValue, setSearchValue] = useState("");
-
+const ProductToolbar = ({
+  searchValue,
+  setSearchValue,
+  onAddProduct,
+  onRefresh,
+}) => {
   const handleSearchChange = (e) => {
     setSearchValue(e.target.value);
-  };
-
-  const handleSearchSubmit = () => {
-    onSearch(searchValue);
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
-      handleSearchSubmit();
-    }
   };
 
   return (
@@ -33,31 +19,43 @@ const ProductToolbar = ({ onSearch, onAddProduct, onRefresh }) => {
         direction="row"
         justifyContent="flex-start"
         alignItems="center"
+        mt={1}
       >
         <TextField
-          sx={{ minWidth: 500 }}
+          sx={{
+            minWidth: {
+              xs: "100%",
+              md: 500,
+            },
+          }}
           variant="standard"
           value={searchValue}
           onChange={handleSearchChange}
-          onKeyDown={handleKeyDown}
           label="Tìm kiếm sản phẩm"
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="start">
-                <IconButton aria-label="search" onClick={handleSearchSubmit}>
-                  <Search />
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
         />
       </Box>
 
-      <Grid
-        container
+      <Box
+        display={"flex"}
         justifyContent="space-between"
-        alignItems="center"
-        sx={{ mb: 3, mt: 3 }}
+        alignItems={{
+          xs: "stretch",
+          sm: "center",
+          md: "center",
+        }}
+        flexDirection={{
+          xs: "column",
+          sm: "row",
+          md: "row",
+        }}
+        sx={{
+          mb: 3,
+          mt: 3,
+          gap: {
+            xs: 2,
+            md: 0,
+          },
+        }}
       >
         <Button
           variant="outlined"
@@ -76,7 +74,7 @@ const ProductToolbar = ({ onSearch, onAddProduct, onRefresh }) => {
         >
           Thêm sản phẩm
         </Button>
-      </Grid>
+      </Box>
     </Fragment>
   );
 };
