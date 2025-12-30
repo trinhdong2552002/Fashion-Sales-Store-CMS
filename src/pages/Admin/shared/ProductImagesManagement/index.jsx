@@ -170,10 +170,26 @@ const ProductImagesManagement = () => {
     <DashboardLayoutWrapper>
       <Typography variant="h5">Quản lý Hình ảnh Sản phẩm</Typography>
       <Box
-        sx={{ mb: 3, mt: 3 }}
+        sx={{
+          mb: 3,
+          mt: 3,
+          gap: {
+            xs: 2,
+            md: 0,
+          },
+        }}
         display={"flex"}
         justifyContent={"space-between"}
-        alignItems={"center"}
+        alignItems={{
+          xs: "stretch",
+          sm: "center",
+          md: "center",
+        }}
+        flexDirection={{
+          xs: "column",
+          sm: "row",
+          md: "row",
+        }}
       >
         <Button
           variant="outlined"

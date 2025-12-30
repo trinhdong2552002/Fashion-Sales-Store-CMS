@@ -280,10 +280,19 @@ const BranchesManagement = () => {
     <DashboardLayoutWrapper>
       <Typography variant="h5">Quản lý Chi nhánh</Typography>
       <Box
-        sx={{ mt: 3, mb: 3 }}
+        sx={{ mt: 3, mb: 3, gap: { xs: 2, md: 0 } }}
         display={"flex"}
         justifyContent={"space-between"}
-        alignItems={"center"}
+        alignItems={{
+          xs: "stretch",
+          sm: "center",
+          md: "center",
+        }}
+        flexDirection={{
+          xs: "column",
+          sm: "row",
+          md: "row",
+        }}
       >
         <Button
           variant="outlined"

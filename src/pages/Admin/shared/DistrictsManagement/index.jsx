@@ -112,10 +112,19 @@ const DistrictsManagement = () => {
       <Typography variant="h5">Quản lý Quận / huyện</Typography>
 
       <Box
+        sx={{ mb: 3, mt: 3, gap: { xs: 2, md: 0 } }}
         display="flex"
-        alignItems="center"
         justifyContent="space-between"
-        sx={{ mb: 3, mt: 3 }}
+        alignItems={{
+          xs: "stretch",
+          sm: "center",
+          md: "center",
+        }}
+        flexDirection={{
+          xs: "column",
+          sm: "row",
+          md: "row",
+        }}
       >
         <Button
           variant="outlined"
@@ -125,7 +134,10 @@ const DistrictsManagement = () => {
           Làm mới
         </Button>
 
-        <FormControl sx={{ minWidth: 300 }}>
+        <FormControl sx={{ minWidth: {
+          xs: "100%",
+          sm: 300,
+        } }}>
           <InputLabel>Chọn tỉnh / thành phố</InputLabel>
           <Select
             value={selectedProvinceId}
