@@ -11,14 +11,15 @@ export const productApi = baseApi.injectEndpoints({
       providesTags: [TAG_KEYS.PRODUCT],
     }),
 
-    // TODO: Need search product for admin
-    searchProducts: builder.query({
-      query: ({ pageNo, pageSize, search }) => ({
-        url: "/v1/products/search",
-        params: { pageNo, pageSize, search },
-      }),
-      providesTags: [TAG_KEYS.PRODUCT],
-    }),
+    // TODO: Api search product for user has been error, need backend fix it
+    // TODO: Because i want to use search api for admin too the BE have not support it yet
+    // searchProducts: builder.query({
+    //   query: ({ pageNo, pageSize, search }) => ({
+    //     url: "/v1/products/search",
+    //     params: { pageNo, pageSize, search },
+    //   }),
+    //   providesTags: [TAG_KEYS.PRODUCT],
+    // }),
 
     addProduct: builder.mutation({
       query: (product) => ({

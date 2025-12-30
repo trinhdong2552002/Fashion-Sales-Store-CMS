@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { Typography, IconButton, Chip } from "@mui/material";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import {
@@ -22,8 +22,18 @@ import { useListColorsQuery } from "@/services/api/color";
 import { useListSizesQuery } from "@/services/api/size";
 import { useListImagesQuery } from "@/services/api/productImage";
 import ProductDialogDetail from "./shared/ProductDialogDetail";
-import { useSearchProductsQuery } from "@/services/api/product";
+
 import { useSnackbar } from "@/components/Snackbar";
+
+// Vietnamese character encoding normalization for search
+const normalizeString = (str) => {
+  return str
+    .toLowerCase()
+    .normalize("NFD") // Split accents from letters
+    .replace(/[\u0300-\u036f]/g, "") // Remove accents
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "D");
+};
 
 const ProductsManagement = () => {
   const { showSnackbar } = useSnackbar();
@@ -35,10 +45,11 @@ const ProductsManagement = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [submitted, setSubmitted] = useState(false);
-  const [search, setSearch] = useState("");
+  const [searchValue, setSearchValue] = useState("");
+
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
-    pageSize: 10,
+    pageSize: 20,
   });
   const [newProduct, setNewProduct] = useState({
     name: "",
@@ -58,20 +69,8 @@ const ProductsManagement = () => {
     refetch: refetchProducts,
   } = useListProductsForAdminQuery(
     {
-      pageNo: paginationModel.page + 1,
-      pageSize: paginationModel.pageSize,
-    },
-    {
-      refetchOnMountOrArgChange: true,
-    }
-  );
-
-  // TODO: Need search product for admin
-  const { data: dataSearchProducts } = useSearchProductsQuery(
-    {
-      page: paginationModel.page,
-      size: paginationModel.pageSize,
-      search,
+      pageNo: 1,
+      pageSize: 1000,
     },
     {
       refetchOnMountOrArgChange: true,
@@ -110,14 +109,26 @@ const ProductsManagement = () => {
   );
 
   const dataRowProducts = dataProducts?.result?.items || [];
-  search.length > 0
-    ? dataSearchProducts?.result?.items || []
-    : dataProducts?.result?.items || [];
 
-  const totalRows = dataProducts?.result?.totalItems || 0;
-  search.length > 0
-    ? dataSearchProducts?.result?.totalItems || 0
-    : dataProducts?.result?.totalItems || 0;
+  const filteredProducts = useMemo(() => {
+    if (!searchValue) return dataRowProducts;
+
+    const normalizedSearch = normalizeString(searchValue);
+
+    return dataRowProducts.filter((product) => {
+      if (!product.name) return false;
+      // Convert product name to normalized string before comparing
+      return normalizeString(product.name).includes(normalizedSearch);
+    });
+  }, [dataRowProducts, searchValue]);
+
+  const totalRows = filteredProducts.length;
+
+  useEffect(() => {
+    if (searchValue) {
+      setPaginationModel((prev) => ({ ...prev, page: 0 }));
+    }
+  }, [searchValue]);
 
   const columnsProduct = [
     { field: "id", headerName: "ID", width: 100 },
@@ -382,7 +393,8 @@ const ProductsManagement = () => {
       <Typography variant="h5">Quản lý Sản phẩm</Typography>
 
       <ProductToolbar
-        onSearch={setSearch}
+        searchValue={searchValue}
+        setSearchValue={setSearchValue}
         onAddProduct={() => {
           setOpenAddDialog(true);
           setNewProduct({
@@ -403,13 +415,13 @@ const ProductsManagement = () => {
       />
 
       <TableData
-        rows={dataRowProducts}
+        rows={filteredProducts}
         totalRows={totalRows}
         columnsData={columnsProduct}
         loading={isLoadingProducts}
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}
-        pageSizeOptions={[10, 15, 20]}
+        pageSizeOptions={[20, 50, 100]}
       />
 
       <ProductDialogAdd
