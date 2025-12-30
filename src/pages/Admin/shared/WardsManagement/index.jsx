@@ -118,9 +118,18 @@ const WardsManagement = () => {
 
       <Box
         display="flex"
-        alignItems="center"
         justifyContent="space-between"
-        sx={{ mb: 3, mt: 3 }}
+        alignItems={{
+          xs: "stretch",
+          sm: "center",
+          md: "center",
+        }}
+        flexDirection={{
+          xs: "column",
+          sm: "row",
+          md: "row",
+        }}
+        sx={{ mb: 3, mt: 3, gap: { xs: 2, md: 0 } }}
       >
         <Button
           variant="outlined"
