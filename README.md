@@ -37,7 +37,7 @@
 * ![React](https://img.shields.io/badge/React-19-blue) **ReactJS (Vite)**
 * ![Redux](https://img.shields.io/badge/Redux-Toolkit-purple) **Redux Toolkit & RTK Query**
 * ![MUI](https://img.shields.io/badge/MUI-Material_UI-blue) **Material UI**
-* **Authentication:** JWT, React Router DOM (Protected Routes)
+* **Authentication:** JWT, React Router DOM
 
 ---
 
