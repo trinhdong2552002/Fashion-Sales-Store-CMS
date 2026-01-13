@@ -16,7 +16,6 @@ import {
   useUploadImageMutation,
   useDeleteImageMutation,
 } from "@/services/api/productImage";
-import { useGetMyInfoQuery } from "@/services/api/auth";
 import { useState } from "react";
 import { AddPhotoAlternate, Delete, Refresh } from "@mui/icons-material";
 import ErrorDisplay from "@/components/ErrorDisplay";
@@ -35,7 +34,6 @@ const ProductImagesManagement = () => {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [imageIdToDelete, setImageIdToDelete] = useState(null);
 
-  const { isLoading: isLoadingUser } = useGetMyInfoQuery();
   const {
     data: dataImage,
     isLoading: isLoadingImage,
@@ -46,8 +44,9 @@ const ProductImagesManagement = () => {
       pageNo: paginationModel.page + 1,
       pageSize: paginationModel.pageSize,
     },
-    { skip: isLoadingUser },
-    { refetchOnMountOrArgChange: true }
+    {
+      refetchOnMountOrArgChange: true,
+    }
   );
 
   const [uploadImage] = useUploadImageMutation();
