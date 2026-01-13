@@ -19,43 +19,57 @@ import ProvincesManagement from "./pages/Admin/shared/ProvincesManagement";
 import ProductImagesManagement from "./pages/Admin/shared/ProductImagesManagement";
 import ProductVariantsManagement from "./pages/Admin/shared/ProductVariantsManagement";
 import AddressManagement from "./pages/Admin/shared/AddressManagement";
+import { PrivateRoute, PublicRoute } from "./components/ProtectedRoute";
 
 const App = () => {
   return (
     <Routes>
-      <Route index element={<Login />} />
-      {/* Route admin */}
-      <Route path="/admin" element={<AdminLayout />}>
-        <Route path="dashboard" element={<Admin />} />
-        <Route path="productsManagement" element={<ProductsManagement />} />
-        <Route
-          path="productImagesManagement"
-          element={<ProductImagesManagement />}
-        />
-        <Route
-          path="productVariantsManagement"
-          element={<ProductVariantsManagement />}
-        />
-        <Route path="colorsManagement" element={<ColorsManagement />} />
-        <Route path="sizesManagement" element={<SizesManagement />} />
-        <Route path="wardsManagement" element={<WardsManagement />} />
-        <Route path="districtsManagement" element={<DistrictsManagement />} />
-        <Route path="provincesManagement" element={<ProvincesManagement />} />
-        <Route path="addressManagement" element={<AddressManagement />} />
-        <Route path="categoriesManagement" element={<CategoriesManagement />} />
-        <Route path="ordersManagement" element={<OrdersManagement />} />
-        <Route path="usersManagement" element={<UsersManagement />} />
-        <Route path="branchesManagement" element={<BranchesManagement />} />
-        <Route path="promotionsManagement" element={<PromotionsManagement />} />
-        <Route path="rolesManagement" element={<RolesManagement />} />
-        <Route
-          path="permissionsManagement"
-          element={<PermissionsManagement />}
-        />
-        <Route
-          path="paymentHistoriesManagement"
-          element={<PaymentHistoriesManagement />}
-        />
+      {/* Route public */}
+      <Route element={<PublicRoute />}>
+        <Route path="/" element={<Login />} />
+      </Route>
+
+      {/* Route private */}
+      {/* TODO: Set PrivateRoute if the browser not found token or expired token it will return the page login */}
+      <Route element={<PrivateRoute />}>
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route path="dashboard" element={<Admin />} />
+          <Route path="productsManagement" element={<ProductsManagement />} />
+          <Route
+            path="productImagesManagement"
+            element={<ProductImagesManagement />}
+          />
+          <Route
+            path="productVariantsManagement"
+            element={<ProductVariantsManagement />}
+          />
+          <Route path="colorsManagement" element={<ColorsManagement />} />
+          <Route path="sizesManagement" element={<SizesManagement />} />
+          <Route path="wardsManagement" element={<WardsManagement />} />
+          <Route path="districtsManagement" element={<DistrictsManagement />} />
+          <Route path="provincesManagement" element={<ProvincesManagement />} />
+          <Route path="addressManagement" element={<AddressManagement />} />
+          <Route
+            path="categoriesManagement"
+            element={<CategoriesManagement />}
+          />
+          <Route path="ordersManagement" element={<OrdersManagement />} />
+          <Route path="usersManagement" element={<UsersManagement />} />
+          <Route path="branchesManagement" element={<BranchesManagement />} />
+          <Route
+            path="promotionsManagement"
+            element={<PromotionsManagement />}
+          />
+          <Route path="rolesManagement" element={<RolesManagement />} />
+          <Route
+            path="permissionsManagement"
+            element={<PermissionsManagement />}
+          />
+          <Route
+            path="paymentHistoriesManagement"
+            element={<PaymentHistoriesManagement />}
+          />
+        </Route>
       </Route>
     </Routes>
   );

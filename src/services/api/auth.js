@@ -28,7 +28,7 @@ export const authApi = baseApi.injectEndpoints({
 
         dispatch(setAuth(authData));
 
-        console.log("queryFulfilled", data);
+        // console.log("queryFulfilled", data);
       },
       invalidatesTags: [TAG_KEYS.AUTH],
     }),
@@ -48,18 +48,6 @@ export const authApi = baseApi.injectEndpoints({
           },
         };
       },
-      invalidatesTags: [TAG_KEYS.AUTH],
-    }),
-
-    // refreshToken
-    refreshToken: builder.mutation({
-      query: (credentials) => ({
-        url: "/v1/auth/refresh-token",
-        method: "POST",
-        data: {
-          refreshToken: credentials.refreshToken,
-        },
-      }),
       invalidatesTags: [TAG_KEYS.AUTH],
     }),
 
@@ -83,7 +71,7 @@ export const authApi = baseApi.injectEndpoints({
             })
           );
 
-          console.log("getMyInfo queryFulfilled", data);
+          // console.log("getMyInfo queryFulfilled", data);
         } catch (error) {
           console.error("getMyInfo failed:", error);
         }
@@ -95,11 +83,6 @@ export const authApi = baseApi.injectEndpoints({
 
 export const {
   useLoginMutation,
-  useForgotPasswordMutation,
-  useForgotPasswordVerifyMutation,
-  useResetPasswordMutation,
   useLogoutMutation,
-  useRefreshTokenMutation,
-  useGetMyInfoQuery,
   useLazyGetMyInfoQuery,
 } = authApi;

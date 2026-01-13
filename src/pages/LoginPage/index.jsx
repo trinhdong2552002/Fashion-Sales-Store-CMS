@@ -13,10 +13,9 @@ import { Fragment, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useLoginMutation } from "@/services/api/auth";
-
 import { useLazyGetMyInfoQuery } from "@/services/api/auth";
-import cms from "@/assets/images/cms.png";
 import { useSnackbar } from "@/components/Snackbar";
+import cms from "@/assets/images/cms.png";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -49,6 +48,9 @@ const Login = () => {
       }).unwrap();
 
       if (response) {
+        localStorage.setItem("accessToken", response.result.accessToken);
+        localStorage.setItem("refreshToken", response.result.refreshToken);
+
         const role = response?.result?.roles?.[0]?.name;
         if (!role) {
           throw new Error(
@@ -66,9 +68,6 @@ const Login = () => {
             navigate("/admin/dashboard");
           }, 1000);
         }
-
-        localStorage.setItem("accessToken", response.result.accessToken);
-        localStorage.setItem("refreshToken", response.result.refreshToken);
 
         await triggerMyInfo();
       }
