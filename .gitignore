@@ -1,2 +1,24 @@
-node_modules
-dist
+# Dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# Production build output
+/build
+/dist
+
+# Testing
+/coverage
+
+# Local environment variables and configuration
+.env
+.env.local
+.env.*.local
+
+# Logs and miscellaneous files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store # macOS specific
+.idea/ # IDE specific
+.vscode/ # IDE specific

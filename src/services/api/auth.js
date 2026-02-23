@@ -1,11 +1,9 @@
-import { setAuth } from "../../store/redux/auth/reducer";
-import { setUser } from "../../store/redux/user/reducer";
+import { setUserInfo } from "@/store/redux/user/reducer";
 import { baseApi } from "./index";
 import { TAG_KEYS } from "@/constants/tagKeys";
 
 export const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    // Đăng nhập
     login: builder.mutation({
       query: (credentials) => ({
         url: "/v1/auth/login",
@@ -15,21 +13,7 @@ export const authApi = baseApi.injectEndpoints({
           password: credentials.password,
         },
       }),
-      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
-        const { data } = await queryFulfilled;
 
-        const authData = {
-          accessToken: data?.result?.accessToken,
-          refreshToken: data.result?.refreshToken,
-          authenticated: data?.result?.authenticated,
-          email: data?.result?.email,
-          roles: data?.result?.roles,
-        };
-
-        dispatch(setAuth(authData));
-
-        // console.log("queryFulfilled", data);
-      },
       invalidatesTags: [TAG_KEYS.AUTH],
     }),
 
@@ -61,14 +45,14 @@ export const authApi = baseApi.injectEndpoints({
 
           // Dispatch setUser to update the user slice with the fetched data
           dispatch(
-            setUser({
+            setUserInfo({
               id: data?.result?.id || null,
               name: data?.result?.name || null,
               email: data?.result?.email || null,
               avatarUrl: data?.result?.avatarUrl || null,
               dob: data?.result?.dob || null,
               gender: data?.result?.gender || null,
-            })
+            }),
           );
 
           // console.log("getMyInfo queryFulfilled", data);
@@ -81,8 +65,5 @@ export const authApi = baseApi.injectEndpoints({
   }),
 });
 
-export const {
-  useLoginMutation,
-  useLogoutMutation,
-  useLazyGetMyInfoQuery,
-} = authApi;
+export const { useLoginMutation, useLogoutMutation, useLazyGetMyInfoQuery } =
+  authApi;
