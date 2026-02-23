@@ -11,17 +11,25 @@ const NotFound = () => {
       alignItems={"center"}
       justifyContent={"center"}
     >
-      <Warning color="primary" sx={{ width: "10%", height: "10%", mb: 4 }} />
+      <Warning color="primary" sx={{ fontSize: "100px", mb: 4 }} />
       <Typography variant="h3" mb={2}>
         404
       </Typography>
-      <Typography variant="h4">Trang không tìm thấy</Typography>
+      <Typography
+        fontSize={{
+          xs: "1.5rem",
+          md: "2rem",
+        }}
+      >
+        Trang không tìm thấy
+      </Typography>
       <Typography
         variant="subtitle1"
         textAlign={"center"}
         my={2}
         color={"#666"}
-        width={500}
+        maxWidth={500}
+        mx={4}
       >
         Có vẻ như trang bạn đang tìm kiếm không tồn tại hoặc đã bị xóa. Hãy quay
         lại trang tổng quan và thử lại.
