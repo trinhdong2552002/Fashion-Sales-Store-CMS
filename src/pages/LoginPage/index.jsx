@@ -15,6 +15,7 @@ import { useNavigate } from "react-router-dom";
 import { useLoginMutation } from "@/services/api/auth";
 import { useLazyGetMyInfoQuery } from "@/services/api/auth";
 import { useSnackbar } from "@/components/Snackbar";
+import { setAuth } from "@/store/redux/auth/reducer";
 import cms from "@/assets/images/cms.png";
 
 const Login = () => {
@@ -48,33 +49,33 @@ const Login = () => {
       }).unwrap();
 
       if (response) {
-        localStorage.setItem("accessToken", response.result.accessToken);
-        localStorage.setItem("refreshToken", response.result.refreshToken);
-
         const role = response?.result?.roles?.[0]?.name;
-        if (!role) {
-          throw new Error(
-            "Không thể xác định vai trò người dùng. Vui lòng thử lại."
+
+        if (role === "USER") {
+          showSnackbar(
+            "Đăng nhập với tư cách User không được phép trên Admin.",
+            "error",
           );
+          return;
         }
 
-        if (role !== "ADMIN") {
-          throw new Error("Bạn không có quyền truy cập vào trang quản trị!");
-        }
+        if (role === "ADMIN") {
+          setAuth({
+            accessToken: response?.result?.accessToken,
+            email: response?.result?.email,
+            roles: response?.result?.roles,
+          });
+          localStorage.setItem("accessToken", response?.result?.accessToken);
+          localStorage.setItem("refreshToken", response?.result?.refreshToken);
 
-        if (role === "ADMIN" && "USER") {
+          await triggerMyInfo();
           showSnackbar("Đăng nhập thành công!", "success");
-          setTimeout(() => {
-            navigate("/admin/dashboard");
-          }, 1000);
+          navigate("/admin/dashboard");
         }
-
-        await triggerMyInfo();
       }
     } catch (error) {
       if (error && error.data && error.data.message) {
-        showSnackbar(error.data.message, "error");
-        return;
+        showSnackbar(`${error.data.message}`, "error");
       }
     }
   };
