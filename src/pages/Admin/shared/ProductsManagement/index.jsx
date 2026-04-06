@@ -9,7 +9,6 @@ import {
   useRestoreProductMutation,
 } from "@/services/api/product";
 import { useListCategoriesForAdminQuery } from "@/services/api/categories";
-import ErrorDisplay from "@/components/ErrorDisplay";
 import ProductToolbar from "./shared/ProductToolbar";
 import ProductDialogAdd from "./shared/ProductDialogAdd";
 import ProductDialogEdit from "./shared/ProductDialogEdit";
@@ -17,23 +16,14 @@ import ProductDialogDelete from "./shared/ProductDialogDelete";
 import ProductDialogRestore from "./shared/ProductDialogRestore";
 import TableData from "@/components/TableData";
 import { Delete, Edit, Restore, Visibility } from "@mui/icons-material";
-import { statusDisplay } from "/src/constants/badgeStatus";
+
 import { useListColorsQuery } from "@/services/api/color";
 import { useListSizesQuery } from "@/services/api/size";
 import { useListImagesQuery } from "@/services/api/productImage";
 import ProductDialogDetail from "./shared/ProductDialogDetail";
-
 import { useSnackbar } from "@/components/Snackbar";
-
-// Vietnamese character encoding normalization for search
-const normalizeString = (str) => {
-  return str
-    .toLowerCase()
-    .normalize("NFD") // Split accents from letters
-    .replace(/[\u0300-\u036f]/g, "") // Remove accents
-    .replace(/đ/g, "d")
-    .replace(/Đ/g, "D");
-};
+import { normalizeSearchString } from "@/utils/stringUtils";
+import StatusChip from "@/components/StatusChip";
 
 const ProductsManagement = () => {
   const { showSnackbar } = useSnackbar();
@@ -66,6 +56,7 @@ const ProductsManagement = () => {
     data: dataProducts,
     isLoading: isLoadingProducts,
     isError: isErrorProducts,
+    error: errorProducts,
     refetch: refetchProducts,
   } = useListProductsForAdminQuery(
     {
@@ -74,7 +65,7 @@ const ProductsManagement = () => {
     },
     {
       refetchOnMountOrArgChange: true,
-    }
+    },
   );
 
   const [addProduct] = useAddProductMutation();
@@ -87,14 +78,14 @@ const ProductsManagement = () => {
       { pageNo: 1, pageSize: 100 },
       {
         refetchOnMountOrArgChange: true,
-      }
+      },
     );
 
   const { data: dataColors, refetch: refetchColors } = useListColorsQuery(
     { pageNo: 1, pageSize: 100 },
     {
       refetchOnMountOrArgChange: true,
-    }
+    },
   );
 
   const { data: dataSizes } = useListSizesQuery({
@@ -105,7 +96,7 @@ const ProductsManagement = () => {
     { pageNo: 1, pageSize: 100 },
     {
       refetchOnMountOrArgChange: true,
-    }
+    },
   );
 
   const dataRowProducts = dataProducts?.result?.items || [];
@@ -113,12 +104,12 @@ const ProductsManagement = () => {
   const filteredProducts = useMemo(() => {
     if (!searchValue) return dataRowProducts;
 
-    const normalizedSearch = normalizeString(searchValue);
+    const normalizedSearch = normalizeSearchString(searchValue);
 
     return dataRowProducts.filter((product) => {
       if (!product.name) return false;
       // Convert product name to normalized string before comparing
-      return normalizeString(product.name).includes(normalizedSearch);
+      return normalizeSearchString(product.name).includes(normalizedSearch);
     });
   }, [dataRowProducts, searchValue]);
 
@@ -171,17 +162,7 @@ const ProductsManagement = () => {
       headerName: "Trạng thái",
       width: 200,
       renderCell: (params) => {
-        const display = statusDisplay[params.value] || {
-          label: "Không rõ",
-          color: "default",
-        };
-        return (
-          <Chip
-            label={display.label}
-            color={display.color}
-            variant={display.variant}
-          />
-        );
+       return <StatusChip status={params.value} />;
       },
     },
     {
@@ -378,19 +359,9 @@ const ProductsManagement = () => {
     setOpenDetailDialog(true);
   };
 
-  if (isErrorProducts)
-    return (
-      <ErrorDisplay
-        error={{
-          message:
-            "Không tải được danh sách sản phẩm. Vui lòng kiểm tra kết nối của bạn và thử lại !",
-        }}
-      />
-    );
-
   return (
     <DashboardLayoutWrapper>
-      <Typography variant="h5">Quản lý Sản phẩm</Typography>
+      <Typography variant="h5">Quản lý sản phẩm</Typography>
 
       <ProductToolbar
         searchValue={searchValue}
@@ -419,6 +390,15 @@ const ProductsManagement = () => {
         totalRows={totalRows}
         columnsData={columnsProduct}
         loading={isLoadingProducts}
+        error={
+          isErrorProducts && (
+            <Box mt={2} textAlign="center">
+              <Typography color="error">
+                {errorProducts} || Không tải được dữ liệu.
+              </Typography>
+            </Box>
+          )
+        }
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}
         pageSizeOptions={[20, 50, 100]}

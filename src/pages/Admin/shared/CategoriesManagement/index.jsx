@@ -1,5 +1,4 @@
 import { useState, Fragment } from "react";
-import { DataGrid } from "@mui/x-data-grid";
 import {
   Typography,
   Button,
@@ -21,9 +20,9 @@ import {
   useUpdateCategoriesMutation,
 } from "@/services/api/categories";
 import { Add, Delete, Edit, Refresh, Restore } from "@mui/icons-material";
-import ErrorDisplay from "@/components/ErrorDisplay";
-import { statusDisplay } from "/src/constants/badgeStatus";
 import { useSnackbar } from "@/components/Snackbar";
+import TableData from "@/components/TableData";
+import StatusChip from "@/components/StatusChip";
 
 const CategoriesManagement = () => {
   const { showSnackbar } = useSnackbar();
@@ -45,6 +44,7 @@ const CategoriesManagement = () => {
   const {
     data: dataCategories,
     isLoading: isLoadingCategories,
+    error: errorCategories,
     isError: isErrorCategories,
     refetch: refetchCategories,
   } = useListCategoriesForAdminQuery(
@@ -54,7 +54,7 @@ const CategoriesManagement = () => {
     },
     {
       refetchOnMountOrArgChange: true,
-    }
+    },
   );
 
   const [addCategories] = useAddCategoriesMutation();
@@ -74,17 +74,7 @@ const CategoriesManagement = () => {
       headerName: "Trạng thái",
       width: 200,
       renderCell: (params) => {
-        const display = statusDisplay[params.value] || {
-          label: "Không rõ",
-          color: "default",
-        };
-        return (
-          <Chip
-            label={display.label}
-            color={display.color}
-            variant={display.variant}
-          />
-        );
+       return <StatusChip status={params.value} />;
       },
     },
     {
@@ -265,18 +255,9 @@ const CategoriesManagement = () => {
     }
   };
 
-  if (isErrorCategories)
-    return (
-      <ErrorDisplay
-        error={{
-          message: "Không tải được danh sách danh mục.",
-        }}
-      />
-    );
-
   return (
     <DashboardLayoutWrapper>
-      <Typography variant="h5">Quản lý Danh mục</Typography>
+      <Typography variant="h5">Quản lý danh mục</Typography>
 
       <Box
         sx={{
@@ -321,39 +302,24 @@ const CategoriesManagement = () => {
         </Button>
       </Box>
 
-      <Box height={600}>
-        <DataGrid
-          sx={{
-            boxShadow: 2,
-            border: 2,
-            borderColor: "primary.light",
-            "& .MuiDataGrid-cell:hover": {
-              color: "primary.main",
-            },
-          }}
-          columns={columnsCategories}
-          rows={dataRowCategories}
-          loading={isLoadingCategories}
-          disableSelectionOnClick
-          slotProps={{
-            loadingOverlay: {
-              variant: "linear-progress",
-              noRowsVariant: "linear-progress",
-            },
-          }}
-          localeText={{
-            noRowsLabel: "Không có dữ liệu",
-          }}
-          pagination
-          paginationMode="server"
-          sortingMode="server"
-          filterMode="server"
-          rowCount={totalRows}
-          paginationModel={paginationModel}
-          onPaginationModelChange={setPaginationModel}
-          pageSizeOptions={[10, 15, 20]}
-        />
-      </Box>
+      <TableData
+        rows={dataRowCategories}
+        totalRows={totalRows}
+        columnsData={columnsCategories}
+        loading={isLoadingCategories}
+        error={
+          isErrorCategories && (
+            <Box mt={2} textAlign="center">
+              <Typography color="error">
+                {errorCategories} || "Không tải được dữ liệu."
+              </Typography>
+            </Box>
+          )
+        }
+        paginationModel={paginationModel}
+        onPaginationModelChange={setPaginationModel}
+        pageSizeOptions={[10, 15, 20]}
+      />
 
       {/* TODO: Dialog add categories */}
       <Dialog fullWidth open={openAddDialog}>

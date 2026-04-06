@@ -18,9 +18,9 @@ import {
 } from "@/services/api/productImage";
 import { useState } from "react";
 import { AddPhotoAlternate, Delete, Refresh } from "@mui/icons-material";
-import ErrorDisplay from "@/components/ErrorDisplay";
 import { PreviewImage } from "@/components/PreviewImage";
 import { useSnackbar } from "@/components/Snackbar";
+import TableData from "@/components/TableData";
 
 const ProductImagesManagement = () => {
   const { showSnackbar } = useSnackbar();
@@ -38,6 +38,7 @@ const ProductImagesManagement = () => {
     data: dataImage,
     isLoading: isLoadingImage,
     isError: isErrorImage,
+    error: errorImage,
     refetch: refetchImage,
   } = useListImagesQuery(
     {
@@ -46,7 +47,7 @@ const ProductImagesManagement = () => {
     },
     {
       refetchOnMountOrArgChange: true,
-    }
+    },
   );
 
   const [uploadImage] = useUploadImageMutation();
@@ -156,18 +157,9 @@ const ProductImagesManagement = () => {
     showSnackbar("Danh sách hình ảnh sản phẩm đã được làm mới!", "info");
   };
 
-  if (isErrorImage)
-    return (
-      <ErrorDisplay
-        error={{
-          message: "Không tải được danh sách hình ảnh sản phẩm.",
-        }}
-      />
-    );
-
   return (
     <DashboardLayoutWrapper>
-      <Typography variant="h5">Quản lý Hình ảnh Sản phẩm</Typography>
+      <Typography variant="h5">Quản lý hình ảnh sản phẩm</Typography>
       <Box
         sx={{
           mb: 3,
@@ -215,41 +207,24 @@ const ProductImagesManagement = () => {
         </Button>
       </Box>
 
-      <Box height={600}>
-        <DataGrid
-          sx={{
-            boxShadow: 2,
-            border: 2,
-            borderColor: "primary.light",
-            "& .MuiDataGrid-cell:hover": {
-              color: "primary.main",
-            },
-          }}
-          columns={columnsImage}
-          rows={dataRowImages}
-          rowsPerPageOptions={[10, 20, 50]}
-          rowCount={totalRows}
-          loading={isLoadingImage}
-          disableSelectionOnClick
-          slotProps={{
-            loadingOverlay: {
-              variant: "linear-progress",
-              noRowsVariant: "linear-progress",
-            },
-          }}
-          aria-label="Bảng hình ảnh sản phẩm"
-          localeText={{
-            noRowsLabel: "Không có dữ liệu",
-          }}
-          pagination
-          paginationMode="server"
-          sortingMode="server"
-          filterMode="server"
-          paginationModel={paginationModel}
-          onPaginationModelChange={setPaginationModel}
-          pageSizeOptions={[15, 20, 30]}
-        />
-      </Box>
+      <TableData
+        rows={dataRowImages}
+        totalRows={totalRows}
+        columnsData={columnsImage}
+        loading={isLoadingImage}
+        error={
+          isErrorImage && (
+            <Box mt={2} textAlign="center">
+              <Typography color="error">
+                {errorImage} || Không tải được dữ liệu.
+              </Typography>
+            </Box>
+          )
+        }
+        paginationModel={paginationModel}
+        onPaginationModelChange={setPaginationModel}
+        pageSizeOptions={[15, 30, 50]}
+      />
 
       <Dialog open={openDeleteDialog}>
         <DialogTitle id="delete-dialog-title">

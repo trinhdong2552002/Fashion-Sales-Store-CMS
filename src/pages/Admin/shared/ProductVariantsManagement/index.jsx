@@ -5,7 +5,7 @@ import {
   useListAllProductVariantsByProductQuery,
   useUpdateProductVariantMutation,
   useDeleteProductVariantMutation,
-  // useRestoreProductVariantMutation,
+  useRestoreProductVariantMutation,
 } from "@/services/api/productVariant";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useListProductsForAdminQuery } from "@/services/api/product";
@@ -13,12 +13,11 @@ import { Delete, Edit, Restore } from "@mui/icons-material";
 import TableData from "@/components/TableData";
 import { ProductVariantToolbar } from "./shared/ProductVariantToolbar";
 import { ProductVariantDialogDelete } from "./shared/ProductVariantDialogDelete";
-// import { ProductVariantDialogRestore } from "./shared/ProductVariantDialogRestore";
+import { ProductVariantDialogRestore } from "./shared/ProductVariantDialogRestore";
 import { ProductVariantDialogEdit } from "./shared/ProductVariantDialogEdit";
 import { PreviewImage } from "@/components/PreviewImage";
-import { statusDisplay } from "/src/constants/badgeStatus";
-import ErrorDisplay from "@/components/ErrorDisplay";
 import { useSnackbar } from "@/components/Snackbar";
+import StatusChip from "@/components/StatusChip";
 
 const ProductVariantsManagement = () => {
   const { showSnackbar } = useSnackbar();
@@ -29,7 +28,7 @@ const ProductVariantsManagement = () => {
   // const [submitted, setSubmitted] = useState(false);
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-  // const [openRestoreDialog, setOpenRestoreDialog] = useState(false);
+  const [openRestoreDialog, setOpenRestoreDialog] = useState(false);
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 10,
@@ -43,6 +42,7 @@ const ProductVariantsManagement = () => {
     data: dataProducts,
     isLoading: isLoadingProduct,
     isError: isErrorProduct,
+    error: errorProduct,
     refetch: refetchProduct,
   } = useListProductsForAdminQuery({
     refetchOnMountOrArgChange: true,
@@ -54,6 +54,7 @@ const ProductVariantsManagement = () => {
     data: dataProductVariants,
     isLoading: isLoadingProductVariant,
     isError: isErrorProductVariant,
+    error: errorProductVariant,
     refetch: refetchProductVariants,
   } = useListAllProductVariantsByProductQuery(
     selectedProductId
@@ -65,7 +66,7 @@ const ProductVariantsManagement = () => {
       : skipToken,
     {
       refetchOnMountOrArgChange: true,
-    }
+    },
   );
 
   const dataRowProductVariants = dataProductVariants?.result?.items || [];
@@ -73,7 +74,7 @@ const ProductVariantsManagement = () => {
 
   const [updateProductVariant] = useUpdateProductVariantMutation();
   const [deleteProductVariant] = useDeleteProductVariantMutation();
-  // const [restoreProductVariant] = useRestoreProductVariantMutation();
+  const [restoreProductVariant] = useRestoreProductVariantMutation();
 
   const columnsProductVariant = [
     { field: "id", headerName: "ID", width: 150 },
@@ -92,17 +93,7 @@ const ProductVariantsManagement = () => {
       headerName: "Trạng thái",
       width: 200,
       renderCell: (params) => {
-        const display = statusDisplay[params.value] || {
-          label: "Không rõ",
-          color: "default",
-        };
-        return (
-          <Chip
-            label={display.label}
-            color={display.color}
-            variant={display.variant}
-          />
-        );
+        return <StatusChip status={params.value} />;
       },
     },
     {
@@ -136,18 +127,18 @@ const ProductVariantsManagement = () => {
           >
             <Edit />
           </IconButton>
-          {/* {params.row?.status === "INACTIVE" ? (
+          {params.row?.status === "INACTIVE" ? (
             <IconButton
               onClick={() => handleOpenRestoreDialog(params.row.id)}
               color="success"
             >
               <Restore />
             </IconButton>
-          ) : ( */}
-          <IconButton onClick={() => handleOpenDeleteDialog(params.row.id)}>
-            <Delete color="error" />
-          </IconButton>
-          {/* )} */}
+          ) : (
+            <IconButton onClick={() => handleOpenDeleteDialog(params.row.id)}>
+              <Delete color="error" />
+            </IconButton>
+          )}
         </>
       ),
     },
@@ -163,15 +154,15 @@ const ProductVariantsManagement = () => {
     setOpenDeleteDialog(false);
   };
 
-  // const handleOpenRestoreDialog = (id) => {
-  //   setSelectedProductVariantId(id);
-  //   setOpenRestoreDialog(true);
-  // };
+  const handleOpenRestoreDialog = (id) => {
+    setSelectedProductVariantId(id);
+    setOpenRestoreDialog(true);
+  };
 
-  // const handleCloseRestoreDialog = () => {
-  //   setSelectedProductVariantId(null);
-  //   setOpenRestoreDialog(false);
-  // };
+  const handleCloseRestoreDialog = () => {
+    setSelectedProductVariantId(null);
+    setOpenRestoreDialog(false);
+  };
 
   const handleRefresh = () => {
     refetchProduct();
@@ -180,7 +171,7 @@ const ProductVariantsManagement = () => {
 
   const handleEditProductVariant = (id) => {
     const productVariantToEdit = dataRowProductVariants.find(
-      (item) => item.id === id
+      (item) => item.id === id,
     );
     if (productVariantToEdit) {
       setNewProductVariant({
@@ -230,40 +221,30 @@ const ProductVariantsManagement = () => {
     }
   };
 
-  // const handleRestoreProductVariant = async () => {
-  //   try {
-  //     await restoreProductVariant({ id: selectedProductVariantId }).unwrap();
-  //     setSnackbar({
-  //       open: true,
-  //       message: "Khôi phục sản phẩm thành công!",
-  //       severity: "success",
-  //     });
-  //     setOpenRestoreDialog(false);
-  //     setSelectedProductVariantId(null);
-  //     refetchProductVariants();
-  //   } catch (error) {
-  //     const errorMessage = error.data?.message;
-  //     setSnackbar({
-  //       open: true,
-  //       message: errorMessage,
-  //       severity: "error",
-  //     });
-  //   }
-  // };
-
-  if (isErrorProduct || isErrorProductVariant) {
-    return (
-      <ErrorDisplay
-        error={{
-          message: "Không tải được danh sách sản phẩm hoặc biến thể.",
-        }}
-      />
-    );
-  }
+  const handleRestoreProductVariant = async () => {
+    try {
+      await restoreProductVariant({ id: selectedProductVariantId }).unwrap();
+      setSnackbar({
+        open: true,
+        message: "Khôi phục sản phẩm thành công!",
+        severity: "success",
+      });
+      setOpenRestoreDialog(false);
+      setSelectedProductVariantId(null);
+      refetchProductVariants();
+    } catch (error) {
+      const errorMessage = error.data?.message;
+      setSnackbar({
+        open: true,
+        message: errorMessage,
+        severity: "error",
+      });
+    }
+  };
 
   return (
     <DashboardLayoutWrapper>
-      <Typography variant="h5">Quản lý Biến thể Sản phẩm</Typography>
+      <Typography variant="h5">Quản lý biến thể sản phẩm</Typography>
 
       <ProductVariantToolbar
         handleRefresh={handleRefresh}
@@ -279,7 +260,16 @@ const ProductVariantsManagement = () => {
         rows={dataRowProductVariants}
         totalRows={totalRows}
         columnsData={columnsProductVariant}
-        loading={isLoadingProduct || isLoadingProductVariant}
+        loading={isLoadingProductVariant}
+        error={
+          isErrorProductVariant && (
+            <Box mt={2} textAlign="center">
+              <Typography color="error">
+                {errorProductVariant} || Không tải được dữ liệu.
+              </Typography>
+            </Box>
+          )
+        }
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}
         pageSizeOptions={[10, 15, 20]}
@@ -300,11 +290,11 @@ const ProductVariantsManagement = () => {
         handleDeleteProductVariant={handleDeleteProductVariant}
       />
 
-      {/* <ProductVariantDialogRestore
+      <ProductVariantDialogRestore
         openRestoreDialog={openRestoreDialog}
         closeRestoreDialog={handleCloseRestoreDialog}
         handleRestoreProductVariant={handleRestoreProductVariant}
-      /> */}
+      />
 
       <PreviewImage
         previewImage={previewImage}

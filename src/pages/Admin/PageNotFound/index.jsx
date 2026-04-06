@@ -2,7 +2,7 @@ import { ArrowBack, Warning } from "@mui/icons-material";
 import { Box, Button, Typography } from "@mui/material";
 import { Link } from "react-router-dom";
 
-const NotFound = () => {
+const PageNotFound = () => {
   return (
     <Box
       height={"100vh"}
@@ -44,4 +44,4 @@ const NotFound = () => {
   );
 };
 
-export default NotFound;
+export default PageNotFound;

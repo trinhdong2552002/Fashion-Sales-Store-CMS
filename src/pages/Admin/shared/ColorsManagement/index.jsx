@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { DataGrid } from "@mui/x-data-grid";
 import {
   Typography,
   Button,
@@ -19,8 +18,8 @@ import {
   useDeleteColorMutation,
 } from "@/services/api/color";
 import { Add, Delete, Edit, Refresh } from "@mui/icons-material";
-import ErrorDisplay from "@/components/ErrorDisplay";
 import { useSnackbar } from "@/components/Snackbar";
+import TableData from "@/components/TableData";
 
 const ColorsManagement = () => {
   const { showSnackbar } = useSnackbar();
@@ -39,6 +38,7 @@ const ColorsManagement = () => {
     data: dataColor,
     isLoading: isLoadingColor,
     isError: isErrorColor,
+    error: errorColor,
     refetch: refetchColor,
   } = useListColorsQuery(
     {
@@ -47,7 +47,7 @@ const ColorsManagement = () => {
     },
     {
       refetchOnMountOrArgChange: true,
-    }
+    },
   );
   const [addColor] = useAddColorMutation();
   const [updateColor] = useUpdateColorMutation();
@@ -162,21 +162,12 @@ const ColorsManagement = () => {
     }
   };
 
-  if (isErrorColor)
-    return (
-      <ErrorDisplay
-        error={{
-          message: "Không tải được danh sách màu sắc.",
-        }}
-      />
-    );
-
   return (
     <DashboardLayoutWrapper>
-      <Typography variant="h5">Quản lý Màu sắc</Typography>
+      <Typography variant="h5">Quản lý màu sắc</Typography>
 
       <Box
-        sx={{ mb: 3, mt: 3, gap: { xs: 2, md: 0 } }}
+        sx={{ my: 3 }}
         display={"flex"}
         justifyContent={"space-between"}
         alignItems={{
@@ -213,39 +204,24 @@ const ColorsManagement = () => {
         </Button>
       </Box>
 
-      <Box height={600}>
-        <DataGrid
-          sx={{
-            boxShadow: 2,
-            border: 2,
-            borderColor: "primary.light",
-            "& .MuiDataGrid-cell:hover": {
-              color: "primary.main",
-            },
-          }}
-          columns={columnsColor}
-          rows={dataRowColors}
-          loading={isLoadingColor}
-          disableSelectionOnClick
-          slotProps={{
-            loadingOverlay: {
-              variant: "linear-progress",
-              noRowsVariant: "linear-progress",
-            },
-          }}
-          localeText={{
-            noRowsLabel: "Không có dữ liệu",
-          }}
-          pagination
-          paginationMode="server"
-          sortingMode="server"
-          filterMode="server"
-          rowCount={totalRows}
-          paginationModel={paginationModel}
-          onPaginationModelChange={setPaginationModel}
-          pageSizeOptions={[10, 15, 20]}
-        />
-      </Box>
+      <TableData
+        rows={dataRowColors}
+        totalRows={totalRows}
+        columnsData={columnsColor}
+        loading={isLoadingColor}
+        error={
+          isErrorColor && (
+            <Box mt={2} textAlign="center">
+              <Typography color="error">
+                {errorColor} || "Không tải được dữ liệu."
+              </Typography>
+            </Box>
+          )
+        }
+        paginationModel={paginationModel}
+        onPaginationModelChange={setPaginationModel}
+        pageSizeOptions={[10, 15, 20]}
+      />
 
       {/* TODO: Dialog add color */}
       <Dialog fullWidth open={openAddDialog}>
