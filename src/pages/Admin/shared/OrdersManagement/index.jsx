@@ -14,10 +14,10 @@ import {
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import { useListOrdersForAdminQuery } from "@/services/api/order";
 import { Delete, Refresh, Visibility } from "@mui/icons-material";
-import ErrorDisplay from "@/components/ErrorDisplay";
-import { orderStatusDisplay } from "/src/constants/badgeStatus";
 import { useDeleteOrderByIdMutation } from "@/services/api/order";
 import { useSnackbar } from "@/components/Snackbar";
+import TableData from "@/components/TableData";
+import OrderStatusChip from "@/components/OrderStatusChip";
 
 const OrdersManagement = () => {
   const { showSnackbar } = useSnackbar();
@@ -32,6 +32,7 @@ const OrdersManagement = () => {
     data: dataOrder,
     isLoading: isLoadingOrder,
     isError: isErrorOrder,
+    error: errorOrder,
     refetchOrder: refetchOrder,
   } = useListOrdersForAdminQuery({
     pageNo: paginationModel.page + 1,
@@ -56,10 +57,7 @@ const OrdersManagement = () => {
       headerName: "Trạng thái đơn hàng",
       width: 200,
       renderCell: (params) => {
-        const status = params.value;
-        const { label, color, icon } =
-          orderStatusDisplay[status] || orderStatusDisplay.default;
-        return <Chip label={label} color={color} icon={icon} />;
+       return <OrderStatusChip status={params.value} />;
       },
     },
     { field: "customerName", headerName: "Tên khách hàng", width: 200 },
@@ -106,21 +104,12 @@ const OrdersManagement = () => {
     }
   };
 
-  if (isErrorOrder)
-    return (
-      <ErrorDisplay
-        error={{
-          message: "Không tải được danh sách đơn hàng.",
-        }}
-      />
-    );
-
   return (
     <DashboardLayoutWrapper>
-      <Typography variant="h5">Quản lý Đơn hàng</Typography>
+      <Typography variant="h5">Quản lý đơn hàng</Typography>
 
       <Button
-        sx={{ mb: 3, mt: 3 }}
+        sx={{ my: 3 }}
         variant="outlined"
         color="primary"
         onClick={handleRefresh}
@@ -129,39 +118,24 @@ const OrdersManagement = () => {
         Làm mới
       </Button>
 
-      <Box height={600}>
-        <DataGrid
-          sx={{
-            boxShadow: 2,
-            border: 2,
-            borderColor: "primary.light",
-            "& .MuiDataGrid-cell:hover": {
-              color: "primary.main",
-            },
-          }}
-          columns={columnsOrder}
-          rows={dataRowOrders}
-          loading={isLoadingOrder}
-          disableSelectionOnClick
-          slotProps={{
-            loadingOverlay: {
-              variant: "linear-progress",
-              noRowsVariant: "linear-progress",
-            },
-          }}
-          localeText={{
-            noRowsLabel: "Không có dữ liệu",
-          }}
-          pagination
-          paginationMode="server"
-          sortingMode="server"
-          filterMode="server"
-          rowCount={totalRows}
-          paginationModel={paginationModel}
-          onPaginationModelChange={setPaginationModel}
-          pageSizeOptions={[10, 15, 20]}
-        />
-      </Box>
+      <TableData
+        rows={dataRowOrders}
+        totalRows={totalRows}
+        columnsData={columnsOrder}
+        loading={isLoadingOrder}
+        error={
+          isErrorOrder && (
+            <Box mt={2} textAlign="center">
+              <Typography color="error">
+                {errorOrder} || "Không tải được dữ liệu đơn hàng."
+              </Typography>
+            </Box>
+          )
+        }
+        paginationModel={paginationModel}
+        onPaginationModelChange={setPaginationModel}
+        pageSizeOptions={[10, 15, 20]}
+      />
 
       <Dialog open={openDeleteDialog}>
         <DialogTitle>Xác nhận xoá ?</DialogTitle>

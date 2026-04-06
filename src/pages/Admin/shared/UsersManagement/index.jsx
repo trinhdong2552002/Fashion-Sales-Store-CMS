@@ -13,7 +13,6 @@ import {
   MenuItem,
   Box,
   IconButton,
-  Chip,
 } from "@mui/material";
 import {
   useListUsersForAdminQuery,
@@ -24,11 +23,11 @@ import {
 import { useListRolesQuery } from "@/services/api/role";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import TableData from "@/components/TableData";
-import ErrorDisplay from "@/components/ErrorDisplay";
 import { PreviewImage } from "@/components/PreviewImage";
 import { Add, Delete, Refresh, Restore } from "@mui/icons-material";
-import { statusDisplay } from "/src/constants/badgeStatus";
+
 import { useSnackbar } from "@/components/Snackbar";
+import StatusChip from "@/components/StatusChip";
 
 const UsersManagement = () => {
   const { showSnackbar } = useSnackbar();
@@ -55,6 +54,7 @@ const UsersManagement = () => {
     data: dataUser,
     isLoading: isLoadingUser,
     isError: isErrorUser,
+    error: errorUser,
     refetch: refetchUser,
   } = useListUsersForAdminQuery(
     {
@@ -63,7 +63,7 @@ const UsersManagement = () => {
     },
     {
       refetchOnMountOrArgChange: true,
-    }
+    },
   );
 
   const [createUserWithRole] = useCreateUserWithRoleMutation();
@@ -82,17 +82,7 @@ const UsersManagement = () => {
       headerName: "Trạng thái",
       width: 200,
       renderCell: (params) => {
-        const display = statusDisplay[params.value] || {
-          label: "Không rõ",
-          color: "default",
-        };
-        return (
-          <Chip
-            label={display.label}
-            color={display.color}
-            variant={display.variant}
-          />
-        );
+        return <StatusChip status={params.value} />;
       },
     },
     {
@@ -134,8 +124,8 @@ const UsersManagement = () => {
           {params.value === "MALE"
             ? "Nam"
             : params.value === "FEMALE"
-            ? "Nữ"
-            : "--"}
+              ? "Nữ"
+              : "--"}
         </div>
       ),
     },
@@ -199,7 +189,7 @@ const UsersManagement = () => {
       width: 200,
       renderCell: (params) => {
         const isAdmin = params.row?.roles?.some(
-          (role) => role.name?.toUpperCase() === "ADMIN"
+          (role) => role.name?.toUpperCase() === "ADMIN",
         );
         if (isAdmin) {
           return (
@@ -293,7 +283,7 @@ const UsersManagement = () => {
   const handleDeleteUser = async () => {
     const user = dataRowUsers.find((u) => u.id === userToDelete);
     const isAdmin = user?.roles?.some(
-      (role) => role.name?.toLowerCase() === "admin"
+      (role) => role.name?.toLowerCase() === "admin",
     );
     if (isAdmin) {
       showSnackbar("Không thể xóa người dùng Admin!", "error");
@@ -331,17 +321,9 @@ const UsersManagement = () => {
     }
   };
 
-  if (isErrorUser) {
-    <ErrorDisplay
-      error={{
-        message: "Không tải được danh sách người dùng.",
-      }}
-    />;
-  }
-
   return (
     <DashboardLayoutWrapper>
-      <Typography variant="h5">Quản lý Người dùng</Typography>
+      <Typography variant="h5">Quản lý người dùng</Typography>
 
       <Box
         sx={{
@@ -390,6 +372,15 @@ const UsersManagement = () => {
         totalRows={totalRows}
         columnsData={columnsUser}
         loading={isLoadingUser}
+        error={
+          isErrorUser && (
+            <Box mt={2} textAlign="center">
+              <Typography color="error">
+                {errorUser} || Không tải được dữ liệu.
+              </Typography>
+            </Box>
+          )
+        }
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}
         pageSizeOptions={[10, 15, 20]}
@@ -461,7 +452,7 @@ const UsersManagement = () => {
                   .map(
                     (id) =>
                       dataRoles?.result?.items.find((r) => r.id === id)?.name ||
-                      ""
+                      "",
                   )
                   .join(", ")
               }

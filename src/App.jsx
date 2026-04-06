@@ -20,13 +20,13 @@ import ProductImagesManagement from "./pages/Admin/shared/ProductImagesManagemen
 import ProductVariantsManagement from "./pages/Admin/shared/ProductVariantsManagement";
 import AddressManagement from "./pages/Admin/shared/AddressManagement";
 import { PrivateRoute, PublicRoute } from "./components/ProtectedRoute";
-import NotFound from "./pages/Admin/NotFoundPage";
+import PageNotFound from "./pages/Admin/PageNotFound";
 
 const App = () => {
   return (
     <Routes>
       {/* Check route not found */}
-      <Route path="*" element={<NotFound />} />
+      <Route path="*" element={<PageNotFound />} />
 
       {/* Route public */}
       <Route element={<PublicRoute />}>

@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { DataGrid } from "@mui/x-data-grid";
 import {
   Typography,
   Button,
@@ -22,9 +21,9 @@ import {
   useRestoreBranchesMutation,
 } from "@/services/api/branches";
 import { Add, Delete, Edit, Refresh, Restore } from "@mui/icons-material";
-import ErrorDisplay from "@/components/ErrorDisplay";
-import { statusDisplay } from "/src/constants/badgeStatus";
 import { useSnackbar } from "@/components/Snackbar";
+import TableData from "@/components/TableData";
+import StatusChip from "@/components/StatusChip";
 
 const BranchesManagement = () => {
   const { showSnackbar } = useSnackbar();
@@ -48,12 +47,13 @@ const BranchesManagement = () => {
     data: dataBranches,
     isLoading: isLoadingBranches,
     error: errorBranches,
+    isError: isErrorBranches,
     refetch: refetchBranches,
   } = useListBranchesForAdminQuery(
     { pageNo: paginationModel.page + 1, pageSize: paginationModel.pageSize },
     {
       refetchOnMountOrArgChange: true,
-    }
+    },
   );
   const [addBranches] = useAddBranchesMutation();
   const [updateBranches] = useUpdateBranchesMutation();
@@ -73,17 +73,7 @@ const BranchesManagement = () => {
       headerName: "Trạng thái",
       width: 200,
       renderCell: (params) => {
-        const display = statusDisplay[params.value] || {
-          label: "Không rõ",
-          color: "default",
-        };
-        return (
-          <Chip
-            label={display.label}
-            color={display.color}
-            variant={display.variant}
-          />
-        );
+       return <StatusChip status={params.value} />;
       },
     },
     {
@@ -262,20 +252,6 @@ const BranchesManagement = () => {
     }
   };
 
-  if (errorBranches) {
-    return (
-      <ErrorDisplay
-        error={
-          errorBranches
-            ? {
-                message: "Không tải được danh sách chi nhánh.",
-              }
-            : null
-        }
-      />
-    );
-  }
-
   return (
     <DashboardLayoutWrapper>
       <Typography variant="h5">Quản lý Chi nhánh</Typography>
@@ -319,39 +295,24 @@ const BranchesManagement = () => {
         </Button>
       </Box>
 
-      <Box height={600}>
-        <DataGrid
-          sx={{
-            boxShadow: 2,
-            border: 2,
-            borderColor: "primary.light",
-            "& .MuiDataGrid-cell:hover": {
-              color: "primary.main",
-            },
-          }}
-          columns={columnsBranches}
-          rows={dataRowBranches}
-          loading={isLoadingBranches}
-          disableSelectionOnClick
-          slotProps={{
-            loadingOverlay: {
-              variant: "linear-progress",
-              noRowsVariant: "linear-progress",
-            },
-          }}
-          localeText={{
-            noRowsLabel: "Không có dữ liệu",
-          }}
-          pagination
-          paginationMode="server"
-          sortingMode="server"
-          filterMode="server"
-          rowCount={totalRows}
-          paginationModel={paginationModel}
-          onPaginationModelChange={setPaginationModel}
-          pageSizeOptions={[10, 15, 20]}
-        />
-      </Box>
+      <TableData
+        rows={dataRowBranches}
+        totalRows={totalRows}
+        columnsData={columnsBranches}
+        loading={isLoadingBranches}
+        error={
+          isErrorBranches && (
+            <Box mt={2} textAlign="center">
+              <Typography color="error">
+                {errorBranches} || Không tải được dữ liệu.
+              </Typography>
+            </Box>
+          )
+        }
+        paginationModel={paginationModel}
+        onPaginationModelChange={setPaginationModel}
+        pageSizeOptions={[10, 15, 20]}
+      />
 
       {/* TODO: Dialog add branches */}
       <Dialog fullWidth open={openAddDialog}>

@@ -117,7 +117,7 @@ const PermissionsManagement = () => {
   return (
     <DashboardLayoutWrapper>
       <Typography variant="h5" gutterBottom>
-        Quản lý Quyền hạn
+        Quản lý quyền hạn
       </Typography>
       <Grid container spacing={2} sx={{ mb: 2 }}>
         <Grid item xs={12} sm={9}></Grid>

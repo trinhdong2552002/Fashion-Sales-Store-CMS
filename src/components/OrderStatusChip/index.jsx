@@ -5,21 +5,9 @@ import {
   LocalShipping,
   Settings,
 } from "@mui/icons-material";
+import { Chip } from "@mui/material";
 
-export const statusDisplay = {
-  ACTIVE: {
-    label: "Đang hoạt động",
-    color: "success",
-    variant: "outlined",
-  },
-  INACTIVE: {
-    label: "Ngừng hoạt động",
-    color: "default",
-    variant: "outlined",
-  },
-};
-
-export const orderStatusDisplay = {
+const orderStatusDisplay = {
   PENDING: {
     label: "Chờ xử lý",
     color: "warning",
@@ -46,8 +34,16 @@ export const orderStatusDisplay = {
     icon: <Cancel fontSize="small" />,
   },
   default: {
-    label: status,
+    label: "Không xác định",
     color: "default",
     icon: null,
   },
 };
+
+const OrderStatusChip = ({ status }) => {
+  const { label, color, icon } =
+    orderStatusDisplay[status] || orderStatusDisplay.default;
+  return <Chip label={label} color={color} icon={icon} />;
+};
+
+export default OrderStatusChip;

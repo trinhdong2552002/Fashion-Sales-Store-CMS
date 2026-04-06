@@ -2,60 +2,36 @@ import { useState } from "react";
 import {
   Typography,
   Box,
-  Button,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
 } from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
-import { Refresh } from "@mui/icons-material";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
-import { useListWardsQuery } from "@/services/api/ward";
 import {
   useListDistrictsQuery,
   useListWardsByDistrictQuery,
 } from "@/services/api/district";
 import { skipToken } from "@reduxjs/toolkit/query";
-import ErrorDisplay from "@/components/ErrorDisplay";
-import { useSnackbar } from "@/components/Snackbar";
+import TableData from "@/components/TableData";
 
 const WardsManagement = () => {
-  const { showSnackbar } = useSnackbar();
   const [selectedDistrictId, setSelectedDistrictId] = useState("");
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 20,
   });
 
-  const {
-    data: dataWards,
-    isLoading: isLoadingWards,
-    isError: isErrorWards,
-    refetch: refetchDataWards,
-  } = useListWardsQuery(
-    {
-      pageNo: paginationModel.page + 1,
-      pageSize: paginationModel.pageSize,
-    },
-    {
-      refetchOnMountOrArgChange: true,
-    }
-  );
-
-  const { data: dataDistricts, isError: isErrorDistricts } =
-    useListDistrictsQuery(
-      { pageNo: 1, pageSize: 1000 },
-      {
-        refetchOnMountOrArgChange: true,
-      }
-    );
+  const { data: dataDistricts } = useListDistrictsQuery({
+    pageNo: 1,
+    pageSize: 1000,
+  });
 
   const {
     data: dataWardsByDistrict,
     isLoading: isLoadingWardsByDistrict,
     isError: isErrorWardsByDistrict,
-    refetch: refetchDataWardsByDistrict,
+    error: errorWardsByDistrict,
   } = useListWardsByDistrictQuery(
     selectedDistrictId
       ? {
@@ -64,81 +40,26 @@ const WardsManagement = () => {
           pageSize: paginationModel.pageSize,
         }
       : skipToken,
-    {
-      refetchOnMountOrArgChange: true,
-    }
   );
 
-  const isLoading = selectedDistrictId
-    ? isLoadingWardsByDistrict
-    : isLoadingWards;
-
-  const dataRowWards =
-    (selectedDistrictId
-      ? dataWardsByDistrict?.result?.items
-      : dataWards?.result?.items) || [];
-
-  const rows = dataRowWards.map((item) => ({
-    ...item,
-    id: item.code,
-  }));
+  const dataRowWards = selectedDistrictId
+    ? dataWardsByDistrict?.result?.items
+    : [];
 
   const totalRows = selectedDistrictId
     ? dataWardsByDistrict?.result?.totalItems
-    : dataWards?.result?.totalItems || 0;
+    : 0;
 
   const columnsWards = [
     { field: "code", headerName: "Code", width: 150 },
     { field: "name", headerName: "Tên phường / xã", width: 200 },
   ];
 
-  const handleRefresh = () => {
-    if (selectedDistrictId) {
-      refetchDataWardsByDistrict();
-    } else {
-      refetchDataWards();
-    }
-    showSnackbar("Danh sách phường/xã đã được làm mới!", "info");
-  };
-
-  if (isErrorWards || isErrorWardsByDistrict || isErrorDistricts) {
-    return (
-      <ErrorDisplay
-        error={{
-          message:
-            "Không tải được dữ liệu. Vui lòng kiểm tra kết nối của bạn và thử lại!",
-        }}
-      />
-    );
-  }
-
   return (
     <DashboardLayoutWrapper>
-      <Typography variant="h5">Quản lý Phường / xã</Typography>
+      <Typography variant="h5">Quản lý phường / xã</Typography>
 
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems={{
-          xs: "stretch",
-          sm: "center",
-          md: "center",
-        }}
-        flexDirection={{
-          xs: "column",
-          sm: "row",
-          md: "row",
-        }}
-        sx={{ mb: 3, mt: 3, gap: { xs: 2, md: 0 } }}
-      >
-        <Button
-          variant="outlined"
-          onClick={handleRefresh}
-          startIcon={<Refresh />}
-        >
-          Làm mới
-        </Button>
-
+      <Box sx={{ my: 3, gap: { xs: 2, md: 0 } }}>
         <FormControl sx={{ minWidth: 300 }}>
           <InputLabel>Chọn quận / huyện</InputLabel>
           <Select
@@ -161,37 +82,29 @@ const WardsManagement = () => {
         </FormControl>
       </Box>
 
-      <Box height={600}>
-        <DataGrid
-          sx={{
-            boxShadow: 2,
-            border: 2,
-            borderColor: "primary.light",
-            "& .MuiDataGrid-cell:hover": {
-              color: "primary.main",
-            },
-          }}
-          columns={columnsWards}
-          rows={rows}
-          loading={isLoading}
-          disableSelectionOnClick
-          slotProps={{
-            loadingOverlay: {
-              variant: "linear-progress",
-              noRowsVariant: "linear-progress",
-            },
-          }}
-          localeText={{ noRowsLabel: "Không có dữ liệu" }}
-          pagination
-          paginationMode="server"
-          sortingMode="server"
-          filterMode="server"
-          rowCount={totalRows}
-          paginationModel={paginationModel}
-          onPaginationModelChange={setPaginationModel}
-          pageSizeOptions={[20, 50, 100]}
-        />
-      </Box>
+      <TableData
+        /*
+          If the row's identifier is not called id, then you need to use the getRowId prop to tell the Data Grid where it's located.
+          https://mui.com/x/react-data-grid/row-definition/
+         */
+        getRowId={(row) => row.code}
+        rows={dataRowWards}
+        totalRows={totalRows}
+        columnsData={columnsWards}
+        loading={isLoadingWardsByDistrict}
+        error={
+          isErrorWardsByDistrict && (
+            <Box mt={2} textAlign="center">
+              <Typography color="error">
+                {errorWardsByDistrict} || "Không tải được dữ liệu."
+              </Typography>
+            </Box>
+          )
+        }
+        paginationModel={paginationModel}
+        onPaginationModelChange={setPaginationModel}
+        pageSizeOptions={[10, 20, 50]}
+      />
     </DashboardLayoutWrapper>
   );
 };

@@ -2,10 +2,12 @@ import { DataGrid } from "@mui/x-data-grid";
 import { Box } from "@mui/material";
 
 const TableData = ({
+  getRowId,
   rows,
   totalRows,
   columnsData,
   loading,
+  error,
   paginationModel,
   onPaginationModelChange,
   pageSizeOptions,
@@ -21,10 +23,18 @@ const TableData = ({
             color: "primary.main",
           },
         }}
+        getRowId={getRowId}
         rows={rows}
         columns={columnsData}
         rowCount={totalRows}
         loading={loading}
+        slotProps={{
+          loadingOverlay: {
+            variant: "linear-progress",
+            noRowsVariant: "linear-progress",
+          },
+        }}
+        error={error}
         disableSelectionOnClick
         localeText={{
           noRowsLabel: "Không có dữ liệu",

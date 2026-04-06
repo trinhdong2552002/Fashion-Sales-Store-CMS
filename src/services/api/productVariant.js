@@ -33,13 +33,13 @@ export const productVariantApi = baseApi.injectEndpoints({
     }),
 
     // TODO: BE cũ hiện tại ko support restore khi xoá biến thể coi như đã xoá cứng
-    // restoreProductVariant: builder.mutation({
-    //   query: ({ id }) => ({
-    //     url: `/v1/product-variants/${id}/restore`,
-    //     method: "PATCH",
-    //   }),
-    //   invalidatesTags: [TAG_KEYS.PRODUCT_VARIANT],
-    // }),
+    restoreProductVariant: builder.mutation({
+      query: ({ id }) => ({
+        url: `/v1/product-variants/${id}/restore`,
+        method: "PATCH",
+      }),
+      invalidatesTags: [TAG_KEYS.PRODUCT_VARIANT],
+    }),
   }),
 });
 
@@ -47,5 +47,5 @@ export const {
   useListAllProductVariantsByProductQuery,
   useUpdateProductVariantMutation,
   useDeleteProductVariantMutation,
-  // useRestoreProductVariantMutation,
+  useRestoreProductVariantMutation,
 } = productVariantApi;

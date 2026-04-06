@@ -1,14 +1,10 @@
-import { DataGrid } from "@mui/x-data-grid";
-import { Box, Button, Typography } from "@mui/material";
+import { Typography } from "@mui/material";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import { useListRolesQuery } from "@/services/api/role";
 import { useState } from "react";
-import { Refresh } from "@mui/icons-material";
-import ErrorDisplay from "@/components/ErrorDisplay";
-import { useSnackbar } from "@/components/Snackbar";
+import TableData from "@/components/TableData";
 
 const RolesManagement = () => {
-  const { showSnackbar } = useSnackbar();
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 10,
@@ -18,6 +14,7 @@ const RolesManagement = () => {
     data: dataRole,
     isLoading: isLoadingRole,
     isError: isErrorRole,
+    error: errorRole,
     refetch: refetchRole,
   } = useListRolesQuery(
     {
@@ -26,7 +23,7 @@ const RolesManagement = () => {
     },
     {
       refetchOnMountOrArgChange: true,
-    }
+    },
   );
 
   const dataRowRoles = dataRole?.result?.items || [];
@@ -38,66 +35,30 @@ const RolesManagement = () => {
     { field: "description", headerName: "Mô tả vai trò", width: 200 },
   ];
 
-  const handleRefresh = () => {
-    refetchRole();
-    showSnackbar("Danh sách vai trò đã được làm mới!", "info");
-  };
-
-  if (isErrorRole)
-    return (
-      <ErrorDisplay
-        error={{
-          message: "Không tải được danh sách vai trò.",
-        }}
-      />
-    );
-
   return (
     <DashboardLayoutWrapper>
-      <Typography variant="h5">Quản lý Vai trò</Typography>
+      <Typography variant="h5" sx={{ mb: 3 }}>
+        Quản lý vai trò
+      </Typography>
 
-      <Button
-        sx={{ mb: 3, mt: 3 }}
-        variant="outlined"
-        startIcon={<Refresh />}
-        onClick={handleRefresh}
-      >
-        Làm mới
-      </Button>
-
-      <Box height={600}>
-        <DataGrid
-          sx={{
-            boxShadow: 2,
-            border: 2,
-            borderColor: "primary.light",
-            "& .MuiDataGrid-cell:hover": {
-              color: "primary.main",
-            },
-          }}
-          columns={columnsRoles}
-          rows={dataRowRoles}
-          loading={isLoadingRole}
-          disableSelectionOnClick
-          slotProps={{
-            loadingOverlay: {
-              variant: "linear-progress",
-              noRowsVariant: "linear-progress",
-            },
-          }}
-          localeText={{
-            noRowsLabel: "Không có dữ liệu",
-          }}
-          pagination
-          paginationMode="server"
-          sortingMode="server"
-          filterMode="server"
-          rowCount={totalRows}
-          paginationModel={paginationModel}
-          onPaginationModelChange={setPaginationModel}
-          pageSizeOptions={[10, 15, 20]}
-        />
-      </Box>
+      <TableData
+        rows={dataRowRoles}
+        totalRows={totalRows}
+        columnsData={columnsRoles}
+        loading={isErrorRole}
+        error={
+          isErrorRole && (
+            <Box mt={2} textAlign="center">
+              <Typography color="error">
+                {errorRole} || Không tải được dữ liệu.
+              </Typography>
+            </Box>
+          )
+        }
+        paginationModel={paginationModel}
+        onPaginationModelChange={setPaginationModel}
+        pageSizeOptions={[10, 15, 20]}
+      />
     </DashboardLayoutWrapper>
   );
 };

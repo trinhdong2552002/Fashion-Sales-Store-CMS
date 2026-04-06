@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { DataGrid } from "@mui/x-data-grid";
 import {
   Typography,
   Button,
@@ -10,7 +9,6 @@ import {
   DialogActions,
   IconButton,
   Box,
-  Chip,
 } from "@mui/material";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import {
@@ -21,13 +19,13 @@ import {
   useRestorePromotionMutation,
 } from "@/services/api/promotion";
 import { Add, Delete, Edit, Refresh, Restore } from "@mui/icons-material";
-import ErrorDisplay from "@/components/ErrorDisplay";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
-import { statusDisplay } from "/src/constants/badgeStatus";
 import { useSnackbar } from "@/components/Snackbar";
+import StatusChip from "@/components/StatusChip";
+import TableData from "@/components/TableData";
 
 const PromotionsManagement = () => {
   const { showSnackbar } = useSnackbar();
@@ -53,6 +51,7 @@ const PromotionsManagement = () => {
     data: dataPromotion,
     isLoading: isLoadingPromotion,
     isError: isErrorPromotion,
+    error: errorPromotion,
     refetch: refetchPromotion,
   } = useListPromotionsQuery(
     {
@@ -61,7 +60,7 @@ const PromotionsManagement = () => {
     },
     {
       refetchOnMountOrArgChange: true,
-    }
+    },
   );
   const [addPromotion] = useAddPromotionMutation();
   const [updatePromotion] = useUpdatePromotionMutation();
@@ -124,17 +123,7 @@ const PromotionsManagement = () => {
       headerName: "Trạng thái",
       width: 200,
       renderCell: (params) => {
-        const display = statusDisplay[params.value] || {
-          label: "Không rõ",
-          color: "default",
-        };
-        return (
-          <Chip
-            label={display.label}
-            color={display.color}
-            variant={display.variant}
-          />
-        );
+        return <StatusChip status={params.value} />;
       },
     },
     {
@@ -309,21 +298,12 @@ const PromotionsManagement = () => {
     }
   };
 
-  if (isErrorPromotion)
-    return (
-      <ErrorDisplay
-        error={{
-          message: "Không tải được danh sách khuyến mãi.",
-        }}
-      />
-    );
-
   return (
     <DashboardLayoutWrapper>
-      <Typography variant="h5">Quản lý Khuyến mãi</Typography>
+      <Typography variant="h5">Quản lý khuyến mãi</Typography>
 
       <Box
-        sx={{ mb: 3, mt: 3, gap: { xs: 2, md: 0 } }}
+        sx={{ my: 3, gap: { xs: 2, md: 0 } }}
         display={"flex"}
         justifyContent={"space-between"}
         alignItems={{
@@ -362,39 +342,24 @@ const PromotionsManagement = () => {
         </Button>
       </Box>
 
-      <Box height={600}>
-        <DataGrid
-          sx={{
-            boxShadow: 2,
-            border: 2,
-            borderColor: "primary.light",
-            "& .MuiDataGrid-cell:hover": {
-              color: "primary.main",
-            },
-          }}
-          columns={columnsPromotion}
-          rows={dataRowPromotions}
-          loading={isLoadingPromotion}
-          disableSelectionOnClick
-          slotProps={{
-            loadingOverlay: {
-              variant: "linear-progress",
-              noRowsVariant: "linear-progress",
-            },
-          }}
-          localeText={{
-            noRowsLabel: "Không có dữ liệu",
-          }}
-          pagination
-          paginationMode="server"
-          sortingMode="server"
-          filterMode="server"
-          rowCount={totalRows}
-          paginationModel={paginationModel}
-          onPaginationModelChange={setPaginationModel}
-          pageSizeOptions={[10, 15, 20]}
-        />
-      </Box>
+      <TableData
+        rows={dataRowPromotions}
+        totalRows={totalRows}
+        columnsData={columnsPromotion}
+        loading={isLoadingPromotion}
+        error={
+          isErrorPromotion && (
+            <Box mt={2} textAlign="center">
+              <Typography color="error">
+                {errorPromotion} || Không tải được dữ liệu.
+              </Typography>
+            </Box>
+          )
+        }
+        paginationModel={paginationModel}
+        onPaginationModelChange={setPaginationModel}
+        pageSizeOptions={[10, 15, 20]}
+      />
 
       {/* Add promotion dialog */}
       <Dialog open={openAddDialog} maxWidth="md" fullWidth>

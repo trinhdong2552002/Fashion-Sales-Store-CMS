@@ -1,5 +1,4 @@
 import { Fragment, useState } from "react";
-import { DataGrid } from "@mui/x-data-grid";
 import {
   Typography,
   Box,
@@ -9,7 +8,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Chip,
 } from "@mui/material";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import { Delete, Refresh, Restore } from "@mui/icons-material";
@@ -18,9 +16,9 @@ import {
   useDeleteAddressMutation,
   useRestoreAddressMutation,
 } from "@/services/api/address";
-import ErrorDisplay from "@/components/ErrorDisplay";
-import { statusDisplay } from "/src/constants/badgeStatus";
 import { useSnackbar } from "@/components/Snackbar";
+import TableData from "@/components/TableData";
+import StatusChip from "@/components/StatusChip";
 
 const AddressManagement = () => {
   const { showSnackbar } = useSnackbar();
@@ -44,7 +42,7 @@ const AddressManagement = () => {
     },
     {
       refetchOnMountOrArgChange: true,
-    }
+    },
   );
 
   const [deleteAddress] = useDeleteAddressMutation();
@@ -87,17 +85,7 @@ const AddressManagement = () => {
       headerName: "Trạng thái",
       width: 200,
       renderCell: (params) => {
-        const display = statusDisplay[params.value] || {
-          label: "Không rõ",
-          color: "default",
-        };
-        return (
-          <Chip
-            label={display.label}
-            color={display.color}
-            variant={display.variant}
-          />
-        );
+        return <StatusChip status={params.value} />;
       },
     },
     {
@@ -173,62 +161,37 @@ const AddressManagement = () => {
     }
   };
 
-  if (isErrorAddress) {
-    return (
-      <ErrorDisplay
-        error={{
-          message: "Không tải được danh sách địa chỉ.",
-        }}
-      />
-    );
-  }
-
   return (
     <DashboardLayoutWrapper>
-      <Typography variant="h5">Quản lý Địa chỉ</Typography>
+      <Typography variant="h5">Quản lý địa chỉ</Typography>
 
       <Button
         variant="outlined"
         onClick={handleRefresh}
         startIcon={<Refresh />}
-        sx={{ mb: 3, mt: 3 }}
+        sx={{ my: 3 }}
       >
         Làm mới
       </Button>
 
-      <Box height={600}>
-        <DataGrid
-          sx={{
-            boxShadow: 2,
-            border: 2,
-            borderColor: "primary.light",
-            "& .MuiDataGrid-cell:hover": {
-              color: "primary.main",
-            },
-          }}
-          columns={columnsAddress}
-          rows={dataRowAddresses}
-          loading={isLoadingAddress}
-          disableSelectionOnClick
-          slotProps={{
-            loadingOverlay: {
-              variant: "linear-progress",
-              noRowsVariant: "linear-progress",
-            },
-          }}
-          localeText={{
-            noRowsLabel: "Không có dữ liệu",
-          }}
-          pagination
-          paginationMode="server"
-          sortingMode="server"
-          filterMode="server"
-          rowCount={totalRows}
-          paginationModel={paginationModel}
-          onPaginationModelChange={setPaginationModel}
-          pageSizeOptions={[10, 15, 20]}
-        />
-      </Box>
+      <TableData
+        rows={dataRowAddresses}
+        totalRows={totalRows}
+        columnsData={columnsAddress}
+        loading={isLoadingAddress}
+        error={
+          isErrorAddress && (
+            <Box mt={2} textAlign="center">
+              <Typography color="error">
+                {errorAddress} || "Không tải được dữ liệu."
+              </Typography>
+            </Box>
+          )
+        }
+        paginationModel={paginationModel}
+        onPaginationModelChange={setPaginationModel}
+        pageSizeOptions={[10, 15, 20]}
+      />
 
       <Dialog open={openDeleteDialog}>
         <DialogTitle>Xác nhận xoá ?</DialogTitle>
