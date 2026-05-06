@@ -1,18 +1,19 @@
 import { baseApi } from "./index";
 import { TAG_KEYS } from "@/constants/tagKeys";
 
-export const branchesApi = baseApi.injectEndpoints({
+export const branchApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    listBranchesForAdmin: builder.query({
-      query: ({ pageNo, pageSize }) => ({
-        url: "/v1/branches/admin",
-        params: { pageNo, pageSize },
+    getAllBranchesByAdmin: builder.query({
+      query: ({ page, size }) => ({
+        url: "/v1/admin/branches",
+        params: { page, size },
       }),
-      providesTags: [TAG_KEYS.BRANCHES],
+      providesTags: [TAG_KEYS.BRANCH],
     }),
+
     addBranches: builder.mutation({
       query: (branch) => ({
-        url: "/v1/branches",
+        url: "/v1/admin/branches",
         method: "POST",
         data: {
           name: branch.name,
@@ -20,37 +21,40 @@ export const branchesApi = baseApi.injectEndpoints({
           phone: branch.phone,
         },
       }),
-      invalidatesTags: [TAG_KEYS.BRANCHES],
+      invalidatesTags: [TAG_KEYS.BRANCH],
     }),
+
     updateBranches: builder.mutation({
       query: ({ id, ...branch }) => ({
-        url: `/v1/branches/${id}`,
+        url: `/v1/admin/branches/${id}`,
         method: "PUT",
         data: branch,
       }),
-      invalidatesTags: [TAG_KEYS.BRANCHES],
+      invalidatesTags: [TAG_KEYS.BRANCH],
     }),
+
     deleteBranches: builder.mutation({
       query: ({ id }) => ({
-        url: `/v1/branches/${id}`,
+        url: `/v1/admin/branches/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: [TAG_KEYS.BRANCHES],
+      invalidatesTags: [TAG_KEYS.BRANCH],
     }),
+
     restoreBranches: builder.mutation({
       query: ({ id }) => ({
-        url: `/v1/branches/${id}/restore`,
+        url: `/v1/admin/branches/${id}/restore`,
         method: "PATCH",
       }),
-      invalidatesTags: [TAG_KEYS.BRANCHES],
+      invalidatesTags: [TAG_KEYS.BRANCH],
     }),
   }),
 });
 
 export const {
-  useListBranchesForAdminQuery,
+  useGetAllBranchesByAdminQuery,
   useAddBranchesMutation,
   useUpdateBranchesMutation,
   useDeleteBranchesMutation,
   useRestoreBranchesMutation,
-} = branchesApi;
+} = branchApi;

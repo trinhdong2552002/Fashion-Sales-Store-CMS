@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import {
-  useListPromotionsQuery,
+  useGetAllPromotionsByAdminQuery,
   useAddPromotionMutation,
   useUpdatePromotionMutation,
   useDeletePromotionMutation,
@@ -53,10 +53,10 @@ const PromotionsManagement = () => {
     isError: isErrorPromotion,
     error: errorPromotion,
     refetch: refetchPromotion,
-  } = useListPromotionsQuery(
+  } = useGetAllPromotionsByAdminQuery(
     {
-      pageNo: paginationModel.page + 1,
-      pageSize: paginationModel.pageSize,
+      page: paginationModel.page + 0,
+      size: paginationModel.pageSize,
     },
     {
       refetchOnMountOrArgChange: true,

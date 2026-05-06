@@ -15,12 +15,12 @@ import {
   IconButton,
 } from "@mui/material";
 import {
-  useListUsersForAdminQuery,
+  useGetAllUsersByAdminQuery,
   useCreateUserWithRoleMutation,
   useDeleteUserMutation,
   useRestoreUserMutation,
 } from "@/services/api/user";
-import { useListRolesQuery } from "@/services/api/role";
+
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import TableData from "@/components/TableData";
 import { PreviewImage } from "@/components/PreviewImage";
@@ -28,6 +28,7 @@ import { Add, Delete, Refresh, Restore } from "@mui/icons-material";
 
 import { useSnackbar } from "@/components/Snackbar";
 import StatusChip from "@/components/StatusChip";
+import { useGetAllRolesByAdminQuery } from "../../../../services/api/role";
 
 const UsersManagement = () => {
   const { showSnackbar } = useSnackbar();
@@ -49,14 +50,14 @@ const UsersManagement = () => {
     password: "",
     roleIds: [],
   });
-  const { data: dataRoles } = useListRolesQuery();
+  const { data: dataRoles } = useGetAllRolesByAdminQuery();
   const {
     data: dataUser,
     isLoading: isLoadingUser,
     isError: isErrorUser,
     error: errorUser,
     refetch: refetchUser,
-  } = useListUsersForAdminQuery(
+  } = useGetAllUsersByAdminQuery(
     {
       pageNo: paginationModel.page + 1,
       pageSize: paginationModel.pageSize,

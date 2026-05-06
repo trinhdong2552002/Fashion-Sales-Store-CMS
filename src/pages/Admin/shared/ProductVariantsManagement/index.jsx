@@ -6,9 +6,9 @@ import {
   useUpdateProductVariantMutation,
   useDeleteProductVariantMutation,
   useRestoreProductVariantMutation,
-} from "@/services/api/productVariant";
+} from "@/services/api/product_variant";
 import { skipToken } from "@reduxjs/toolkit/query";
-import { useListProductsForAdminQuery } from "@/services/api/product";
+import { useGetAllProductsByAdminQuery } from "@/services/api/product";
 import { Delete, Edit, Restore } from "@mui/icons-material";
 import TableData from "@/components/TableData";
 import { ProductVariantToolbar } from "./shared/ProductVariantToolbar";
@@ -44,7 +44,7 @@ const ProductVariantsManagement = () => {
     isError: isErrorProduct,
     error: errorProduct,
     refetch: refetchProduct,
-  } = useListProductsForAdminQuery({
+  } = useGetAllProductsByAdminQuery({
     refetchOnMountOrArgChange: true,
     pageNo: 1,
     pageSize: 1000,

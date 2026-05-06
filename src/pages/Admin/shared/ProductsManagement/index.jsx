@@ -1,14 +1,14 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
-import { Typography, IconButton, Chip } from "@mui/material";
+import { Typography, IconButton, Chip, Box } from "@mui/material";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import {
-  useListProductsForAdminQuery,
+  useGetAllProductsByAdminQuery,
   useAddProductMutation,
   useUpdateProductMutation,
   useDeleteProductMutation,
   useRestoreProductMutation,
 } from "@/services/api/product";
-import { useListCategoriesForAdminQuery } from "@/services/api/categories";
+import { useGetAllCategoriesByAdminQuery } from "@/services/api/category";
 import ProductToolbar from "./shared/ProductToolbar";
 import ProductDialogAdd from "./shared/ProductDialogAdd";
 import ProductDialogEdit from "./shared/ProductDialogEdit";
@@ -17,9 +17,9 @@ import ProductDialogRestore from "./shared/ProductDialogRestore";
 import TableData from "@/components/TableData";
 import { Delete, Edit, Restore, Visibility } from "@mui/icons-material";
 
-import { useListColorsQuery } from "@/services/api/color";
-import { useListSizesQuery } from "@/services/api/size";
-import { useListImagesQuery } from "@/services/api/productImage";
+import { useGetAllColorsQuery } from "@/services/api/color";
+import { useGetAllSizesQuery } from "@/services/api/size";
+import { useListImagesQuery } from "@/services/api/product_image";
 import ProductDialogDetail from "./shared/ProductDialogDetail";
 import { useSnackbar } from "@/components/Snackbar";
 import { normalizeSearchString } from "@/utils/stringUtils";
@@ -58,10 +58,10 @@ const ProductsManagement = () => {
     isError: isErrorProducts,
     error: errorProducts,
     refetch: refetchProducts,
-  } = useListProductsForAdminQuery(
+  } = useGetAllProductsByAdminQuery(
     {
-      pageNo: 1,
-      pageSize: 1000,
+      page: 0,
+      size: 1000,
     },
     {
       refetchOnMountOrArgChange: true,
@@ -74,26 +74,26 @@ const ProductsManagement = () => {
   const [restoreProduct] = useRestoreProductMutation();
 
   const { data: dataCategories, refetch: refetchCategories } =
-    useListCategoriesForAdminQuery(
-      { pageNo: 1, pageSize: 100 },
+    useGetAllCategoriesByAdminQuery(
+      { page: 0, size: 100 },
       {
         refetchOnMountOrArgChange: true,
       },
     );
 
-  const { data: dataColors, refetch: refetchColors } = useListColorsQuery(
-    { pageNo: 1, pageSize: 100 },
+  const { data: dataColors, refetch: refetchColors } = useGetAllColorsQuery(
+    { page: 0, size: 100 },
     {
       refetchOnMountOrArgChange: true,
     },
   );
 
-  const { data: dataSizes } = useListSizesQuery({
+  const { data: dataSizes } = useGetAllSizesQuery({
     refetchOnMountOrArgChange: true,
   });
 
   const { data: dataImages, refetch: refetchImages } = useListImagesQuery(
-    { pageNo: 1, pageSize: 100 },
+    { page: 0, pageSize: 100 },
     {
       refetchOnMountOrArgChange: true,
     },
@@ -162,7 +162,7 @@ const ProductsManagement = () => {
       headerName: "Trạng thái",
       width: 200,
       renderCell: (params) => {
-       return <StatusChip status={params.value} />;
+        return <StatusChip status={params.value} />;
       },
     },
     {

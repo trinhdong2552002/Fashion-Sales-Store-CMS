@@ -1,56 +1,59 @@
 import { baseApi } from "./index";
 import { TAG_KEYS } from "@/constants/tagKeys";
 
-export const categoriesApi = baseApi.injectEndpoints({
+export const categoryApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    listCategoriesForAdmin: builder.query({
-      query: ({ pageNo, pageSize }) => ({
-        url: "/v1/categories/admin",
-        params: { pageNo, pageSize },
+    getAllCategoriesByAdmin: builder.query({
+      query: ({ page, size, sort }) => ({
+        url: "/v1/admin/categories",
+        params: { page, size, sort },
       }),
-      providesTags: [TAG_KEYS.CATEGORIES],
+      providesTags: [TAG_KEYS.CATEGORY],
     }),
+
     addCategories: builder.mutation({
       query: (category) => ({
-        url: "/v1/categories",
+        url: "/v1/admin/categories",
         method: "POST",
         data: {
           name: category.name,
           description: category.description,
         },
       }),
-      invalidatesTags: [TAG_KEYS.CATEGORIES],
+      invalidatesTags: [TAG_KEYS.CATEGORY],
     }),
+
     updateCategories: builder.mutation({
       query: ({ id, ...category }) => ({
-        url: `/v1/categories/${id}`,
+        url: `/v1/admin/categories/${id}`,
         method: "PUT",
         data: category,
       }),
-      invalidatesTags: [TAG_KEYS.CATEGORIES],
+      invalidatesTags: [TAG_KEYS.CATEGORY],
     }),
+
     deleteCategories: builder.mutation({
       query: ({ id }) => ({
-        url: `/v1/categories/${id}`,
+        url: `/v1/admin/categories/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: [TAG_KEYS.CATEGORIES],
+      invalidatesTags: [TAG_KEYS.CATEGORY],
     }),
+    
     restoreCategories: builder.mutation({
       query: ({ id }) => ({
-        url: `/v1/categories/${id}/restore`,
+        url: `/v1/admin/categories/${id}/restore`,
         method: "PATCH",
       }),
-      invalidatesTags: [TAG_KEYS.CATEGORIES],
+      invalidatesTags: [TAG_KEYS.CATEGORY],
     }),
   }),
 });
 
-// TODO: Custom Hook
 export const {
-  useListCategoriesForAdminQuery,
+  useGetAllCategoriesByAdminQuery,
   useAddCategoriesMutation,
   useUpdateCategoriesMutation,
   useDeleteCategoriesMutation,
   useRestoreCategoriesMutation,
-} = categoriesApi;
+} = categoryApi;

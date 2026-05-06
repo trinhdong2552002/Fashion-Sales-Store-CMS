@@ -1,8 +1,8 @@
 import { Typography } from "@mui/material";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
-import { useListRolesQuery } from "@/services/api/role";
 import { useState } from "react";
 import TableData from "@/components/TableData";
+import { useGetAllRolesByAdminQuery } from "../../../../services/api/role";
 
 const RolesManagement = () => {
   const [paginationModel, setPaginationModel] = useState({
@@ -16,7 +16,7 @@ const RolesManagement = () => {
     isError: isErrorRole,
     error: errorRole,
     refetch: refetchRole,
-  } = useListRolesQuery(
+  } = useGetAllRolesByAdminQuery(
     {
       page: paginationModel.page,
       size: paginationModel.pageSize,
