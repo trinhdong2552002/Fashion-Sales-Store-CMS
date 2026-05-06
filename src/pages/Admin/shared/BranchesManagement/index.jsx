@@ -14,12 +14,12 @@ import {
 } from "@mui/material";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import {
-  useListBranchesForAdminQuery,
+  useGetAllBranchesByAdminQuery,
   useAddBranchesMutation,
   useUpdateBranchesMutation,
   useDeleteBranchesMutation,
   useRestoreBranchesMutation,
-} from "@/services/api/branches";
+} from "@/services/api/branch";
 import { Add, Delete, Edit, Refresh, Restore } from "@mui/icons-material";
 import { useSnackbar } from "@/components/Snackbar";
 import TableData from "@/components/TableData";
@@ -49,8 +49,8 @@ const BranchesManagement = () => {
     error: errorBranches,
     isError: isErrorBranches,
     refetch: refetchBranches,
-  } = useListBranchesForAdminQuery(
-    { pageNo: paginationModel.page + 1, pageSize: paginationModel.pageSize },
+  } = useGetAllBranchesByAdminQuery(
+    { page: paginationModel.page + 0, size: paginationModel.pageSize },
     {
       refetchOnMountOrArgChange: true,
     },
@@ -73,7 +73,7 @@ const BranchesManagement = () => {
       headerName: "Trạng thái",
       width: 200,
       renderCell: (params) => {
-       return <StatusChip status={params.value} />;
+        return <StatusChip status={params.value} />;
       },
     },
     {

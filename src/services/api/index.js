@@ -4,7 +4,12 @@ import axios from "axios";
 export const axiosBaseQuery =
   () =>
   async ({ url, method, data, params, headers }) => {
-    const publicEndpoints = ["/v1/auth/login", "/v1/auth/refresh-token"];
+    const publicEndpoints = [
+      "/v1/public/auth/login",
+      "/v1/public/auth/refresh-token",
+      "/v1/public/colors",
+      "/v1/public/sizes",
+    ];
 
     const token = localStorage.getItem("accessToken");
     const refreshToken = localStorage.getItem("refreshToken");
@@ -71,14 +76,15 @@ export const baseApi = createApi({
   tagTypes: [
     "Address",
     "Auth",
-    "Branches",
+    "Branch",
     "Cart",
-    "Categories",
+    "Category",
     "Color",
     "District",
     "Order",
     "Product",
     "Product_Variant",
+    "Product_Image",
     "Promotion",
     "Province",
     "Review",

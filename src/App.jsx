@@ -12,7 +12,6 @@ import PaymentHistoriesManagement from "./pages/Admin/shared/PaymentHistoriesMan
 import RolesManagement from "./pages/Admin/shared/RolesManagement";
 import PermissionsManagement from "./pages/Admin/shared/PermissionsManagement";
 import ColorsManagement from "./pages/Admin/shared/ColorsManagement";
-import SizesManagement from "./pages/Admin/shared/SizesManagement";
 import WardsManagement from "./pages/Admin/shared/WardsManagement";
 import DistrictsManagement from "./pages/Admin/shared/DistrictsManagement";
 import ProvincesManagement from "./pages/Admin/shared/ProvincesManagement";
@@ -48,7 +47,6 @@ const App = () => {
             element={<ProductVariantsManagement />}
           />
           <Route path="colorsManagement" element={<ColorsManagement />} />
-          <Route path="sizesManagement" element={<SizesManagement />} />
           <Route path="wardsManagement" element={<WardsManagement />} />
           <Route path="districtsManagement" element={<DistrictsManagement />} />
           <Route path="provincesManagement" element={<ProvincesManagement />} />

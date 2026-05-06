@@ -3,10 +3,10 @@ import { TAG_KEYS } from "@/constants/tagKeys.js";
 
 export const productApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    listProductsForAdmin: builder.query({
-      query: ({ pageNo, pageSize }) => ({
-        url: "/v1/products/admin",
-        params: { pageNo, pageSize },
+    getAllProductsByAdmin: builder.query({
+      query: ({ page, size, sort }) => ({
+        url: "/v1/admin/products/admin",
+        params: { page, size, sort },
       }),
       providesTags: [TAG_KEYS.PRODUCT],
     }),
@@ -23,7 +23,7 @@ export const productApi = baseApi.injectEndpoints({
 
     addProduct: builder.mutation({
       query: (product) => ({
-        url: "/v1/products",
+        url: "/v1/admin/products",
         method: "POST",
         data: {
           name: product.name,
@@ -41,7 +41,7 @@ export const productApi = baseApi.injectEndpoints({
 
     updateProduct: builder.mutation({
       query: ({ id, ...product }) => ({
-        url: `/v1/products/${id}`,
+        url: `/v1/admin/products/${id}`,
         method: "PUT",
         data: { ...product },
       }),
@@ -51,7 +51,7 @@ export const productApi = baseApi.injectEndpoints({
 
     deleteProduct: builder.mutation({
       query: ({ id }) => ({
-        url: `/v1/products/${id}`,
+        url: `/v1/admin/products/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: [TAG_KEYS.PRODUCT],
@@ -59,7 +59,7 @@ export const productApi = baseApi.injectEndpoints({
 
     restoreProduct: builder.mutation({
       query: ({ id }) => ({
-        url: `/v1/products/${id}/restore`,
+        url: `/v1/admin/products/${id}/restore`,
         method: "PATCH",
       }),
       invalidatesTags: [TAG_KEYS.PRODUCT],
@@ -68,7 +68,7 @@ export const productApi = baseApi.injectEndpoints({
 });
 
 export const {
-  useListProductsForAdminQuery,
+  useGetAllProductsByAdminQuery,
   useSearchProductsQuery,
   useAddProductMutation,
   useUpdateProductMutation,

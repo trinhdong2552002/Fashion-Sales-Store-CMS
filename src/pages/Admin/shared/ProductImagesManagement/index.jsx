@@ -15,7 +15,7 @@ import {
   useListImagesQuery,
   useUploadImageMutation,
   useDeleteImageMutation,
-} from "@/services/api/productImage";
+} from "@/services/api/product_image";
 import { useState } from "react";
 import { AddPhotoAlternate, Delete, Refresh } from "@mui/icons-material";
 import { PreviewImage } from "@/components/PreviewImage";

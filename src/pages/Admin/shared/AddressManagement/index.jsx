@@ -12,7 +12,7 @@ import {
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import { Delete, Refresh, Restore } from "@mui/icons-material";
 import {
-  useListAddressForAdminQuery,
+  useGetAllAddressesByAdminQuery,
   useDeleteAddressMutation,
   useRestoreAddressMutation,
 } from "@/services/api/address";
@@ -34,11 +34,12 @@ const AddressManagement = () => {
     data: dataAddress,
     isLoading: isLoadingAddress,
     isError: isErrorAddress,
+    error: errorAddress,
     refetch: refetchAddress,
-  } = useListAddressForAdminQuery(
+  } = useGetAllAddressesByAdminQuery(
     {
-      pageNo: paginationModel.page + 1,
-      pageSize: paginationModel.pageSize,
+      page: paginationModel.page + 0,
+      size: paginationModel.pageSize,
     },
     {
       refetchOnMountOrArgChange: true,

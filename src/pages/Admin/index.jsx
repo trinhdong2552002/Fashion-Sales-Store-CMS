@@ -22,7 +22,7 @@ const Admin = () => {
         <Grid size={{ xs: 12, md: 6 }}>
           <Card>
             <CardContent>
-              {/* <LineChart
+              <LineChart
                 xAxis={[
                   {
                     data: revenueData.map((data) => data.month),
@@ -40,7 +40,7 @@ const Admin = () => {
                 height={300}
                 margin={{ top: 50, bottom: 50, left: 60, right: 20 }}
                 title="Doanh thu 6 tháng gần nhất"
-              /> */}
+              />
             </CardContent>
           </Card>
         </Grid>

@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import {
-  useListColorsQuery,
+  useGetAllColorsQuery,
   useAddColorMutation,
   useUpdateColorMutation,
   useDeleteColorMutation,
@@ -40,10 +40,10 @@ const ColorsManagement = () => {
     isError: isErrorColor,
     error: errorColor,
     refetch: refetchColor,
-  } = useListColorsQuery(
+  } = useGetAllColorsQuery(
     {
-      pageNo: paginationModel.page + 1,
-      pageSize: paginationModel.pageSize,
+      page: paginationModel.page + 0,
+      size: paginationModel.pageSize,
     },
     {
       refetchOnMountOrArgChange: true,

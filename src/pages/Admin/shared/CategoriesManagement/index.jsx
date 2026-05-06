@@ -13,12 +13,12 @@ import {
 } from "@mui/material";
 import DashboardLayoutWrapper from "@/layouts/DashboardLayout";
 import {
+  useGetAllCategoriesByAdminQuery,
   useAddCategoriesMutation,
   useDeleteCategoriesMutation,
-  useListCategoriesForAdminQuery,
   useRestoreCategoriesMutation,
   useUpdateCategoriesMutation,
-} from "@/services/api/categories";
+} from "@/services/api/category";
 import { Add, Delete, Edit, Refresh, Restore } from "@mui/icons-material";
 import { useSnackbar } from "@/components/Snackbar";
 import TableData from "@/components/TableData";
@@ -47,11 +47,8 @@ const CategoriesManagement = () => {
     error: errorCategories,
     isError: isErrorCategories,
     refetch: refetchCategories,
-  } = useListCategoriesForAdminQuery(
-    {
-      pageNo: paginationModel.page + 1,
-      pageSize: paginationModel.pageSize,
-    },
+  } = useGetAllCategoriesByAdminQuery(
+    { page: paginationModel.page + 0, size: paginationModel.pageSize },
     {
       refetchOnMountOrArgChange: true,
     },
@@ -74,7 +71,7 @@ const CategoriesManagement = () => {
       headerName: "Trạng thái",
       width: 200,
       renderCell: (params) => {
-       return <StatusChip status={params.value} />;
+        return <StatusChip status={params.value} />;
       },
     },
     {

@@ -66,6 +66,7 @@ const DashboardLayoutWrapper = ({ children }) => {
       title: "Khuyến mãi",
       icon: <LocalOffer />,
     },
+    { path: "/admin/addressManagement", title: "Địa chỉ", icon: <Place /> },
   ];
 
   // Grouped navigation items
@@ -99,33 +100,6 @@ const DashboardLayoutWrapper = ({ children }) => {
           title: "Màu sắc",
           icon: <Palette />,
         },
-        {
-          path: "/admin/sizesManagement",
-          title: "Kích thước",
-          icon: <Height />,
-        },
-      ],
-    },
-    {
-      title: "Mục địa chỉ",
-      icon: <LocationOn />,
-      items: [
-        {
-          path: "/admin/provincesManagement",
-          title: "Tỉnh / thành phố",
-          icon: <Place />,
-        },
-        {
-          path: "/admin/districtsManagement",
-          title: "Quận / huyện",
-          icon: <Place />,
-        },
-        {
-          path: "/admin/wardsManagement",
-          title: "Phường / xã",
-          icon: <Place />,
-        },
-        { path: "/admin/addressManagement", title: "Địa chỉ", icon: <Place /> },
       ],
     },
   ];

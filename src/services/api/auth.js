@@ -6,7 +6,7 @@ export const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     login: builder.mutation({
       query: (credentials) => ({
-        url: "/v1/auth/login",
+        url: "/v1/public/auth/login",
         method: "POST",
         data: {
           email: credentials.email,
@@ -17,7 +17,6 @@ export const authApi = baseApi.injectEndpoints({
       invalidatesTags: [TAG_KEYS.AUTH],
     }),
 
-    // Đăng xuất
     logout: builder.mutation({
       query: (credentials) => {
         if (!credentials.accessToken) {
@@ -25,7 +24,7 @@ export const authApi = baseApi.injectEndpoints({
         }
 
         return {
-          url: "/v1/auth/logout",
+          url: "/v1/private/auth/logout",
           method: "POST",
           data: {
             accessToken: credentials.accessToken,
@@ -37,7 +36,7 @@ export const authApi = baseApi.injectEndpoints({
 
     getMyInfo: builder.query({
       query: () => ({
-        url: "/v1/auth/myInfo",
+        url: "/v1/private/auth/myInfo",
       }),
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
         try {
