@@ -11,7 +11,7 @@ export const TAG_KEYS = {
   ORDER: "Order",
   PRODUCT: "Product",
   PRODUCT_VARIANT: "Product_Variant",
-  PRODUCT_IMAGE: "Product_Image",
+  FILE: "File",
   PROMOTION: "Promotion",
   PROVINCE: "Province",
   REVIEW: "Review",
