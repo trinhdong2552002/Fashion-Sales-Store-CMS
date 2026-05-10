@@ -1,0 +1,81 @@
+import React, { useState, useEffect } from "react";
+import { Typography, Card, CardContent, Grid } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { LineChart, BarChart } from "@mui/x-charts";
+import DashboardLayoutWrapper from "@/layouts/Dashboard_layout";
+
+const AdminPage = () => {
+  const [revenueData, setRevenueData] = useState([]);
+  const [orderStatusData, setOrderStatusData] = useState({});
+
+  const navigate = useNavigate();
+
+  return (
+    <DashboardLayoutWrapper>
+      <Typography variant="h5" gutterBottom>
+        Tổng quan
+      </Typography>
+
+      {/* Biểu đồ doanh thu và thống kê đơn hàng */}
+      <Grid container spacing={3} sx={{ mb: 3 }}>
+        <Grid size={{ xs: 12, md: 6 }}>
+          <Card>
+            <CardContent>
+              <LineChart
+                xAxis={[
+                  {
+                    data: revenueData.map((data) => data.month),
+                    label: "Tháng",
+                  },
+                ]}
+                series={[
+                  {
+                    data: revenueData.map((data) => data.revenue),
+                    label: "Doanh thu (VND)",
+                    color: "#4bc0c0",
+                    area: true,
+                  },
+                ]}
+                height={300}
+                margin={{ top: 50, bottom: 50, left: 60, right: 20 }}
+                title="Doanh thu 6 tháng gần nhất"
+              />
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid size={{ xs: 12, md: 6 }}>
+          <Card>
+            <CardContent>
+              <BarChart
+                xAxis={[
+                  {
+                    scaleType: "band",
+                    data: ["Chờ xử lý", "Hoàn thành", "Đã hủy"],
+                    label: "Trạng thái",
+                  },
+                ]}
+                series={[
+                  {
+                    data: [
+                      orderStatusData.PENDING || 0,
+                      orderStatusData.COMPLETED || 0,
+                      orderStatusData.CANCELLED || 0,
+                    ],
+                    label: "Số lượng đơn hàng",
+                    color: "#4bc0c0",
+                  },
+                ]}
+                height={300}
+                margin={{ top: 50, bottom: 50, left: 60, right: 20 }}
+                title="Thống kê đơn hàng theo trạng thái"
+              />
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+    </DashboardLayoutWrapper>
+  );
+};
+
+export default AdminPage;

@@ -84,7 +84,7 @@ export const baseApi = createApi({
     "Order",
     "Product",
     "Product_Variant",
-    "Product_Image",
+    "File",
     "Promotion",
     "Province",
     "Review",
