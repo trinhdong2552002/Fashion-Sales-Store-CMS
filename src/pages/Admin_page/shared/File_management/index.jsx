@@ -13,15 +13,14 @@ import {
 import DashboardLayoutWrapper from "@/layouts/Dashboard_layout";
 import {
   useGetAllFilesQuery,
-  useUploadImageMutation,
-  useDeleteImageMutation,
+  useUploadMultipleFilesMutation,
+  useDeleteFileMutation,
 } from "@/services/api/file";
 import { useState } from "react";
 import { AddPhotoAlternate, Delete, Refresh } from "@mui/icons-material";
 import { PreviewImage } from "@/components/Preview_image";
 import { useSnackbar } from "@/components/Snackbar";
 import TableData from "@/components/Table_data";
-
 
 const FileManagement = () => {
   const { showSnackbar } = useSnackbar();
@@ -36,11 +35,11 @@ const FileManagement = () => {
   const [imageIdToDelete, setImageIdToDelete] = useState(null);
 
   const {
-    data: dataImage,
-    isLoading: isLoadingImage,
-    isError: isErrorImage,
-    error: errorImage,
-    refetch: refetchImage,
+    data: dataFile,
+    isLoading: isLoadingFile,
+    isError: isErrorFile,
+    error: errorFile,
+    refetch: refetchFile,
   } = useGetAllFilesQuery(
     {
       page: paginationModel.page + 0,
@@ -51,18 +50,18 @@ const FileManagement = () => {
     },
   );
 
-  const [uploadImage] = useUploadImageMutation();
-  const [deleteImage] = useDeleteImageMutation();
+  const [uploadFile] = useUploadMultipleFilesMutation();
+  const [deleteFile] = useDeleteFileMutation();
 
-  const dataRowImages = dataImage?.result?.items || [];
-  const totalRows = dataImage?.result?.totalItems || 0;
+  const dataRowFiles = dataFile?.result?.items || [];
+  const totalRows = dataFile?.result?.totalItems || 0;
 
-  const columnsImage = [
+  const columnsFile = [
     { field: "id", headerName: "ID", width: 150 },
     { field: "fileName", headerName: "Tên file", width: 200 },
     {
       field: "imageUrl",
-      headerName: "Hình ảnh sản phẩm",
+      headerName: "Hình ảnh",
       width: 200,
       renderCell: (params) => (
         <img
@@ -108,23 +107,19 @@ const FileManagement = () => {
     },
   ];
 
-  const handleUploadImage = async (e) => {
-    const file = e.target.files[0]; // Single file only
-    if (!file) return;
+  const handleUploadFile = async (e) => {
+    const files = e.target.files;
 
-    // Validate file type
-    if (!file.type.startsWith("image/")) {
-      showSnackbar("Vui lòng chọn một file hình ảnh!", "warning");
+    if (!files || files.length === 0) {
+      showSnackbar("Vui lòng chọn ít nhất một hình ảnh để tải lên.", "warning");
       return;
     }
 
     setIsUploadingImage(true);
     try {
-      // Pass single file, not array
-      await uploadImage(file).unwrap();
+      await uploadFile(files).unwrap();
       showSnackbar("Tải lên hình ảnh thành công!", "success");
-      refetchImage();
-      e.target.value = ""; // Clear input
+      refetchFile();
     } catch (error) {
       if (error && error.data && error.data.message) {
         showSnackbar(error.data.message, "error");
@@ -134,13 +129,13 @@ const FileManagement = () => {
     }
   };
 
-  const handleDeleteImage = async () => {
+  const handleDeleteFile = async () => {
     try {
       await deleteImage(imageIdToDelete).unwrap();
       showSnackbar("Xóa hình ảnh thành công!", "success");
       setOpenDeleteDialog(false);
       setImageIdToDelete(null);
-      refetchImage();
+      refetchFile();
     } catch (error) {
       if (error && error.data && error.data.message) {
         showSnackbar(error.data.message, "error");
@@ -153,14 +148,14 @@ const FileManagement = () => {
     setImageIdToDelete(null);
   };
 
-  const handleRefresh = () => {
-    refetchImage();
-    showSnackbar("Danh sách hình ảnh sản phẩm đã được làm mới!", "info");
+  const handleRefreshFile = () => {
+    refetchFile();
+    showSnackbar("Danh sách hình ảnh đã được làm mới!", "info");
   };
 
   return (
     <DashboardLayoutWrapper>
-      <Typography variant="h5">Quản lý hình ảnh sản phẩm</Typography>
+      <Typography variant="h5">Quản lý file</Typography>
       <Box
         sx={{
           mb: 3,
@@ -187,7 +182,7 @@ const FileManagement = () => {
           variant="outlined"
           color="primary"
           startIcon={<Refresh />}
-          onClick={handleRefresh}
+          onClick={handleRefreshFile}
         >
           Làm mới
         </Button>
@@ -198,26 +193,27 @@ const FileManagement = () => {
           startIcon={<AddPhotoAlternate />}
           disabled={isUploadingImage}
         >
-          {isUploadingImage ? "Đang tải..." : "Tải lên hình ảnh"}
+          {isUploadingImage ? "Đang tải hình ảnh..." : "Tải lên hình ảnh"}
           <input
             type="file"
+            multiple
             accept="image/*"
             hidden
-            onChange={handleUploadImage}
+            onChange={handleUploadFile}
           />
         </Button>
       </Box>
 
       <TableData
-        rows={dataRowImages}
+        rows={dataRowFiles}
         totalRows={totalRows}
-        columnsData={columnsImage}
-        loading={isLoadingImage}
+        columnsData={columnsFile}
+        loading={isLoadingFile}
         error={
-          isErrorImage && (
+          isErrorFile && (
             <Box mt={2} textAlign="center">
               <Typography color="error">
-                {errorImage} || Không tải được dữ liệu.
+                {errorFile} || Không tải được dữ liệu.
               </Typography>
             </Box>
           )
@@ -245,7 +241,7 @@ const FileManagement = () => {
             Hủy
           </Button>
           <Button
-            onClick={handleDeleteImage}
+            onClick={handleDeleteFile}
             color="error"
             variant="contained"
             autoFocus

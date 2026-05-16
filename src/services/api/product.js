@@ -5,7 +5,7 @@ export const productApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getAllProductsByAdmin: builder.query({
       query: ({ page, size, sort }) => ({
-        url: "/v1/admin/products/admin",
+        url: "/v1/admin/products",
         params: { page, size, sort },
       }),
       providesTags: [TAG_KEYS.PRODUCT],

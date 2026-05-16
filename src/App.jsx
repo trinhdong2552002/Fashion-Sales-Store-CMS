@@ -12,7 +12,7 @@ import RolesManagement from "./pages/Admin_page/shared/Role_management";
 import ColorsManagement from "./pages/Admin_page/shared/Color_management";
 import AddressManagement from "./pages/Admin_page/shared/Address_management";
 import PageNotFound from "./pages/Admin_page/Page_not_found";
-import FileManagement from "./pages/Admin_page/shared/File_Management";
+import FileManagement from "./pages/Admin_page/shared/File_management";
 import ProductManagement from "./pages/Admin_page/shared/Product_management";
 import ColorManagement from "./pages/Admin_page/shared/Color_management";
 import BranchManagement from "./pages/Admin_page/shared/Branch_management";
