@@ -12,11 +12,13 @@ export const productImageApi = baseApi.injectEndpoints({
       providesTags: [TAG_KEYS.FILE],
     }),
 
-    uploadImage: builder.mutation({
+    uploadMultipleFiles: builder.mutation({
       async queryFn(file) {
         const formData = new FormData();
 
-        formData.append("files", file);
+        for (let i = 0; i < file.length; i++) {
+          formData.append("files", file[i]);
+        }
 
         try {
           const token = localStorage.getItem("accessToken");
@@ -44,7 +46,7 @@ export const productImageApi = baseApi.injectEndpoints({
       invalidatesTags: [TAG_KEYS.FILE],
     }),
 
-    deleteImage: builder.mutation({
+    deleteFile: builder.mutation({
       query: (id) => ({
         url: `/v1/admin/files/delete/${id}`,
         method: "DELETE",
@@ -56,7 +58,6 @@ export const productImageApi = baseApi.injectEndpoints({
 
 export const {
   useGetAllFilesQuery,
-  useUploadImageMutation,
-  useLazyListImagesQuery,
-  useDeleteImageMutation,
+  useUploadMultipleFilesMutation,
+  useDeleteFileMutation,
 } = productImageApi;
