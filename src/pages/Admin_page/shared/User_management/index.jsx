@@ -29,12 +29,15 @@ import { Add, Delete, Refresh, Restore } from "@mui/icons-material";
 import { useSnackbar } from "@/components/Snackbar";
 import StatusChip from "@/components/Status_chip";
 import { useGetAllRolesByAdminQuery } from "@/services/api/role";
+import UserAddDialog from "./shared/user_add_dialog";
+import UserDeleteDialog from "./shared/user_delete_dialog";
+import UserRestoreDialog from "./shared/user_restore_dialog";
 
 const UserManagement = () => {
   const { showSnackbar } = useSnackbar();
   const [previewImage, setPreviewImage] = useState(null);
   const [submitted, setSubmitted] = useState(false);
-  const [openDialog, setOpenDialog] = useState(false);
+  const [openAddDialog, setOpenAddDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [openRestoreDialog, setOpenRestoreDialog] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
@@ -243,9 +246,13 @@ const UserManagement = () => {
     setOpenRestoreDialog(true);
   };
 
-  const handleCloseRestoreDialog = () => {
+  const handleCloseDialogRestore = () => {
     setUserToRestore(null);
     setOpenRestoreDialog(false);
+  };
+
+  const handleCloseAddDialog = () => {
+    setOpenAddDialog(false);
   };
 
   const handleRefresh = () => {
@@ -271,7 +278,7 @@ const UserManagement = () => {
         password: "",
         roleIds: [],
       });
-      setOpenDialog(false);
+      setOpenAddDialog(false);
       showSnackbar("Thêm người dùng thành công!", "success");
       refetchUser();
     } catch (error) {
@@ -362,7 +369,7 @@ const UserManagement = () => {
         <Button
           variant="contained"
           startIcon={<Add />}
-          onClick={() => setOpenDialog(true)}
+          onClick={() => setOpenAddDialog(true)}
         >
           Thêm người dùng
         </Button>
@@ -387,147 +394,27 @@ const UserManagement = () => {
         pageSizeOptions={[10, 15, 20]}
       />
 
-      <Dialog fullWidth open={openDialog}>
-        <DialogTitle>Thêm người dùng</DialogTitle>
-        <DialogContent>
-          <TextField
-            label="Tên"
-            value={newUser.name}
-            onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
-            fullWidth
-            sx={{ mt: 2 }}
-            error={submitted && !newUser.name}
-            helperText={
-              submitted && !newUser.name ? "name không được để trống" : ""
-            }
-          />
-          <TextField
-            label="Email"
-            value={newUser.email}
-            onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-            fullWidth
-            sx={{ mt: 2 }}
-            error={submitted && !newUser.email}
-            helperText={
-              submitted && !newUser.email ? "email không được để trống" : ""
-            }
-          />
-          <TextField
-            label="Số điện thoại"
-            value={newUser.phone}
-            onChange={(e) => setNewUser({ ...newUser, phone: e.target.value })}
-            fullWidth
-            sx={{ mt: 2 }}
-            error={submitted && !newUser.phone}
-            helperText={
-              submitted && !newUser.phone ? "phone không được để trống" : ""
-            }
-          />
-          <TextField
-            label="Mật khẩu"
-            value={newUser.password}
-            onChange={(e) =>
-              setNewUser({ ...newUser, password: e.target.value })
-            }
-            fullWidth
-            sx={{ mt: 2 }}
-            type="password"
-            error={submitted && !newUser.password}
-            helperText={
-              submitted && !newUser.password
-                ? "password không được để trống"
-                : ""
-            }
-          />
-          <FormControl fullWidth sx={{ mt: 2 }}>
-            <InputLabel>Vai trò</InputLabel>
-            <Select
-              multiple
-              value={newUser.roleIds}
-              onChange={(e) =>
-                setNewUser({ ...newUser, roleIds: e.target.value })
-              }
-              label="Vai trò"
-              renderValue={(selected) =>
-                selected
-                  .map(
-                    (id) =>
-                      dataRoles?.result?.items.find((r) => r.id === id)?.name ||
-                      "",
-                  )
-                  .join(", ")
-              }
-            >
-              {dataRoles?.result?.items?.map((role) => (
-                <MenuItem key={role.id} value={role.id}>
-                  {role.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </DialogContent>
-        <DialogActions sx={{ p: 3 }}>
-          <Button
-            color="error"
-            variant="outlined"
-            sx={{ mr: 1 }}
-            onClick={() => setOpenDialog(false)}
-          >
-            Hủy
-          </Button>
-          <Button variant="contained" onClick={handleAddUser}>
-            Thêm
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <UserAddDialog
+        open={openAddDialog}
+        onClose={handleCloseAddDialog}
+        onSubmit={handleAddUser}
+        newUser={newUser}
+        setNewUser={setNewUser}
+        submitted={submitted}
+        dataRoles={dataRoles}
+      />
 
-      <Dialog open={openDeleteDialog}>
-        <DialogTitle>Xác nhận xóa ?</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Bạn có chắc chắn muốn xóa người dùng này không ?
-          </Typography>
-        </DialogContent>
-        <DialogActions sx={{ p: 3 }}>
-          <Button
-            color="error"
-            variant="outlined"
-            sx={{ mr: 1 }}
-            onClick={handleCloseDeleteDialog}
-          >
-            Hủy
-          </Button>
-          <Button onClick={handleDeleteUser} color="error" variant="contained">
-            Xóa
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <UserDeleteDialog
+        open={openDeleteDialog}
+        onClose={handleCloseDeleteDialog}
+        onConfirm={handleDeleteUser}
+      />
 
-      <Dialog open={openRestoreDialog} onClose={handleCloseRestoreDialog}>
-        <DialogTitle>Xác nhận khôi phục ?</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Bạn có chắc chắn muốn khôi phục người dùng này không?
-          </Typography>
-        </DialogContent>
-        <DialogActions sx={{ p: 3 }}>
-          <Button
-            color="error"
-            variant="outlined"
-            sx={{ mr: 1 }}
-            onClick={handleCloseRestoreDialog}
-          >
-            Hủy
-          </Button>
-          <Button
-            onClick={handleRestoreUser}
-            color="success"
-            variant="contained"
-          >
-            Khôi phục
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <UserRestoreDialog
+        open={openRestoreDialog}
+        onClose={handleCloseDialogRestore}
+        onConfirm={handleRestoreUser}
+      />
 
       <PreviewImage
         previewImage={previewImage}

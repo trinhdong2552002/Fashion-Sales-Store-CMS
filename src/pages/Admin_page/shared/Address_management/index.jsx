@@ -19,6 +19,8 @@ import {
 import { useSnackbar } from "@/components/Snackbar";
 import TableData from "@/components/Table_data";
 import StatusChip from "@/components/Status_chip";
+import AddressDeleteDialog from "./shared/address_delete_dialog";
+import AddressRestoreDialog from "./shared/address_restore_dialog";
 
 const AddressManagement = () => {
   const { showSnackbar } = useSnackbar();
@@ -131,7 +133,7 @@ const AddressManagement = () => {
 
   const handleRefresh = () => {
     refetchAddress();
-    showSnackbar("Làm mới danh sách địa chỉ thành công!", "success");
+    showSnackbar("Làm mới địa chỉ thành công!", "info");
   };
 
   const handleDeleteCategories = async () => {
@@ -194,53 +196,17 @@ const AddressManagement = () => {
         pageSizeOptions={[10, 15, 20]}
       />
 
-      <Dialog open={openDeleteDialog}>
-        <DialogTitle>Xác nhận xoá ?</DialogTitle>
-        <DialogContent>
-          <Typography>Bạn có chắc chắn muốn xoá địa chỉ này không ?</Typography>
-        </DialogContent>
-        <DialogActions sx={{ p: 3 }}>
-          <Button
-            color="error"
-            variant="outlined"
-            onClick={handleCloseDeleteDialog}
-          >
-            Huỷ
-          </Button>
-          <Button
-            variant="contained"
-            color="error"
-            onClick={handleDeleteCategories}
-          >
-            Xoá
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <AddressDeleteDialog
+        open={openDeleteDialog}
+        onClose={handleCloseDeleteDialog}
+        onConfirm={handleDeleteCategories}
+      />
 
-      <Dialog open={openRestoreDialog}>
-        <DialogTitle>Xác nhận khôi phục ?</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Bạn có chắc chắn muốn khôi phục địa chỉ này không ?
-          </Typography>
-        </DialogContent>
-        <DialogActions sx={{ p: 3 }}>
-          <Button
-            color="error"
-            variant="outlined"
-            onClick={handleCloseRestoreDialog}
-          >
-            Huỷ
-          </Button>
-          <Button
-            variant="contained"
-            color="success"
-            onClick={handleRestoreCategories}
-          >
-            Khôi phục
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <AddressRestoreDialog
+        open={openRestoreDialog}
+        onClose={handleCloseRestoreDialog}
+        onConfirm={handleRestoreCategories}
+      />
     </DashboardLayoutWrapper>
   );
 };

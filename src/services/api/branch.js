@@ -25,8 +25,8 @@ export const branchApi = baseApi.injectEndpoints({
     }),
 
     updateBranches: builder.mutation({
-      query: ({ id, ...branch }) => ({
-        url: `/v1/admin/branches/${id}`,
+      query: ({ branchId, ...branch }) => ({
+        url: `/v1/admin/branches/${branchId}`,
         method: "PUT",
         data: branch,
       }),
@@ -34,16 +34,16 @@ export const branchApi = baseApi.injectEndpoints({
     }),
 
     deleteBranches: builder.mutation({
-      query: ({ id }) => ({
-        url: `/v1/admin/branches/${id}`,
+      query: ({ branchId }) => ({
+        url: `/v1/admin/branches/${branchId}`,
         method: "DELETE",
       }),
       invalidatesTags: [TAG_KEYS.BRANCH],
     }),
 
     restoreBranches: builder.mutation({
-      query: ({ id }) => ({
-        url: `/v1/admin/branches/${id}/restore`,
+      query: ({ branchId }) => ({
+        url: `/v1/admin/branches/${branchId}/restore`,
         method: "PATCH",
       }),
       invalidatesTags: [TAG_KEYS.BRANCH],

@@ -6,7 +6,6 @@ export const colorApi = baseApi.injectEndpoints({
     getAllColors: builder.query({
       query: ({ page, size, sort }) => ({
         url: "/v1/public/colors",
-        method: "GET",
         params: { page, size, sort },
       }),
       providesTags: [TAG_KEYS.COLOR],
@@ -16,32 +15,26 @@ export const colorApi = baseApi.injectEndpoints({
       query: (color) => ({
         url: "/v1/admin/colors",
         method: "POST",
-        data: color,
+        data: color.name,
       }),
       invalidatesTags: [TAG_KEYS.COLOR],
     }),
 
     updateColor: builder.mutation({
-      query: ({ id, ...color }) => ({
-        url: `/v1/admin/colors/${id}`,
+      query: ({ colorId, ...color }) => ({
+        url: `/v1/admin/colors/${colorId}`,
         method: "PUT",
         data: color,
       }),
       invalidatesTags: [TAG_KEYS.COLOR],
     }),
+
     deleteColor: builder.mutation({
-      query: ({ id }) => ({
-        url: `/v1/admin/colors/${id}`,
+      query: ({ colorId }) => ({
+        url: `/v1/admin/colors/${colorId}`,
         method: "DELETE",
       }),
       invalidatesTags: [TAG_KEYS.COLOR],
-    }),
-    getColorById: builder.query({
-      query: (id) => ({
-        url: `/v1/admin/colors/${id}`,
-        method: "GET",
-      }),
-      providesTags: [TAG_KEYS.COLOR],
     }),
   }),
 });
@@ -51,5 +44,4 @@ export const {
   useAddColorMutation,
   useUpdateColorMutation,
   useDeleteColorMutation,
-  useGetColorByIdQuery,
 } = colorApi;

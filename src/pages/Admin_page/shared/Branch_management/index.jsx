@@ -24,6 +24,10 @@ import { Add, Delete, Edit, Refresh, Restore } from "@mui/icons-material";
 import { useSnackbar } from "@/components/Snackbar";
 import TableData from "@/components/Table_data";
 import StatusChip from "@/components/Status_chip";
+import BranchAddDialog from "./shared/branch_add_dialog";
+import BranchEditDialog from "./shared/branch_edit_dialog";
+import BranchDeleteDialog from "./shared/branch_delete_dialog";
+import BranchRestoreDialog from "./shared/branch_restore_dialog";
 
 const BranchManagement = () => {
   const { showSnackbar } = useSnackbar();
@@ -163,6 +167,15 @@ const BranchManagement = () => {
     setOpenRestoreDialog(false);
   };
 
+  const handleCloseAddDialog = () => {
+    setOpenAddDialog(false);
+  };
+
+  const handleCloseEditDialog = () => {
+    setOpenEditDialog(false);
+    setSelectedBranchesId(null);
+  };
+
   const handleRefresh = () => {
     refetchBranches();
     showSnackbar("Danh sách chi nhánh đã được làm mới!", "info");
@@ -170,7 +183,7 @@ const BranchManagement = () => {
 
   const handleDeleteBranches = async () => {
     try {
-      await deleteBranches({ id: selectedBranchesId }).unwrap();
+      await deleteBranches({ branchId: selectedBranchesId }).unwrap();
       showSnackbar("Xoá chi nhánh thành công!", "success");
       setOpenDeleteDialog(false);
       setSelectedBranchesId(null);
@@ -184,7 +197,7 @@ const BranchManagement = () => {
 
   const handleRestoreBranches = async () => {
     try {
-      await restoreBranches({ id: selectedBranchesId }).unwrap();
+      await restoreBranches({ branchId: selectedBranchesId }).unwrap();
       showSnackbar("Khôi phục chi nhánh thành công!", "success");
       setOpenRestoreDialog(false);
       setSelectedBranchesId(null);
@@ -196,14 +209,18 @@ const BranchManagement = () => {
     }
   };
 
-  const handleAddBranches = async (data) => {
+  const handleAddBranches = async () => {
     setSubmitted(true);
+
+    if (!newBranches.name || !newBranches.location || !newBranches.phone) {
+      return;
+    }
 
     try {
       await addBranches({
-        name: data?.name,
-        location: data?.location,
-        phone: data?.phone,
+        name: newBranches.name,
+        location: newBranches.location,
+        phone: newBranches.phone,
       }).unwrap();
       showSnackbar("Thêm chi nhánh thành công!", "success");
       setNewBranches({ name: "", location: "", phone: "" });
@@ -236,7 +253,7 @@ const BranchManagement = () => {
 
     try {
       await updateBranches({
-        id: selectedBranchesId,
+        branchId: selectedBranchesId,
         ...newBranches,
       }).unwrap();
       showSnackbar("Cập nhật chi nhánh thành công!", "success");
@@ -314,184 +331,35 @@ const BranchManagement = () => {
         pageSizeOptions={[10, 15, 20]}
       />
 
-      {/* TODO: Dialog add branches */}
-      <Dialog fullWidth open={openAddDialog}>
-        <DialogTitle>Thêm chi nhánh</DialogTitle>
-        <DialogContent>
-          <TextField
-            label="Tên chi nhánh"
-            value={newBranches.name}
-            onChange={(e) =>
-              setNewBranches({ ...newBranches, name: e.target.value })
-            }
-            fullWidth
-            sx={{ mt: 2 }}
-            error={submitted && !newBranches.name}
-            helperText={
-              submitted && !newBranches.name ? "name không được để trống" : ""
-            }
-          />
-          <TextField
-            label="Địa điểm"
-            value={newBranches.location}
-            onChange={(e) =>
-              setNewBranches({ ...newBranches, location: e.target.value })
-            }
-            fullWidth
-            sx={{ mt: 2 }}
-            error={submitted && !newBranches.location}
-            helperText={
-              submitted && !newBranches.location
-                ? "location không được để trống"
-                : ""
-            }
-          />
-          <TextField
-            label="Số điện thoại"
-            value={newBranches.phone}
-            onChange={(e) =>
-              setNewBranches({ ...newBranches, phone: e.target.value })
-            }
-            fullWidth
-            sx={{ mt: 2 }}
-            error={submitted && !newBranches.phone}
-            helperText={
-              submitted && !newBranches.phone ? "phone không được để trống" : ""
-            }
-          />
-        </DialogContent>
-        <DialogActions sx={{ p: 3 }}>
-          <Button
-            color="error"
-            variant="outlined"
-            sx={{ mr: 1 }}
-            onClick={() => setOpenAddDialog(false)}
-          >
-            Hủy
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => handleAddBranches(newBranches)}
-          >
-            Thêm
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <BranchAddDialog
+        open={openAddDialog}
+        onClose={handleCloseAddDialog}
+        onSubmit={handleAddBranches}
+        newBranches={newBranches}
+        setNewBranches={setNewBranches}
+        submitted={submitted}
+      />
 
-      {/* TODO: Dialog update branches */}
-      <Dialog fullWidth open={openEditDialog}>
-        <DialogTitle>Cập nhật chi nhánh</DialogTitle>
-        <DialogContent>
-          <TextField
-            label="Tên chi nhánh"
-            value={newBranches.name}
-            onChange={(e) =>
-              setNewBranches({ ...newBranches, name: e.target.value })
-            }
-            fullWidth
-            sx={{ mt: 2 }}
-            error={submitted && !newBranches.name}
-            helperText={
-              submitted && !newBranches.name ? "name không được để trống" : ""
-            }
-          />
-          <TextField
-            label="Địa điểm"
-            value={newBranches.location}
-            onChange={(e) =>
-              setNewBranches({ ...newBranches, location: e.target.value })
-            }
-            fullWidth
-            sx={{ mt: 2 }}
-            error={submitted && !newBranches.location}
-            helperText={
-              submitted && !newBranches.location
-                ? "location không được để trống"
-                : ""
-            }
-          />
-          <TextField
-            label="Số điện thoại"
-            value={newBranches.phone}
-            onChange={(e) =>
-              setNewBranches({ ...newBranches, phone: e.target.value })
-            }
-            fullWidth
-            sx={{ mt: 2 }}
-            error={submitted && !newBranches.phone}
-            helperText={
-              submitted && !newBranches.phone ? "phone không được để trống" : ""
-            }
-          />
-        </DialogContent>
-        <DialogActions sx={{ p: 3 }}>
-          <Button
-            color="error"
-            variant="outlined"
-            sx={{ mr: 1 }}
-            onClick={() => setOpenEditDialog(false)}
-          >
-            Hủy
-          </Button>
-          <Button variant="contained" onClick={handleUpdateBranches}>
-            Cập nhật
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <BranchEditDialog
+        open={openEditDialog}
+        onClose={handleCloseEditDialog}
+        onSubmit={handleUpdateBranches}
+        newBranches={newBranches}
+        setNewBranches={setNewBranches}
+        submitted={submitted}
+      />
 
-      <Dialog open={openDeleteDialog}>
-        <DialogTitle>Xác nhận xóa ?</DialogTitle>
-        <DialogContent>
-          <DialogContentText id="delete-dialog-description">
-            Bạn có chắc chắn muốn xoá chi nhánh này không ?
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions sx={{ p: 3 }}>
-          <Button
-            color="error"
-            variant="outlined"
-            sx={{ mr: 1 }}
-            onClick={handleCloseDeleteDialog}
-          >
-            Hủy
-          </Button>
-          <Button
-            onClick={handleDeleteBranches}
-            color="error"
-            variant="contained"
-            autoFocus
-          >
-            Xóa
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <BranchDeleteDialog
+        open={openDeleteDialog}
+        onClose={handleCloseDeleteDialog}
+        onConfirm={handleDeleteBranches}
+      />
 
-      <Dialog open={openRestoreDialog}>
-        <DialogTitle>Xác nhận khôi phục ?</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Bạn có chắc chắn muốn khôi phục chi nhánh này không ?
-          </Typography>
-        </DialogContent>
-        <DialogActions sx={{ p: 3 }}>
-          <Button
-            color="error"
-            variant="outlined"
-            sx={{ mr: 1 }}
-            onClick={handleCloseRestoreDialog}
-          >
-            Huỷ
-          </Button>
-          <Button
-            variant="contained"
-            color="success"
-            onClick={handleRestoreBranches}
-          >
-            Khôi phục
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <BranchRestoreDialog
+        open={openRestoreDialog}
+        onClose={handleCloseRestoreDialog}
+        onConfirm={handleRestoreBranches}
+      />
     </DashboardLayoutWrapper>
   );
 };

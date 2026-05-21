@@ -23,6 +23,10 @@ import { Add, Delete, Edit, Refresh, Restore } from "@mui/icons-material";
 import { useSnackbar } from "@/components/Snackbar";
 import TableData from "@/components/Table_data";
 import StatusChip from "@/components/Status_chip";
+import CategoryAddDialog from "./shared/category_add_dialog";
+import CategoryEditDialog from "./shared/category_edit_dialog";
+import CategoryDeleteDialog from "./shared/category_delete_dialog";
+import CategoryRestoreDialog from "./shared/category_restore_dialog";
 
 const CategoryManagement = () => {
   const { showSnackbar } = useSnackbar();
@@ -161,6 +165,17 @@ const CategoryManagement = () => {
     setOpenRestoreDialog(false);
   };
 
+  const handleCloseAddDialog = () => {
+    setOpenAddDialog(false);
+    setSubmitted(false);
+  };
+
+  const handleCloseEditDialog = () => {
+    setOpenEditDialog(false);
+    // setSelectedCategoriesId(null);
+    setSubmitted(false);
+  };
+
   const handleRefresh = () => {
     refetchCategories();
     showSnackbar("Danh sách danh mục đã được làm mới!", "success");
@@ -205,7 +220,7 @@ const CategoryManagement = () => {
 
     try {
       await updateCategories({
-        id: selectedCategoriesId,
+        categoryId: selectedCategoriesId,
         ...newCategories,
       }).unwrap();
       showSnackbar("Cập nhật danh mục thành công !", "success");
@@ -224,7 +239,7 @@ const CategoryManagement = () => {
 
   const handleDeleteCategories = async () => {
     try {
-      await deleteCategories({ id: selectedCategoriesId }).unwrap();
+      await deleteCategories({ categoryId: selectedCategoriesId }).unwrap();
       showSnackbar("Xoá danh mục thành công !", "success");
       setOpenDeleteDialog(false);
       setSelectedCategoriesId(null);
@@ -239,7 +254,7 @@ const CategoryManagement = () => {
 
   const handleRestoreCategories = async () => {
     try {
-      await restoreCategories({ id: selectedCategoriesId }).unwrap();
+      await restoreCategories({ categoryId: selectedCategoriesId }).unwrap();
       showSnackbar("Khôi phục danh mục thành công !", "success");
       setOpenRestoreDialog(false);
       setSelectedCategoriesId(null);
@@ -318,151 +333,35 @@ const CategoryManagement = () => {
         pageSizeOptions={[10, 15, 20]}
       />
 
-      {/* TODO: Dialog add categories */}
-      <Dialog fullWidth open={openAddDialog}>
-        <DialogTitle>Thêm danh mục</DialogTitle>
-        <DialogContent>
-          <TextField
-            label="Tên danh mục"
-            value={newCategories.name}
-            onChange={(e) =>
-              setNewCategories({ ...newCategories, name: e.target.value })
-            }
-            fullWidth
-            sx={{ mt: 2 }}
-            error={submitted && !newCategories.name}
-            helperText={
-              submitted && !newCategories.name ? "name không được để trống" : ""
-            }
-          />
-          <TextField
-            label="Mô tả danh mục"
-            value={newCategories.description}
-            onChange={(e) =>
-              setNewCategories({
-                ...newCategories,
-                description: e.target.value,
-              })
-            }
-            fullWidth
-            sx={{ mt: 3 }}
-          />
-        </DialogContent>
-        <DialogActions sx={{ p: 3 }}>
-          <Button
-            color="error"
-            variant="outlined"
-            onClick={() => setOpenAddDialog(false)}
-          >
-            Huỷ
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleAddCategories}
-          >
-            Thêm
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <CategoryAddDialog
+        open={openAddDialog}
+        onClose={handleCloseAddDialog}
+        onSubmit={handleAddCategories}
+        newCategories={newCategories}
+        setNewCategories={setNewCategories}
+        submitted={submitted}
+      />
 
-      {/* TODO: Dialog update categories */}
-      <Dialog fullWidth open={openEditDialog}>
-        <DialogTitle>Cập nhật danh mục</DialogTitle>
-        <DialogContent>
-          <TextField
-            label="Tên danh mục"
-            value={newCategories.name}
-            onChange={(e) =>
-              setNewCategories({ ...newCategories, name: e.target.value })
-            }
-            fullWidth
-            sx={{ mt: 2 }}
-            error={submitted && !newCategories.name}
-            helperText={
-              submitted && !newCategories.name ? "name không được để trống" : ""
-            }
-          />
-          <TextField
-            label="Mô tả danh mục"
-            value={newCategories.description}
-            onChange={(e) =>
-              setNewCategories({
-                ...newCategories,
-                description: e.target.value,
-              })
-            }
-            fullWidth
-            sx={{ mt: 3 }}
-          />
-        </DialogContent>
-        <DialogActions sx={{ p: 3 }}>
-          <Button
-            color="error"
-            variant="outlined"
-            onClick={() => setOpenEditDialog(false)}
-          >
-            Huỷ
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleUpdateCategories}
-          >
-            Cập nhật
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <CategoryEditDialog
+        open={openEditDialog}
+        onClose={handleCloseEditDialog}
+        onSubmit={handleUpdateCategories}
+        newCategories={newCategories}
+        setNewCategories={setNewCategories}
+        submitted={submitted}
+      />
 
-      <Dialog open={openDeleteDialog}>
-        <DialogTitle>Xác nhận xoá ?</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Bạn có chắc chắn muốn xoá danh mục này không ?
-          </Typography>
-        </DialogContent>
-        <DialogActions sx={{ p: 3 }}>
-          <Button
-            color="error"
-            variant="outlined"
-            onClick={handleCloseDeleteDialog}
-          >
-            Huỷ
-          </Button>
-          <Button
-            variant="contained"
-            color="error"
-            onClick={handleDeleteCategories}
-          >
-            Xoá
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <CategoryDeleteDialog
+        open={openDeleteDialog}
+        onClose={handleCloseDeleteDialog}
+        onConfirm={handleDeleteCategories}
+      />
 
-      <Dialog open={openRestoreDialog}>
-        <DialogTitle>Xác nhận khôi phục ?</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Bạn có chắc chắn muốn khôi phục danh mục này không ?
-          </Typography>
-        </DialogContent>
-        <DialogActions sx={{ p: 3 }}>
-          <Button
-            color="error"
-            variant="outlined"
-            onClick={handleCloseRestoreDialog}
-          >
-            Huỷ
-          </Button>
-          <Button
-            variant="contained"
-            color="success"
-            onClick={handleRestoreCategories}
-          >
-            Khôi phục
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <CategoryRestoreDialog
+        open={openRestoreDialog}
+        onClose={handleCloseRestoreDialog}
+        onConfirm={handleRestoreCategories}
+      />
     </DashboardLayoutWrapper>
   );
 };
