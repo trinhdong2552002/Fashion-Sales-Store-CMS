@@ -20,12 +20,15 @@ import {
 import { Add, Delete, Edit, Refresh } from "@mui/icons-material";
 import { useSnackbar } from "@/components/Snackbar";
 import TableData from "@/components/Table_data";
+import ColorAddDialog from "./shared/color_add_dialog";
+import ColorEditDialog from "./shared/color_edit_dialog";
+import ColorDeleteDialog from "./shared/color_delete_dialog";
 
 const ColorManagement = () => {
   const { showSnackbar } = useSnackbar();
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [openAddDialog, setOpenAddDialog] = useState(false);
-  const [openUpdateDialog, setOpenUpdateDialog] = useState(false);
+  const [openEditDialog, setOpenEditDialog] = useState(false);
   const [selectedColorId, setSelectedColorId] = useState(null);
   const [submitted, setSubmitted] = useState(false);
   const [paginationModel, setPaginationModel] = useState({
@@ -89,17 +92,26 @@ const ColorManagement = () => {
     setOpenDeleteDialog(false);
   };
 
+  const handleCloseAddDialog = () => {
+    setOpenAddDialog(false);
+  };
+
+  const handleCloseEditDialog = () => {
+    setOpenEditDialog(false);
+    setSelectedColorId(null);
+  };
+
   const handleRefresh = () => {
     refetchColor();
     showSnackbar("Danh sách màu sắc đã được làm mới!", "info");
   };
 
-  const handleAddColor = async (data) => {
+  const handleAddColor = async () => {
     setSubmitted(true);
 
     try {
       await addColor({
-        name: data?.name,
+        name: newColor.name,
       }).unwrap();
       showSnackbar("Thêm màu sắc thành công!", "success");
       setNewColor({ name: "" });
@@ -115,7 +127,6 @@ const ColorManagement = () => {
 
   const handleEditColor = (id) => {
     const colorsEdit = dataRowColors.find((item) => item.id === id);
-    console.log("colorEdit", colorsEdit);
 
     if (colorsEdit) {
       setNewColor({
@@ -123,21 +134,20 @@ const ColorManagement = () => {
       });
     }
     setSelectedColorId(id);
-    setOpenUpdateDialog(true);
+    setOpenEditDialog(true);
   };
 
   const handleUpdateColor = async () => {
     setSubmitted(true);
 
     try {
-      console.log("Selected Color ID:", selectedColorId);
       await updateColor({
-        id: selectedColorId,
+        colorId: selectedColorId,
         ...newColor,
       }).unwrap();
       showSnackbar("Cập nhật màu sắc thành công!", "success");
       setNewColor({ name: "" });
-      setOpenUpdateDialog(false);
+      setOpenEditDialog(false);
       setSubmitted(false);
       setSelectedColorId(null);
       refetchColor();
@@ -150,7 +160,7 @@ const ColorManagement = () => {
 
   const handleDeleteColor = async () => {
     try {
-      await deleteColor({ id: selectedColorId }).unwrap();
+      await deleteColor({ colorId: selectedColorId }).unwrap();
       showSnackbar("Xóa màu sắc thành công!", "success");
       setOpenDeleteDialog(false);
       setSelectedColorId(null);
@@ -223,85 +233,29 @@ const ColorManagement = () => {
         pageSizeOptions={[10, 15, 20]}
       />
 
-      {/* TODO: Dialog add color */}
-      <Dialog fullWidth open={openAddDialog}>
-        <DialogTitle>Thêm màu sắc</DialogTitle>
-        <DialogContent>
-          <TextField
-            label="Tên màu sắc"
-            value={newColor.name}
-            onChange={(e) => setNewColor({ ...newColor, name: e.target.value })}
-            fullWidth
-            sx={{ mt: 2 }}
-            error={submitted && !newColor.name}
-            helperText={
-              submitted && !newColor.name ? "name không được để trống" : ""
-            }
-          />
-        </DialogContent>
-        <DialogActions sx={{ p: 3 }}>
-          <Button
-            color="error"
-            variant="outlined"
-            onClick={() => setOpenAddDialog(false)}
-          >
-            Hủy
-          </Button>
-          <Button onClick={() => handleAddColor(newColor)} variant="contained">
-            Thêm
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <ColorAddDialog
+        open={openAddDialog}
+        onClose={handleCloseAddDialog}
+        onSubmit={handleAddColor}
+        newColor={newColor}
+        setNewColor={setNewColor}
+        submitted={submitted}
+      />
 
-      {/* TODO: Dialog update color */}
-      <Dialog fullWidth open={openUpdateDialog}>
-        <DialogTitle>Cập nhật màu sắc</DialogTitle>
-        <DialogContent>
-          <TextField
-            label="Tên màu sắc"
-            value={newColor.name}
-            onChange={(e) => setNewColor({ ...newColor, name: e.target.value })}
-            fullWidth
-            sx={{ mt: 2 }}
-            error={submitted && !newColor.name}
-            helperText={
-              submitted && !newColor.name ? "name không được để trống" : ""
-            }
-          />
-        </DialogContent>
-        <DialogActions sx={{ p: 3 }}>
-          <Button
-            color="error"
-            variant="outlined"
-            onClick={() => setOpenUpdateDialog(false)}
-          >
-            Hủy
-          </Button>
-          <Button variant="contained" onClick={handleUpdateColor}>
-            Cập nhật
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <ColorEditDialog
+        open={openEditDialog}
+        onClose={handleCloseEditDialog}
+        onSubmit={handleUpdateColor}
+        newColor={newColor}
+        setNewColor={setNewColor}
+        submitted={submitted}
+      />
 
-      {/* TODO: Dialog delete color */}
-      <Dialog open={openDeleteDialog}>
-        <DialogTitle>Xác nhận xóa ?</DialogTitle>
-        <DialogContent>
-          <Typography>Bạn có chắc chắn muốn xóa màu sắc này không ?</Typography>
-        </DialogContent>
-        <DialogActions sx={{ p: 3 }}>
-          <Button
-            color="error"
-            variant="outlined"
-            onClick={handleCloseDeleteDialog}
-          >
-            Hủy
-          </Button>
-          <Button color="error" variant="contained" onClick={handleDeleteColor}>
-            Xóa
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <ColorDeleteDialog
+        open={openDeleteDialog}
+        onClose={handleCloseDeleteDialog}
+        onConfirm={handleDeleteColor}
+      />
     </DashboardLayoutWrapper>
   );
 };

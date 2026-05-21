@@ -3,10 +3,10 @@ import { Typography, IconButton, Chip } from "@mui/material";
 import { Delete, Edit, Restore } from "@mui/icons-material";
 
 import TableData from "@/components/Table_data";
-import { ProductVariantToolbar } from "./shared/ProductVariantToolbar";
-import { ProductVariantDialogDelete } from "./shared/ProductVariantDialogDelete";
-import { ProductVariantDialogRestore } from "./shared/ProductVariantDialogRestore";
-import { ProductVariantDialogEdit } from "./shared/ProductVariantDialogEdit";
+import { ProductVariantToolbar } from "./shared/product_variant_toolbar";
+import { ProductVariantDeleteDialog } from "./shared/product_variant_delete_dialog";
+import { ProductVariantRestoreDialog } from "./shared/product_variant_restore_dialog";
+import { ProductVariantEditDialog } from "./shared/product_variant_edit_dialog";
 import { PreviewImage } from "@/components/Preview_image";
 import { useSnackbar } from "@/components/Snackbar";
 import StatusChip from "@/components/Status_chip";
@@ -277,7 +277,7 @@ const ProductVariantManagement = () => {
         pageSizeOptions={[10, 15, 20]}
       />
 
-      <ProductVariantDialogEdit
+      <ProductVariantEditDialog
         openEditDialog={openEditDialog}
         closeEditDialog={() => setOpenEditDialog(false)}
         handleUpdateProductVariant={handleUpdateProductVariant}
@@ -286,13 +286,13 @@ const ProductVariantManagement = () => {
         // submitted={submitted}
       />
 
-      <ProductVariantDialogDelete
+      <ProductVariantDeleteDialog
         openDeleteDialog={openDeleteDialog}
         closeDeleteDialog={handleCloseDeleteDialog}
         handleDeleteProductVariant={handleDeleteProductVariant}
       />
 
-      <ProductVariantDialogRestore
+      <ProductVariantRestoreDialog
         openRestoreDialog={openRestoreDialog}
         closeRestoreDialog={handleCloseRestoreDialog}
         handleRestoreProductVariant={handleRestoreProductVariant}

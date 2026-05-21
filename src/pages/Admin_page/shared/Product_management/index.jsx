@@ -9,21 +9,23 @@ import {
   useRestoreProductMutation,
 } from "@/services/api/product";
 import { useGetAllCategoriesByAdminQuery } from "@/services/api/category";
-import ProductToolbar from "./shared/ProductToolbar";
-import ProductDialogAdd from "./shared/ProductDialogAdd";
-import ProductDialogEdit from "./shared/ProductDialogEdit";
-import ProductDialogDelete from "./shared/ProductDialogDelete";
-import ProductDialogRestore from "./shared/ProductDialogRestore";
 import TableData from "@/components/Table_data";
 import { Delete, Edit, Restore, Visibility } from "@mui/icons-material";
-import { useGetAllFilesQuery } from "@/services/api/file";
-import { useGetAllColorsQuery } from "@/services/api/color";
-import { useGetAllSizesQuery } from "@/services/api/size";
-
-import ProductDialogDetail from "./shared/ProductDialogDetail";
 import { useSnackbar } from "@/components/Snackbar";
 import { normalizeSearchString } from "@/utils/stringUtils";
 import StatusChip from "@/components/Status_chip";
+
+import ProductAddDialog from "./shared/product_add_dialog";
+import ProductSeeDetailDialog from "./shared/product_see_detail_dialog";
+import ProductRestoreDialog from "./shared/product_restore_dialog";
+import ProductDialogSeeDetail from "./shared/product_see_detail_dialog";
+import ProductEditDialog from "./shared/product_edit_dialog";
+
+import { useGetAllFilesQuery } from "@/services/api/file";
+import { useGetAllColorsQuery } from "@/services/api/color";
+import { useGetAllSizesQuery } from "@/services/api/size";
+import ProductDeleteDialog from "./shared/product_delete_dialog";
+import ProductToolbar from "./shared/product_toolbar";
 
 const ProductManagement = () => {
   const { showSnackbar } = useSnackbar();
@@ -275,7 +277,6 @@ const ProductManagement = () => {
 
   const handleEditProduct = (id) => {
     const productToEdit = dataRowProducts.find((item) => item.id === id);
-    console.log("Product to edit:", productToEdit);
 
     if (productToEdit) {
       // Extract category ID
@@ -414,7 +415,7 @@ const ProductManagement = () => {
         pageSizeOptions={[20, 50, 100]}
       />
 
-      <ProductDialogAdd
+      <ProductAddDialog
         open={openAddDialog}
         onClose={() => setOpenAddDialog(false)}
         onSubmit={handleAddProduct}
@@ -427,7 +428,7 @@ const ProductManagement = () => {
         dataImages={dataImages}
       />
 
-      <ProductDialogEdit
+      <ProductEditDialog
         open={openEditDialog}
         onClose={() => setOpenEditDialog(false)}
         onSubmit={handleUpdateProduct}
@@ -440,19 +441,19 @@ const ProductManagement = () => {
         dataImages={dataImages}
       />
 
-      <ProductDialogDelete
+      <ProductDeleteDialog
         open={openDeleteDialog}
         onClose={handleCloseDeleteDialog}
         onConfirm={handleDeleteProduct}
       />
 
-      <ProductDialogRestore
+      <ProductRestoreDialog
         open={openRestoreDialog}
         onClose={handleCloseRestoreDialog}
         onConfirm={handleRestoreProduct}
       />
 
-      <ProductDialogDetail
+      <ProductSeeDetailDialog
         open={openDetailDialog}
         onClose={() => setOpenDetailDialog(false)}
         product={selectedProduct}

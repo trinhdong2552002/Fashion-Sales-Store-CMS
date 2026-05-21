@@ -18,6 +18,7 @@ import { useLogoutMutation } from "@/services/api/auth";
 import { clearAuth } from "@/store/redux/auth/reducer";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useSnackbar } from "@/components/Snackbar";
 
 const StyledBadge = styled(Badge)(({ theme }) => ({
   "& .MuiBadge-badge": {
@@ -49,6 +50,7 @@ const StyledBadge = styled(Badge)(({ theme }) => ({
 }));
 
 const UserInfo = ({ isMobile = false, drawerWidth }) => {
+  const { showSnackbar } = useSnackbar();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const myInfo = useSelector(selectUser);
@@ -70,7 +72,7 @@ const UserInfo = ({ isMobile = false, drawerWidth }) => {
         try {
           await logout({ accessToken }).unwrap();
         } catch (err) {
-          console.log("Logout failed", err);
+          showSnackbar("Đăng xuất thất bại. Vui lòng thử lại.", "error");
         }
       }
 

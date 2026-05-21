@@ -26,6 +26,10 @@ import dayjs from "dayjs";
 import { useSnackbar } from "@/components/Snackbar";
 import StatusChip from "@/components/Status_chip";
 import TableData from "@/components/Table_data";
+import PromotionAddDialog from "./shared/promotion_add_dialog";
+import PromotionEditDialog from "./shared/promotion_edit_dialog";
+import PromotionDeleteDialog from "./shared/promotion_delete_dialog";
+import PromotionRestoreDialog from "./shared/promotion_restore_dialog";
 
 const PromotionManagement = () => {
   const { showSnackbar } = useSnackbar();
@@ -245,7 +249,7 @@ const PromotionManagement = () => {
 
     try {
       await updatePromotion({
-        id: selectedPromotionId,
+        promotionId: selectedPromotionId,
         ...newPromotion,
         discountPercent: parseFloat(newPromotion.discountPercent),
         startDate: newPromotion.startDate.format("YYYY-MM-DD"),
@@ -272,7 +276,7 @@ const PromotionManagement = () => {
 
   const handleDeletePromotion = async () => {
     try {
-      await deletePromotion({ id: selectedPromotionId }).unwrap();
+      await deletePromotion({ promotionId: selectedPromotionId }).unwrap();
       showSnackbar("Xóa khuyến mãi thành công!", "success");
       setOpenDeleteDialog(false);
       setSelectedPromotionId(null);
@@ -286,7 +290,7 @@ const PromotionManagement = () => {
 
   const handleRestorePromotion = async () => {
     try {
-      await restorePromotion({ id: selectedPromotionId }).unwrap();
+      await restorePromotion({ promotionId: selectedPromotionId }).unwrap();
       showSnackbar("Khôi phục khuyến mãi thành công!", "success");
       setOpenRestoreDialog(false);
       setSelectedPromotionId(null);
@@ -361,265 +365,35 @@ const PromotionManagement = () => {
         pageSizeOptions={[10, 15, 20]}
       />
 
-      {/* Add promotion dialog */}
-      <Dialog open={openAddDialog} maxWidth="md" fullWidth>
-        <DialogTitle>Thêm khuyến mãi</DialogTitle>
-        <DialogContent>
-          <TextField
-            label="Mã khuyến mãi"
-            value={newPromotion.code}
-            onChange={(e) =>
-              setNewPromotion({ ...newPromotion, code: e.target.value })
-            }
-            fullWidth
-            sx={{ mt: 2 }}
-            error={submitted && !newPromotion.code}
-            helperText={
-              submitted && !newPromotion.code
-                ? "Mã khuyến mãi không được để trống"
-                : ""
-            }
-          />
-          <TextField
-            label="Mô tả"
-            value={newPromotion.description}
-            onChange={(e) =>
-              setNewPromotion({ ...newPromotion, description: e.target.value })
-            }
-            fullWidth
-            sx={{ mt: 2 }}
-            error={submitted && !newPromotion.description}
-            helperText={
-              submitted && !newPromotion.description
-                ? "Mô tả không được để trống"
-                : ""
-            }
-          />
-          <TextField
-            label="Giảm giá (%)"
-            type="number"
-            value={newPromotion.discountPercent}
-            onChange={(e) =>
-              setNewPromotion({
-                ...newPromotion,
-                discountPercent: e.target.value,
-              })
-            }
-            fullWidth
-            sx={{ mt: 2 }}
-            error={submitted && !newPromotion.discountPercent}
-            helperText={
-              submitted && !newPromotion.discountPercent
-                ? "Phần trăm giảm giá không được để trống"
-                : ""
-            }
-          />
+      <PromotionAddDialog
+        open={openAddDialog}
+        onClose={() => setOpenAddDialog(false)}
+        onSubmit={handleAddPromotion}
+        newPromotion={newPromotion}
+        setNewPromotion={setNewPromotion}
+        submitted={submitted}
+      />
 
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <Box
-              display={"flex"}
-              gap={2}
-              alignItems={"center"}
-              justifyContent={"space-between"}
-              sx={{ mt: 2 }}
-            >
-              <DatePicker
-                label="Ngày bắt đầu"
-                value={newPromotion.startDate}
-                onChange={(value) =>
-                  setNewPromotion({
-                    ...newPromotion,
-                    startDate: value || dayjs(),
-                  })
-                }
-                sx={{ flex: 1 }}
-              />
+      <PromotionEditDialog
+        open={openEditDialog}
+        onClose={() => setOpenEditDialog(false)}
+        handleSubmit={handleUpdatePromotion}
+        newPromotion={newPromotion}
+        setNewPromotion={setNewPromotion}
+        submitted={submitted}
+      />
 
-              <DatePicker
-                label="Ngày kết thúc"
-                value={newPromotion.endDate}
-                onChange={(value) =>
-                  setNewPromotion({
-                    ...newPromotion,
-                    endDate: value || dayjs(),
-                  })
-                }
-                sx={{ flex: 1 }}
-                minDate={newPromotion.startDate}
-              />
-            </Box>
-          </LocalizationProvider>
-        </DialogContent>
-        <DialogActions sx={{ p: 3 }}>
-          <Button
-            color="error"
-            variant="outlined"
-            sx={{ mr: 1 }}
-            onClick={() => setOpenAddDialog(false)}
-          >
-            Hủy
-          </Button>
-          <Button onClick={handleAddPromotion} variant="contained">
-            Thêm
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <PromotionDeleteDialog
+        open={openDeleteDialog}
+        onClose={handleCloseDeleteDialog}
+        onConfirm={handleDeletePromotion}
+      />
 
-      {/* Edit promotion dialog */}
-      <Dialog open={openEditDialog} maxWidth="md" fullWidth>
-        <DialogTitle>Cập nhật khuyến mãi</DialogTitle>
-        <DialogContent>
-          <TextField
-            label="Mã khuyến mãi"
-            value={newPromotion.code}
-            onChange={(e) =>
-              setNewPromotion({ ...newPromotion, code: e.target.value })
-            }
-            fullWidth
-            sx={{ mt: 2 }}
-            error={submitted && !newPromotion.code}
-            helperText={
-              submitted && !newPromotion.code
-                ? "Mã khuyến mãi không được để trống"
-                : ""
-            }
-          />
-          <TextField
-            label="Mô tả"
-            value={newPromotion.description}
-            onChange={(e) =>
-              setNewPromotion({ ...newPromotion, description: e.target.value })
-            }
-            fullWidth
-            sx={{ mt: 2 }}
-            error={submitted && !newPromotion.description}
-            helperText={
-              submitted && !newPromotion.description
-                ? "Mô tả không được để trống"
-                : ""
-            }
-          />
-          <TextField
-            label="Giảm giá (%)"
-            type="number"
-            value={newPromotion.discountPercent}
-            onChange={(e) =>
-              setNewPromotion({
-                ...newPromotion,
-                discountPercent: e.target.value,
-              })
-            }
-            fullWidth
-            sx={{ mt: 2 }}
-            error={submitted && !newPromotion.discountPercent}
-            helperText={
-              submitted && !newPromotion.discountPercent
-                ? "Phần trăm giảm giá không được để trống"
-                : ""
-            }
-          />
-
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <Box
-              display={"flex"}
-              gap={2}
-              alignItems={"center"}
-              justifyContent={"space-between"}
-              sx={{ mt: 2 }}
-            >
-              <DatePicker
-                label="Ngày bắt đầu"
-                value={newPromotion.startDate}
-                onChange={(value) =>
-                  setNewPromotion({
-                    ...newPromotion,
-                    startDate: value || dayjs(),
-                  })
-                }
-                sx={{ flex: 1 }}
-              />
-
-              <DatePicker
-                label="Ngày kết thúc"
-                value={newPromotion.endDate}
-                onChange={(value) =>
-                  setNewPromotion({
-                    ...newPromotion,
-                    endDate: value || dayjs(),
-                  })
-                }
-                sx={{ flex: 1 }}
-                minDate={newPromotion.startDate}
-              />
-            </Box>
-          </LocalizationProvider>
-        </DialogContent>
-        <DialogActions sx={{ p: 3 }}>
-          <Button
-            color="error"
-            variant="outlined"
-            sx={{ mr: 1 }}
-            onClick={() => setOpenEditDialog(false)}
-          >
-            Hủy
-          </Button>
-          <Button onClick={handleUpdatePromotion} variant="contained">
-            Cập nhật
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Dialog open={openDeleteDialog}>
-        <DialogTitle>Xác nhận xóa ?</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Bạn có chắc chắn muốn xóa khuyến mãi này không ?
-          </Typography>
-        </DialogContent>
-        <DialogActions sx={{ p: 3 }}>
-          <Button
-            color="error"
-            variant="outlined"
-            sx={{ mr: 1 }}
-            onClick={handleCloseDeleteDialog}
-          >
-            Hủy
-          </Button>
-          <Button
-            onClick={handleDeletePromotion}
-            color="error"
-            variant="contained"
-          >
-            Xóa
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Dialog open={openRestoreDialog}>
-        <DialogTitle>Xác nhận khôi phục ?</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Bạn có chắc chắn muốn khôi phục khuyến mãi này không ?
-          </Typography>
-        </DialogContent>
-        <DialogActions sx={{ p: 3 }}>
-          <Button
-            color="error"
-            variant="outlined"
-            sx={{ mr: 1 }}
-            onClick={handleCloseRestoreDialog}
-          >
-            Hủy
-          </Button>
-          <Button
-            onClick={handleRestorePromotion}
-            color="success"
-            variant="contained"
-          >
-            Khôi phục
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <PromotionRestoreDialog
+        open={openRestoreDialog}
+        onClose={handleCloseRestoreDialog}
+        onConfirm={handleRestorePromotion}
+      />
     </DashboardLayoutWrapper>
   );
 };

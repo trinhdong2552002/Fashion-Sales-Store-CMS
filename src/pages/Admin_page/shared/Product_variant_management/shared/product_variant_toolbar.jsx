@@ -17,7 +17,7 @@ export const ProductVariantToolbar = ({
   refetchProducts,
 }) => {
   const activeProducts = dataProducts?.result?.items.filter(
-    (product) => product.status === "ACTIVE"
+    (product) => product.status === "ACTIVE",
   );
   return (
     <Grid

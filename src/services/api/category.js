@@ -24,8 +24,8 @@ export const categoryApi = baseApi.injectEndpoints({
     }),
 
     updateCategories: builder.mutation({
-      query: ({ id, ...category }) => ({
-        url: `/v1/admin/categories/${id}`,
+      query: ({ categoryId, ...category }) => ({
+        url: `/v1/admin/categories/${categoryId}`,
         method: "PUT",
         data: category,
       }),
@@ -33,16 +33,16 @@ export const categoryApi = baseApi.injectEndpoints({
     }),
 
     deleteCategories: builder.mutation({
-      query: ({ id }) => ({
-        url: `/v1/admin/categories/${id}`,
+      query: ({ categoryId }) => ({
+        url: `/v1/admin/categories/${categoryId}`,
         method: "DELETE",
       }),
       invalidatesTags: [TAG_KEYS.CATEGORY],
     }),
-    
+
     restoreCategories: builder.mutation({
-      query: ({ id }) => ({
-        url: `/v1/admin/categories/${id}/restore`,
+      query: ({ categoryId }) => ({
+        url: `/v1/admin/categories/${categoryId}/restore`,
         method: "PATCH",
       }),
       invalidatesTags: [TAG_KEYS.CATEGORY],
