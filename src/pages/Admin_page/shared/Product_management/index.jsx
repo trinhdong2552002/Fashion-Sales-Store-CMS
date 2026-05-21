@@ -44,12 +44,16 @@ const ProductManagement = () => {
   const [newProduct, setNewProduct] = useState({
     name: "",
     description: "",
-    price: "",
-    quantity: "",
     categoryId: "",
-    colorIds: [],
-    sizeIds: [],
     imageIds: [],
+    variants: [
+      {
+        colorId: "",
+        sizeId: "",
+        price: "",
+        quantity: "",
+      },
+    ],
   });
 
   const {
@@ -215,26 +219,47 @@ const ProductManagement = () => {
 
   const handleRefresh = () => {
     refetchProducts();
-    showSnackbar("Làm mới danh sách sản phẩm thành công!", "info");
+    showSnackbar("Làm mới sản phẩm thành công!", "info");
   };
 
   const handleAddProduct = async () => {
     setSubmitted(true);
 
+    const formattedVariants = [];
+
+    if (newProduct.colorIds && newProduct.sizeIds) {
+      newProduct.colorIds.forEach((colorId) => {
+        newProduct.sizeIds.forEach((sizeId) => {
+          formattedVariants.push({
+            colorId,
+            sizeId,
+            price: newProduct.price,
+            quantity: newProduct.quantity,
+          });
+        });
+      });
+    }
+
+    const payloadProduct = {
+      name: newProduct.name,
+      description: newProduct.description,
+      categoryId: newProduct.categoryId,
+      imageIds: newProduct.imageIds,
+      variants: formattedVariants,
+    };
+
     try {
-      await addProduct({
-        ...newProduct,
-      }).unwrap();
+      await addProduct(payloadProduct).unwrap();
       showSnackbar("Thêm sản phẩm thành công!", "success");
       setNewProduct({
         name: "",
         description: "",
-        price: "",
-        quantity: "",
         categoryId: "",
+        imageIds: [],
         colorIds: [],
         sizeIds: [],
-        imageIds: [],
+        price: "",
+        quantity: "",
       });
 
       setOpenAddDialog(false);
@@ -257,18 +282,6 @@ const ProductManagement = () => {
       const categoryId =
         productToEdit.category?.id || productToEdit.categoryId || "";
 
-      // Extract color IDs from colors array
-      const colorIds =
-        productToEdit.colors?.map((color) => color.id) ||
-        productToEdit.colorIds ||
-        [];
-
-      // Extract size IDs from sizes array
-      const sizeIds =
-        productToEdit.sizes?.map((size) => size.id) ||
-        productToEdit.sizeIds ||
-        [];
-
       // Extract image IDs from images array
       const imageIds =
         productToEdit.images?.map((image) => image.id) ||
@@ -278,12 +291,9 @@ const ProductManagement = () => {
       setNewProduct({
         name: productToEdit.name || "",
         description: productToEdit.description || "",
-        price: productToEdit.price || "",
-        quantity: productToEdit.quantity || "",
         categoryId: categoryId,
-        colorIds: colorIds,
-        sizeIds: sizeIds,
         imageIds: imageIds,
+        images: productToEdit.images || [],
       });
 
       setSelectedProductId(id);
@@ -296,18 +306,14 @@ const ProductManagement = () => {
 
     try {
       await updateProduct({
-        id: selectedProductId,
+        productId: selectedProductId,
         ...newProduct,
       });
       showSnackbar("Cập nhật sản phẩm thành công!", "success");
       setNewProduct({
         name: "",
         description: "",
-        price: "",
-        quantity: "",
         categoryId: "",
-        colorIds: [],
-        sizeIds: [],
         imageIds: [],
       });
 
@@ -325,7 +331,7 @@ const ProductManagement = () => {
 
   const handleDeleteProduct = async () => {
     try {
-      await deleteProduct({ id: selectedProductId }).unwrap();
+      await deleteProduct({ productId: selectedProductId }).unwrap();
       showSnackbar("Xóa sản phẩm thành công!", "success");
       setOpenDeleteDialog(false);
       setSelectedProductId(null);
@@ -340,7 +346,7 @@ const ProductManagement = () => {
 
   const handleRestoreProduct = async () => {
     try {
-      await restoreProduct({ id: selectedProductId }).unwrap();
+      await restoreProduct({ productId: selectedProductId }).unwrap();
       showSnackbar("Khôi phục sản phẩm thành công!", "success");
       setOpenRestoreDialog(false);
       setSelectedProductId(null);
@@ -371,12 +377,16 @@ const ProductManagement = () => {
           setNewProduct({
             name: "",
             description: "",
-            price: "",
-            quantity: "",
             categoryId: "",
-            colorIds: [],
-            sizeIds: [],
             imageIds: [],
+            variants: [
+              {
+                colorId: "",
+                sizeId: "",
+                price: "",
+                quantity: "",
+              },
+            ],
           });
           refetchCategories();
           refetchColors();

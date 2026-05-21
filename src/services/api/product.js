@@ -25,23 +25,14 @@ export const productApi = baseApi.injectEndpoints({
       query: (product) => ({
         url: "/v1/admin/products",
         method: "POST",
-        data: {
-          name: product.name,
-          description: product.description,
-          price: product.price,
-          quantity: product.quantity,
-          categoryId: product.categoryId,
-          colorIds: product.colorIds,
-          sizeIds: product.sizeIds,
-          imageIds: product.imageIds,
-        },
+        data: product,
       }),
       invalidatesTags: [TAG_KEYS.PRODUCT],
     }),
 
     updateProduct: builder.mutation({
-      query: ({ id, ...product }) => ({
-        url: `/v1/admin/products/${id}`,
+      query: ({ productId, ...product }) => ({
+        url: `/v1/admin/products/${productId}`,
         method: "PUT",
         data: { ...product },
       }),
@@ -50,16 +41,16 @@ export const productApi = baseApi.injectEndpoints({
     }),
 
     deleteProduct: builder.mutation({
-      query: ({ id }) => ({
-        url: `/v1/admin/products/${id}`,
+      query: ({ productId }) => ({
+        url: `/v1/admin/products/${productId}`,
         method: "DELETE",
       }),
       invalidatesTags: [TAG_KEYS.PRODUCT],
     }),
 
     restoreProduct: builder.mutation({
-      query: ({ id }) => ({
-        url: `/v1/admin/products/${id}/restore`,
+      query: ({ productId }) => ({
+        url: `/v1/admin/products/${productId}/restore`,
         method: "PATCH",
       }),
       invalidatesTags: [TAG_KEYS.PRODUCT],
