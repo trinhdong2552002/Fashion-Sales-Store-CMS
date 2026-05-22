@@ -9,7 +9,7 @@ import {
   Select,
 } from "@mui/material";
 
-export const ProductVariantToolbar = ({
+const ProductVariantToolbar = ({
   handleRefresh,
   selectedProductId,
   setSelectedProductId,
@@ -76,3 +76,5 @@ export const ProductVariantToolbar = ({
     </Grid>
   );
 };
+
+export default ProductVariantToolbar;

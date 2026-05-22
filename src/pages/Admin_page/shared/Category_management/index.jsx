@@ -38,7 +38,7 @@ const CategoryManagement = () => {
   const [submitted, setSubmitted] = useState(false);
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
-    pageSize: 10,
+    pageSize: 25,
   });
   const [newCategories, setNewCategories] = useState({
     name: "",
@@ -330,7 +330,7 @@ const CategoryManagement = () => {
         }
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}
-        pageSizeOptions={[10, 15, 20]}
+        pageSizeOptions={[25, 50, 100]}
       />
 
       <CategoryAddDialog

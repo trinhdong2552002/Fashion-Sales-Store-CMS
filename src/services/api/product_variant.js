@@ -4,18 +4,18 @@ import { TAG_KEYS } from "/src/constants/tagKeys.js";
 
 export const productVariantApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    listAllProductVariantsByProduct: builder.query({
-      query: ({ pageNo, pageSize, id }) => ({
-        // TODO: Dùng tạm của user hiện admin đang lỗi
-        // url: `/v1/products/${id}/product-variants/admin`,
-        url: `/v1/products/${id}/product-variants`,
-        params: { pageNo, pageSize },
+    createProductVariant: builder.mutation({
+      query: (productVariant) => ({
+        url: `/v1/admin/products/${productId}/product-variants`,
+        method: "POST",
+        data: productVariant,
       }),
-      providesTags: [TAG_KEYS.PRODUCT_VARIANT],
+      invalidatesTags: [TAG_KEYS.PRODUCT_VARIANT],
     }),
+
     updateProductVariant: builder.mutation({
-      query: ({ id, price, quantity }) => ({
-        url: `/v1/product-variants/${id}`,
+      query: ({ productVariantId, price, quantity }) => ({
+        url: `/v1/admin/product-variants/${productVariantId}`,
         method: "PUT",
         data: {
           price,
@@ -24,18 +24,18 @@ export const productVariantApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [TAG_KEYS.PRODUCT_VARIANT],
     }),
+
     deleteProductVariant: builder.mutation({
-      query: ({ id }) => ({
-        url: `/v1/product-variants/${id}`,
+      query: ({ productVariantId }) => ({
+        url: `/v1/admin/product-variants/${productVariantId}`,
         method: "DELETE",
       }),
       invalidatesTags: [TAG_KEYS.PRODUCT_VARIANT],
     }),
 
-    // TODO: BE cũ hiện tại ko support restore khi xoá biến thể coi như đã xoá cứng
     restoreProductVariant: builder.mutation({
-      query: ({ id }) => ({
-        url: `/v1/product-variants/${id}/restore`,
+      query: ({ productVariantId }) => ({
+        url: `/v1/admin/product-variants/${productVariantId}/restore`,
         method: "PATCH",
       }),
       invalidatesTags: [TAG_KEYS.PRODUCT_VARIANT],

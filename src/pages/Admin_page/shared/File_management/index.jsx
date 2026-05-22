@@ -28,7 +28,7 @@ const FileManagement = () => {
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
-    pageSize: 15,
+    pageSize: 25,
   });
 
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
@@ -220,7 +220,7 @@ const FileManagement = () => {
         }
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}
-        pageSizeOptions={[15, 30, 50]}
+        pageSizeOptions={[25, 50, 100]}
       />
 
       <Dialog open={openDeleteDialog}>

@@ -1,7 +1,7 @@
 import { TextField } from "@mui/material";
 import EditDialog from "@/components/Dialog/Edit_dialog";
 
-export const ProductVariantEditDialog = ({
+const ProductVariantEditDialog = ({
   openEditDialog,
   closeEditDialog,
   handleUpdateProductVariant,
@@ -60,3 +60,5 @@ export const ProductVariantEditDialog = ({
     </EditDialog>
   );
 };
+
+export default ProductVariantEditDialog;

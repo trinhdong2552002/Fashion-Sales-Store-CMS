@@ -1,21 +1,19 @@
 import { useState } from "react";
-import { Typography, IconButton, Chip } from "@mui/material";
+import { Typography, IconButton, Chip, Box } from "@mui/material";
 import { Delete, Edit, Restore } from "@mui/icons-material";
-
 import TableData from "@/components/Table_data";
-import { ProductVariantToolbar } from "./shared/product_variant_toolbar";
-import { ProductVariantDeleteDialog } from "./shared/product_variant_delete_dialog";
-import { ProductVariantRestoreDialog } from "./shared/product_variant_restore_dialog";
-import { ProductVariantEditDialog } from "./shared/product_variant_edit_dialog";
-import { PreviewImage } from "@/components/Preview_image";
+import ProductVariantToolbar from "./shared/product_variant_toolbar";
+import ProductVariantDeleteDialog from "./shared/product_variant_delete_dialog";
+import ProductVariantRestoreDialog from "./shared/product_variant_restore_dialog";
+import ProductVariantEditDialog from "./shared/product_variant_edit_dialog";
 import { useSnackbar } from "@/components/Snackbar";
 import StatusChip from "@/components/Status_chip";
 import DashboardLayoutWrapper from "@/layouts/Dashboard_layout";
 
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useGetAllProductsByAdminQuery } from "@/services/api/product";
+import { useGetAllProductVariantsByProductForAdminQuery } from "@/services/api/product";
 import {
-  useListAllProductVariantsByProductQuery,
   useUpdateProductVariantMutation,
   useDeleteProductVariantMutation,
   useRestoreProductVariantMutation,
@@ -23,17 +21,16 @@ import {
 
 const ProductVariantManagement = () => {
   const { showSnackbar } = useSnackbar();
-  const [previewImage, setPreviewImage] = useState(null);
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [selectedProductVariantId, setSelectedProductVariantId] =
     useState(null);
-  // const [submitted, setSubmitted] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [openRestoreDialog, setOpenRestoreDialog] = useState(false);
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
-    pageSize: 10,
+    pageSize: 25,
   });
   const [newProductVariant, setNewProductVariant] = useState({
     price: "",
@@ -48,8 +45,8 @@ const ProductVariantManagement = () => {
     refetch: refetchProduct,
   } = useGetAllProductsByAdminQuery({
     refetchOnMountOrArgChange: true,
-    pageNo: 1,
-    pageSize: 1000,
+    page: 0,
+    size: 1000,
   });
 
   const {
@@ -58,11 +55,11 @@ const ProductVariantManagement = () => {
     isError: isErrorProductVariant,
     error: errorProductVariant,
     refetch: refetchProductVariants,
-  } = useListAllProductVariantsByProductQuery(
+  } = useGetAllProductVariantsByProductForAdminQuery(
     selectedProductId
       ? {
-          id: selectedProductId,
-          pageNo: paginationModel.page + 1,
+          productId: selectedProductId,
+          pageNo: paginationModel.page + 0,
           pageSize: paginationModel.pageSize,
         }
       : skipToken,
@@ -97,12 +94,6 @@ const ProductVariantManagement = () => {
       renderCell: (params) => {
         return <StatusChip status={params.value} />;
       },
-    },
-    {
-      field: "product",
-      headerName: "Tên sản phẩm",
-      width: 550,
-      renderCell: (params) => params.row?.product?.name || "-",
     },
     {
       field: "size",
@@ -168,7 +159,7 @@ const ProductVariantManagement = () => {
 
   const handleRefresh = () => {
     refetchProduct();
-    showSnackbar("Danh sách biến thể sản phẩm đã được làm mới!", "success");
+    showSnackbar("Danh sách biến thể sản phẩm đã được làm mới!", "info");
   };
 
   const handleEditProductVariant = (id) => {
@@ -186,11 +177,11 @@ const ProductVariantManagement = () => {
   };
 
   const handleUpdateProductVariant = async () => {
-    // setSubmitted(true);
+    setSubmitted(true);
 
     try {
       await updateProductVariant({
-        id: selectedProductVariantId,
+        productVariantId: selectedProductVariantId,
         ...newProductVariant,
       }).unwrap();
       showSnackbar("Cập nhật biến thể sản phẩm thành công!", "success");
@@ -200,7 +191,7 @@ const ProductVariantManagement = () => {
       });
       setSelectedProductVariantId(null);
       setOpenEditDialog(false);
-      // setSubmitted(false);
+      setSubmitted(false);
       refetchProductVariants();
     } catch (error) {
       if (error && error.data && error.data.message) {
@@ -211,7 +202,9 @@ const ProductVariantManagement = () => {
 
   const handleDeleteProductVariant = async () => {
     try {
-      await deleteProductVariant({ id: selectedProductVariantId }).unwrap();
+      await deleteProductVariant({
+        productVariantId: selectedProductVariantId,
+      }).unwrap();
       showSnackbar("Xóa biến thể sản phẩm thành công!", "success");
       setOpenDeleteDialog(false);
       setSelectedProductVariantId(null);
@@ -225,22 +218,17 @@ const ProductVariantManagement = () => {
 
   const handleRestoreProductVariant = async () => {
     try {
-      await restoreProductVariant({ id: selectedProductVariantId }).unwrap();
-      setSnackbar({
-        open: true,
-        message: "Khôi phục sản phẩm thành công!",
-        severity: "success",
-      });
+      await restoreProductVariant({
+        productVariantId: selectedProductVariantId,
+      }).unwrap();
+      showSnackbar("Khôi phục biến thể sản phẩm thành công!", "success");
       setOpenRestoreDialog(false);
       setSelectedProductVariantId(null);
       refetchProductVariants();
     } catch (error) {
-      const errorMessage = error.data?.message;
-      setSnackbar({
-        open: true,
-        message: errorMessage,
-        severity: "error",
-      });
+      if (error && error.data && error.data.message) {
+        showSnackbar(error.data.message, "error");
+      }
     }
   };
 
@@ -274,7 +262,7 @@ const ProductVariantManagement = () => {
         }
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}
-        pageSizeOptions={[10, 15, 20]}
+        pageSizeOptions={[25, 50, 100]}
       />
 
       <ProductVariantEditDialog
@@ -283,24 +271,19 @@ const ProductVariantManagement = () => {
         handleUpdateProductVariant={handleUpdateProductVariant}
         newProductVariant={newProductVariant}
         setNewProductVariant={setNewProductVariant}
-        // submitted={submitted}
+        submitted={submitted}
       />
 
       <ProductVariantDeleteDialog
-        openDeleteDialog={openDeleteDialog}
-        closeDeleteDialog={handleCloseDeleteDialog}
-        handleDeleteProductVariant={handleDeleteProductVariant}
+        open={openDeleteDialog}
+        onClose={handleCloseDeleteDialog}
+        onConfirm={handleDeleteProductVariant}
       />
 
       <ProductVariantRestoreDialog
-        openRestoreDialog={openRestoreDialog}
-        closeRestoreDialog={handleCloseRestoreDialog}
-        handleRestoreProductVariant={handleRestoreProductVariant}
-      />
-
-      <PreviewImage
-        previewImage={previewImage}
-        setPreviewImage={setPreviewImage}
+        open={openRestoreDialog}
+        onClose={handleCloseRestoreDialog}
+        onConfirm={handleRestoreProductVariant}
       />
     </DashboardLayoutWrapper>
   );

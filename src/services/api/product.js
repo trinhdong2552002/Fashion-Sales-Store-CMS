@@ -21,7 +21,15 @@ export const productApi = baseApi.injectEndpoints({
     //   providesTags: [TAG_KEYS.PRODUCT],
     // }),
 
-    addProduct: builder.mutation({
+    getAllProductVariantsByProductForAdmin: builder.query({
+      query: ({ page, size, sort, productId }) => ({
+        url: `/v1/admin/products/${productId}/product-variants/admin`,
+        params: { page, size, sort },
+      }),
+      providesTags: [TAG_KEYS.PRODUCT_VARIANT],
+    }),
+
+    createProduct: builder.mutation({
       query: (product) => ({
         url: "/v1/admin/products",
         method: "POST",
@@ -60,8 +68,9 @@ export const productApi = baseApi.injectEndpoints({
 
 export const {
   useGetAllProductsByAdminQuery,
+  useGetAllProductVariantsByProductForAdminQuery,
   useSearchProductsQuery,
-  useAddProductMutation,
+  useCreateProductMutation,
   useUpdateProductMutation,
   useDeleteProductMutation,
   useRestoreProductMutation,

@@ -3,7 +3,7 @@ import { Typography, IconButton, Chip, Box } from "@mui/material";
 import DashboardLayoutWrapper from "@/layouts/Dashboard_layout";
 import {
   useGetAllProductsByAdminQuery,
-  useAddProductMutation,
+  useCreateProductMutation,
   useUpdateProductMutation,
   useDeleteProductMutation,
   useRestoreProductMutation,
@@ -41,7 +41,7 @@ const ProductManagement = () => {
 
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
-    pageSize: 20,
+    pageSize: 25,
   });
   const [newProduct, setNewProduct] = useState({
     name: "",
@@ -74,7 +74,7 @@ const ProductManagement = () => {
     },
   );
 
-  const [addProduct] = useAddProductMutation();
+  const [createProduct] = useCreateProductMutation();
   const [updateProduct] = useUpdateProductMutation();
   const [deleteProduct] = useDeleteProductMutation();
   const [restoreProduct] = useRestoreProductMutation();
@@ -221,10 +221,10 @@ const ProductManagement = () => {
 
   const handleRefresh = () => {
     refetchProducts();
-    showSnackbar("Làm mới sản phẩm thành công!", "info");
+    showSnackbar("Danh sách sản phẩm đã được làm mới!", "info");
   };
 
-  const handleAddProduct = async () => {
+  const handlecreateProduct = async () => {
     setSubmitted(true);
 
     const formattedVariants = [];
@@ -251,7 +251,7 @@ const ProductManagement = () => {
     };
 
     try {
-      await addProduct(payloadProduct).unwrap();
+      await createProduct(payloadProduct).unwrap();
       showSnackbar("Thêm sản phẩm thành công!", "success");
       setNewProduct({
         name: "",
@@ -373,7 +373,7 @@ const ProductManagement = () => {
       <ProductToolbar
         searchValue={searchValue}
         setSearchValue={setSearchValue}
-        onAddProduct={() => {
+        oncreateProduct={() => {
           setOpenAddDialog(true);
           setNewProduct({
             name: "",
@@ -412,13 +412,13 @@ const ProductManagement = () => {
         }
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}
-        pageSizeOptions={[20, 50, 100]}
+        pageSizeOptions={[25, 50, 100]}
       />
 
       <ProductAddDialog
         open={openAddDialog}
         onClose={() => setOpenAddDialog(false)}
-        onSubmit={handleAddProduct}
+        onSubmit={handlecreateProduct}
         product={newProduct}
         setProduct={setNewProduct}
         submitted={submitted}

@@ -1,15 +1,13 @@
 import DeleteDialog from "@/components/Dialog/Delete_dialog";
 
-export const ProductVariantDeleteDialog = ({
-  openDeleteDialog,
-  closeDeleteDialog,
-  handleDeleteProductVariant,
-}) => (
+const ProductVariantDeleteDialog = ({ open, onClose, onConfirm }) => (
   <DeleteDialog
-    open={openDeleteDialog}
-    onClose={closeDeleteDialog}
-    onConfirm={handleDeleteProductVariant}
+    open={open}
+    onClose={onClose}
+    onConfirm={onConfirm}
     title="Xác nhận xóa biến thể sản phẩm"
-    description="Bạn có chắc chắn muốn xóa biến thể sản phẩm này không?"
+    description="Bạn có chắc chắn muốn xóa biến thể sản phẩm này không? Bạn có thể khôi phục dữ liệu sau."
   />
 );
+
+export default ProductVariantDeleteDialog;

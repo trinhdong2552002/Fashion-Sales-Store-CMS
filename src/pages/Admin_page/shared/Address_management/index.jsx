@@ -29,7 +29,7 @@ const AddressManagement = () => {
   const [selectedCategoriesId, setSelectedCategoriesId] = useState(null);
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
-    pageSize: 10,
+    pageSize: 25,
   });
 
   const {
@@ -133,7 +133,7 @@ const AddressManagement = () => {
 
   const handleRefresh = () => {
     refetchAddress();
-    showSnackbar("Làm mới địa chỉ thành công!", "info");
+    showSnackbar("Địa chỉ đã được làm mới!", "info");
   };
 
   const handleDeleteCategories = async () => {
@@ -193,7 +193,7 @@ const AddressManagement = () => {
         }
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}
-        pageSizeOptions={[10, 15, 20]}
+        pageSizeOptions={[25, 50, 100]}
       />
 
       <AddressDeleteDialog
