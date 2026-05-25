@@ -3,6 +3,7 @@ import { Typography, IconButton, Chip, Box } from "@mui/material";
 import { Delete, Edit, Restore } from "@mui/icons-material";
 import TableData from "@/components/Table_data";
 import ProductVariantToolbar from "./shared/product_variant_toolbar";
+import ProductVariantAddDialog from "./shared/product_variant_add_dialog";
 import ProductVariantDeleteDialog from "./shared/product_variant_delete_dialog";
 import ProductVariantRestoreDialog from "./shared/product_variant_restore_dialog";
 import ProductVariantEditDialog from "./shared/product_variant_edit_dialog";
@@ -14,10 +15,13 @@ import { skipToken } from "@reduxjs/toolkit/query";
 import { useGetAllProductsByAdminQuery } from "@/services/api/product";
 import { useGetAllProductVariantsByProductForAdminQuery } from "@/services/api/product";
 import {
+  useAddProductVariantMutation,
   useUpdateProductVariantMutation,
   useDeleteProductVariantMutation,
   useRestoreProductVariantMutation,
 } from "@/services/api/product_variant";
+import { useGetAllColorsQuery } from "@/services/api/color";
+import { useGetAllSizesQuery } from "@/services/api/size";
 
 const ProductVariantManagement = () => {
   const { showSnackbar } = useSnackbar();
@@ -25,6 +29,7 @@ const ProductVariantManagement = () => {
   const [selectedProductVariantId, setSelectedProductVariantId] =
     useState(null);
   const [submitted, setSubmitted] = useState(false);
+  const [openAddDialog, setOpenAddDialog] = useState(false);
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [openRestoreDialog, setOpenRestoreDialog] = useState(false);
@@ -32,7 +37,15 @@ const ProductVariantManagement = () => {
     page: 0,
     pageSize: 25,
   });
+
   const [newProductVariant, setNewProductVariant] = useState({
+    productId: "",
+    colorId: "",
+    sizeId: "",
+    price: "",
+    quantity: "",
+  });
+  const [editProductVariant, setEditProductVariant] = useState({
     price: "",
     quantity: "",
   });
@@ -47,6 +60,17 @@ const ProductVariantManagement = () => {
     refetchOnMountOrArgChange: true,
     page: 0,
     size: 1000,
+  });
+
+  const { data: dataColors, refetch: refetchColors } = useGetAllColorsQuery(
+    { page: 0, size: 100 },
+    {
+      refetchOnMountOrArgChange: true,
+    },
+  );
+
+  const { data: dataSizes } = useGetAllSizesQuery({
+    refetchOnMountOrArgChange: true,
   });
 
   const {
@@ -71,6 +95,7 @@ const ProductVariantManagement = () => {
   const dataRowProductVariants = dataProductVariants?.result?.items || [];
   const totalRows = dataProductVariants?.result?.totalItems || 0;
 
+  const [addProductVariant] = useAddProductVariantMutation();
   const [updateProductVariant] = useUpdateProductVariantMutation();
   const [deleteProductVariant] = useDeleteProductVariantMutation();
   const [restoreProductVariant] = useRestoreProductVariantMutation();
@@ -137,6 +162,10 @@ const ProductVariantManagement = () => {
     },
   ];
 
+  const handleOpenAddDialog = () => {
+    setOpenAddDialog(true);
+  };
+
   const handleOpenDeleteDialog = (id) => {
     setSelectedProductVariantId(id);
     setOpenDeleteDialog(true);
@@ -162,12 +191,39 @@ const ProductVariantManagement = () => {
     showSnackbar("Danh sách biến thể sản phẩm đã được làm mới!", "info");
   };
 
+  const handleAddProductVariant = async () => {
+    try {
+      await addProductVariant({
+        productId: selectedProductId,
+        colorId: newProductVariant.colorId,
+        sizeId: newProductVariant.sizeId,
+        price: newProductVariant.price,
+        quantity: newProductVariant.quantity,
+      }).unwrap();
+      showSnackbar("Thêm biến thể sản phẩm thành công!", "success");
+      setNewProductVariant({
+        productId: "",
+        colorId: "",
+        sizeId: "",
+        price: "",
+        quantity: "",
+      });
+      setOpenAddDialog(false);
+      setSubmitted(false);
+      refetchProductVariants();
+    } catch (error) {
+      if (error && error.data && error.data.message) {
+        showSnackbar(error.data.message, "error");
+      }
+    }
+  };
+
   const handleEditProductVariant = (id) => {
     const productVariantToEdit = dataRowProductVariants.find(
       (item) => item.id === id,
     );
     if (productVariantToEdit) {
-      setNewProductVariant({
+      setEditProductVariant({
         price: productVariantToEdit.price,
         quantity: productVariantToEdit.quantity,
       });
@@ -182,10 +238,10 @@ const ProductVariantManagement = () => {
     try {
       await updateProductVariant({
         productVariantId: selectedProductVariantId,
-        ...newProductVariant,
+        ...editProductVariant,
       }).unwrap();
       showSnackbar("Cập nhật biến thể sản phẩm thành công!", "success");
-      setNewProductVariant({
+      setEditProductVariant({
         price: "",
         quantity: "",
       });
@@ -238,6 +294,16 @@ const ProductVariantManagement = () => {
 
       <ProductVariantToolbar
         handleRefresh={handleRefresh}
+        onAddProductVariant={() => {
+          setNewProductVariant({
+            productId: selectedProductId,
+            colorId: "",
+            sizeId: "",
+            price: "",
+            quantity: "",
+          });
+          setOpenAddDialog(true);
+        }}
         selectedProductId={selectedProductId}
         setSelectedProductId={setSelectedProductId}
         refetchProduct={refetchProduct}
@@ -265,12 +331,24 @@ const ProductVariantManagement = () => {
         pageSizeOptions={[25, 50, 100]}
       />
 
+      <ProductVariantAddDialog
+        openAddDialog={openAddDialog}
+        onClose={() => setOpenAddDialog(false)}
+        onSubmit={handleAddProductVariant}
+        submitted={submitted}
+        productVariant={newProductVariant}
+        setNewProductVariant={setNewProductVariant}
+        dataProducts={dataProducts}
+        dataColors={dataColors}
+        dataSizes={dataSizes}
+      />
+
       <ProductVariantEditDialog
         openEditDialog={openEditDialog}
-        closeEditDialog={() => setOpenEditDialog(false)}
+        onClose={() => setOpenEditDialog(false)}
         handleUpdateProductVariant={handleUpdateProductVariant}
-        newProductVariant={newProductVariant}
-        setNewProductVariant={setNewProductVariant}
+        editProductVariant={editProductVariant}
+        setEditProductVariant={setEditProductVariant}
         submitted={submitted}
       />
 

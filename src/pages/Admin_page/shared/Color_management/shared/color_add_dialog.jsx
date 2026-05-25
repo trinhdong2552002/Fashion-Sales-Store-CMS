@@ -20,7 +20,12 @@ const ColorAddDialog = ({
         required
         label="Tên màu sắc"
         value={newColor.name}
-        onChange={(e) => setNewColor({ ...newColor, name: e.target.value })}
+        onChange={(e) =>
+          setNewColor({
+            newColor,
+            name: e.target.value,
+          })
+        }
         fullWidth
         sx={{ mt: 2 }}
         error={submitted && !newColor.name}

@@ -3,36 +3,36 @@ import EditDialog from "@/components/Dialog/Edit_dialog";
 
 const ProductVariantEditDialog = ({
   openEditDialog,
-  closeEditDialog,
+  onClose,
   handleUpdateProductVariant,
-  newProductVariant,
-  setNewProductVariant,
+  editProductVariant,
+  setEditProductVariant,
   //   submitted,
 }) => {
   return (
     <EditDialog
       open={openEditDialog}
-      onClose={closeEditDialog}
+      onClose={onClose}
       onSubmit={handleUpdateProductVariant}
       title="Cập nhật biến thể sản phẩm"
     >
       <TextField
         label="Giá"
         type="number"
-        value={newProductVariant.price ?? ""}
+        value={editProductVariant.price ?? ""}
         fullWidth
         required
         sx={{ mt: 2 }}
         onChange={(e) =>
-          setNewProductVariant({
-            ...newProductVariant,
+          setEditProductVariant({
+            ...editProductVariant,
             price: e.target.value,
           })
         }
         /* Hiện tại backend chưa có validation khi người dùng ko nhập price và quantity */
-        //   error={submitted && !newProductVariant.price}
+        //   error={submitted && !editProductVariant.price}
         //   helperText={
-        //     submitted && !newProductVariant.price
+        //     submitted && !editProductVariant.price
         //       ? "price không được để trống"
         //       : ""
         //   }
@@ -40,19 +40,19 @@ const ProductVariantEditDialog = ({
       <TextField
         label="Số lượng"
         type="number"
-        value={newProductVariant.quantity ?? ""}
+        value={editProductVariant.quantity ?? ""}
         fullWidth
         required
         sx={{ mt: 2 }}
         onChange={(e) =>
-          setNewProductVariant({
-            ...newProductVariant,
+          setEditProductVariant({
+            ...editProductVariant,
             quantity: e.target.value,
           })
         }
-        //   error={submitted && !newProductVariant.quantity}
+        //   error={submitted && !editProductVariant.quantity}
         //   helperText={
-        //     submitted && !newProductVariant.quantity
+        //     submitted && !editProductVariant.quantity
         //       ? "quantity không được để trống"
         //       : ""
         //   }

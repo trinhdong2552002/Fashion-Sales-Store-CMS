@@ -4,9 +4,9 @@ import { TAG_KEYS } from "/src/constants/tagKeys.js";
 
 export const productVariantApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    createProductVariant: builder.mutation({
+    addProductVariant: builder.mutation({
       query: (productVariant) => ({
-        url: `/v1/admin/products/${productId}/product-variants`,
+        url: "/v1/admin/product-variants",
         method: "POST",
         data: productVariant,
       }),
@@ -45,6 +45,7 @@ export const productVariantApi = baseApi.injectEndpoints({
 
 export const {
   useListAllProductVariantsByProductQuery,
+  useAddProductVariantMutation,
   useUpdateProductVariantMutation,
   useDeleteProductVariantMutation,
   useRestoreProductVariantMutation,

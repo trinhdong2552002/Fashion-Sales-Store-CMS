@@ -224,7 +224,7 @@ const ProductManagement = () => {
     showSnackbar("Danh sách sản phẩm đã được làm mới!", "info");
   };
 
-  const handlecreateProduct = async () => {
+  const handleAddProduct = async () => {
     setSubmitted(true);
 
     const formattedVariants = [];
@@ -373,7 +373,7 @@ const ProductManagement = () => {
       <ProductToolbar
         searchValue={searchValue}
         setSearchValue={setSearchValue}
-        oncreateProduct={() => {
+        onCreateProduct={() => {
           setOpenAddDialog(true);
           setNewProduct({
             name: "",
@@ -418,7 +418,7 @@ const ProductManagement = () => {
       <ProductAddDialog
         open={openAddDialog}
         onClose={() => setOpenAddDialog(false)}
-        onSubmit={handlecreateProduct}
+        onSubmit={handleAddProduct}
         product={newProduct}
         setProduct={setNewProduct}
         submitted={submitted}
