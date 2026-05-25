@@ -1,15 +1,13 @@
 import RestoreDialog from "@/components/Dialog/Restore_dialog";
 
-export const ProductVariantRestoreDialog = ({
-  openRestoreDialog,
-  closeRestoreDialog,
-  handleRestoreProductVariant,
-}) => (
+const ProductVariantRestoreDialog = ({ open, onClose, onConfirm }) => (
   <RestoreDialog
-    open={openRestoreDialog}
-    onClose={closeRestoreDialog}
-    onConfirm={handleRestoreProductVariant}
+    open={open}
+    onClose={onClose}
+    onConfirm={onConfirm}
     title="Xác nhận khôi phục biến thể sản phẩm"
     description="Bạn có chắc chắn muốn khôi phục biến thể sản phẩm này không?"
   />
 );
+
+export default ProductVariantRestoreDialog;

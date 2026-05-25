@@ -72,7 +72,7 @@ const PaymentHistoryManagement = () => {
         // }
         // paginationModel={paginationModel}
         // onPaginationModelChange={setPaginationModel}
-        // pageSizeOptions={[10, 15, 20]}
+        // pageSizeOptions={[25, 50, 100]}
       />
     </DashboardLayoutWrapper>
   );

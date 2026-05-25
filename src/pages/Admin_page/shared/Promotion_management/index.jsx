@@ -41,7 +41,7 @@ const PromotionManagement = () => {
   const [selectedPromotionId, setSelectedPromotionId] = useState(null);
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
-    pageSize: 10,
+    pageSize: 25,
   });
   const [newPromotion, setNewPromotion] = useState({
     code: "",
@@ -362,7 +362,7 @@ const PromotionManagement = () => {
         }
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}
-        pageSizeOptions={[10, 15, 20]}
+        pageSizeOptions={[25, 50, 100]}
       />
 
       <PromotionAddDialog

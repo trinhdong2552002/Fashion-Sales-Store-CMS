@@ -12,15 +12,9 @@ import {
   Chip,
 } from "@mui/material";
 import DashboardLayoutWrapper from "@/layouts/Dashboard_layout";
-import {
-  useGetAllCategoriesByAdminQuery,
-  useAddCategoriesMutation,
-  useDeleteCategoriesMutation,
-  useRestoreCategoriesMutation,
-  useUpdateCategoriesMutation,
-} from "@/services/api/category";
 import { Add, Delete, Edit, Refresh, Restore } from "@mui/icons-material";
 import { useSnackbar } from "@/components/Snackbar";
+import { PreviewImage } from "@/components/Preview_image";
 import TableData from "@/components/Table_data";
 import StatusChip from "@/components/Status_chip";
 import CategoryAddDialog from "./shared/category_add_dialog";
@@ -28,8 +22,18 @@ import CategoryEditDialog from "./shared/category_edit_dialog";
 import CategoryDeleteDialog from "./shared/category_delete_dialog";
 import CategoryRestoreDialog from "./shared/category_restore_dialog";
 
+import {
+  useGetAllCategoriesByAdminQuery,
+  useAddCategoriesMutation,
+  useDeleteCategoriesMutation,
+  useRestoreCategoriesMutation,
+  useUpdateCategoriesMutation,
+} from "@/services/api/category";
+import { useGetAllFilesQuery } from "@/services/api/file";
+
 const CategoryManagement = () => {
   const { showSnackbar } = useSnackbar();
+  const [previewImage, setPreviewImage] = useState(null);
   const [openAddDialog, setOpenAddDialog] = useState(false);
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
@@ -38,11 +42,11 @@ const CategoryManagement = () => {
   const [submitted, setSubmitted] = useState(false);
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
-    pageSize: 10,
+    pageSize: 25,
   });
   const [newCategories, setNewCategories] = useState({
     name: "",
-    description: "",
+    imageUrl: "",
   });
 
   const {
@@ -58,6 +62,11 @@ const CategoryManagement = () => {
     },
   );
 
+  const { data: dataImages, refetch: refetchImages } = useGetAllFilesQuery({
+    page: 0,
+    size: 1000,
+  });
+
   const [addCategories] = useAddCategoriesMutation();
   const [updateCategories] = useUpdateCategoriesMutation();
   const [deleteCategories] = useDeleteCategoriesMutation();
@@ -69,7 +78,24 @@ const CategoryManagement = () => {
   const columnsCategories = [
     { field: "id", headerName: "ID", width: 100 },
     { field: "name", headerName: "Tên danh mục", width: 200 },
-    { field: "description", headerName: "Mô tả danh mục", width: 200 },
+    {
+      field: "imageUrl",
+      headerName: "Hình ảnh danh mục",
+      width: 200,
+      renderCell: (params) => (
+        <img
+          src={params.row.imageUrl}
+          alt={params.row.fileName}
+          style={{
+            width: 50,
+            height: 50,
+            objectFit: "cover",
+            cursor: "pointer",
+          }}
+          onClick={() => setPreviewImage(params.value)}
+        />
+      ),
+    },
     {
       field: "status",
       headerName: "Trạng thái",
@@ -178,7 +204,7 @@ const CategoryManagement = () => {
 
   const handleRefresh = () => {
     refetchCategories();
-    showSnackbar("Danh sách danh mục đã được làm mới!", "success");
+    showSnackbar("Danh sách danh mục đã được làm mới!", "info");
   };
 
   const handleAddCategories = async () => {
@@ -187,10 +213,10 @@ const CategoryManagement = () => {
     try {
       await addCategories({
         name: newCategories.name,
-        description: newCategories.description,
+        imageUrl: newCategories.imageUrl,
       }).unwrap();
       showSnackbar("Thêm danh mục thành công !", "success");
-      setNewCategories({ name: "", description: "" });
+      setNewCategories({ name: "", imageUrl: "" });
       setOpenAddDialog(false);
       setSubmitted(false);
       refetchCategories();
@@ -208,7 +234,7 @@ const CategoryManagement = () => {
     if (categoryToEdit) {
       setNewCategories({
         name: categoryToEdit.name,
-        description: categoryToEdit.description,
+        imageUrl: categoryToEdit.imageUrl,
       });
       setSelectedCategoriesId(id);
       setOpenEditDialog(true);
@@ -224,7 +250,7 @@ const CategoryManagement = () => {
         ...newCategories,
       }).unwrap();
       showSnackbar("Cập nhật danh mục thành công !", "success");
-      setNewCategories({ name: "", description: "" });
+      setNewCategories({ name: "", imageUrl: "" });
       setSelectedCategoriesId(null);
       setOpenEditDialog(false);
       setSubmitted(false);
@@ -306,7 +332,7 @@ const CategoryManagement = () => {
           color="primary"
           onClick={() => {
             setOpenAddDialog(true);
-            setNewCategories({ name: "", description: "" });
+            setNewCategories({ name: "", imageUrl: "" });
           }}
           startIcon={<Add />}
         >
@@ -330,7 +356,7 @@ const CategoryManagement = () => {
         }
         paginationModel={paginationModel}
         onPaginationModelChange={setPaginationModel}
-        pageSizeOptions={[10, 15, 20]}
+        pageSizeOptions={[25, 50, 100]}
       />
 
       <CategoryAddDialog
@@ -339,6 +365,8 @@ const CategoryManagement = () => {
         onSubmit={handleAddCategories}
         newCategories={newCategories}
         setNewCategories={setNewCategories}
+        dataImages={dataImages}
+        refreshImages={refetchImages}
         submitted={submitted}
       />
 
@@ -348,6 +376,8 @@ const CategoryManagement = () => {
         onSubmit={handleUpdateCategories}
         newCategories={newCategories}
         setNewCategories={setNewCategories}
+        dataImages={dataImages}
+        // refreshImages={refetchImages}
         submitted={submitted}
       />
 
@@ -361,6 +391,11 @@ const CategoryManagement = () => {
         open={openRestoreDialog}
         onClose={handleCloseRestoreDialog}
         onConfirm={handleRestoreCategories}
+      />
+
+      <PreviewImage
+        previewImage={previewImage}
+        setPreviewImage={setPreviewImage}
       />
     </DashboardLayoutWrapper>
   );

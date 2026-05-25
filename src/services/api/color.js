@@ -15,7 +15,7 @@ export const colorApi = baseApi.injectEndpoints({
       query: (color) => ({
         url: "/v1/admin/colors",
         method: "POST",
-        data: color.name,
+        data: color,
       }),
       invalidatesTags: [TAG_KEYS.COLOR],
     }),

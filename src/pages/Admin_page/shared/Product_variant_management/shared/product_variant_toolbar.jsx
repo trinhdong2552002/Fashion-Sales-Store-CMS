@@ -1,4 +1,4 @@
-import { Refresh } from "@mui/icons-material";
+import { Add, Refresh } from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -9,8 +9,9 @@ import {
   Select,
 } from "@mui/material";
 
-export const ProductVariantToolbar = ({
+const ProductVariantToolbar = ({
   handleRefresh,
+  onAddProductVariant,
   selectedProductId,
   setSelectedProductId,
   dataProducts,
@@ -28,29 +29,43 @@ export const ProductVariantToolbar = ({
       display={"flex"}
       alignItems={"center"}
     >
-      <Grid size={{ md: 3, sm: 12, xs: 12 }}>
-        <Button
-          variant="outlined"
-          onClick={handleRefresh}
-          startIcon={<Refresh />}
-        >
-          Làm mới
-        </Button>
+      <Grid size={{ lg: 6, md: 12, sm: 12, xs: 12 }}>
+        <Box display={"flex"}>
+          <Button
+            variant="outlined"
+            onClick={handleRefresh}
+            startIcon={<Refresh />}
+          >
+            Làm mới
+          </Button>
+
+          <Button
+            variant="contained"
+            disabled={!selectedProductId}
+            startIcon={<Add />}
+            sx={{ ml: 2 }}
+            onClick={onAddProductVariant}
+          >
+            Thêm biến thể
+          </Button>
+        </Box>
       </Grid>
 
-      <Grid size={{ md: 9, sm: 12, xs: 12 }}>
+      <Grid size={{ lg: 6, md: 12, sm: 12, xs: 12 }}>
         <Box
           sx={{
             display: "flex",
-            mt: {
+            my: {
               sm: 2,
               xs: 2,
-              md: 0,
+              md: 2,
+              lg: 0,
             },
             justifyContent: {
-              xs: "flex-start", // mobile
-              sm: "flex-start", // tablet
-              md: "flex-end", // desktop
+              xs: "flex-start",
+              sm: "flex-start",
+              md: "flex-start",
+              lg: "flex-end",
             },
           }}
         >
@@ -76,3 +91,5 @@ export const ProductVariantToolbar = ({
     </Grid>
   );
 };
+
+export default ProductVariantToolbar;

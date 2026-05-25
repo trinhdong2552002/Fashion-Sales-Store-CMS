@@ -5,7 +5,7 @@ import { Fragment } from "react";
 const ProductToolbar = ({
   searchValue,
   setSearchValue,
-  onAddProduct,
+  onCreateProduct,
   onRefresh,
 }) => {
   const handleSearchChange = (e) => {
@@ -69,7 +69,7 @@ const ProductToolbar = ({
         <Button
           variant="contained"
           color="primary"
-          onClick={onAddProduct}
+          onClick={onCreateProduct}
           startIcon={<Add />}
         >
           Thêm sản phẩm
