@@ -17,7 +17,7 @@ export const categoryApi = baseApi.injectEndpoints({
         method: "POST",
         data: {
           name: category.name,
-          description: category.description,
+          imageUrl: category.imageUrl,
         },
       }),
       invalidatesTags: [TAG_KEYS.CATEGORY],

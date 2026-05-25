@@ -1,5 +1,11 @@
 import AddDialog from "@/components/Dialog/Add_dialog";
-import { TextField } from "@mui/material";
+import {
+  FormControl,
+  InputLabel,
+  MenuItem,
+  TextField,
+  Select,
+} from "@mui/material";
 
 const CategoryAddDialog = ({
   open,
@@ -7,6 +13,8 @@ const CategoryAddDialog = ({
   onSubmit,
   newCategories,
   setNewCategories,
+  dataImages,
+  refreshImages,
   submitted,
 }) => {
   return (
@@ -30,18 +38,60 @@ const CategoryAddDialog = ({
           submitted && !newCategories.name ? "name không được để trống" : ""
         }
       />
-      <TextField
-        label="Mô tả danh mục"
-        value={newCategories.description}
-        onChange={(e) =>
-          setNewCategories({
-            ...newCategories,
-            description: e.target.value,
-          })
-        }
-        fullWidth
-        sx={{ mt: 3 }}
-      />
+
+      <FormControl fullWidth sx={{ mt: 2 }} required>
+        <InputLabel>Hình ảnh danh mục</InputLabel>
+        <Select
+          value={newCategories.imageUrl || ""}
+          onChange={(e) => {
+            const selectedImage = dataImages?.result?.items.find(
+              (img) => img.imageUrl === e.target.value,
+            );
+            setNewCategories({
+              ...newCategories,
+              imageUrl: selectedImage?.imageUrl || "",
+            });
+          }}
+          label="Hình ảnh danh mục"
+          renderValue={(selected) => {
+            const image = dataImages?.result?.items.find(
+              (img) => img.imageUrl === selected,
+            );
+            return (
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <img
+                  src={image?.imageUrl}
+                  alt={image?.fileName}
+                  style={{
+                    width: 50,
+                    height: 50,
+                    objectFit: "cover",
+                    borderRadius: 4,
+                    border: "1px solid #ddd",
+                  }}
+                />
+                <span>{image?.fileName}</span>
+              </div>
+            );
+          }}
+        >
+          {dataImages?.result?.items.map((image) => (
+            <MenuItem key={image.id} value={image.imageUrl}>
+              <img
+                src={image?.imageUrl}
+                alt={image?.fileName}
+                style={{
+                  width: 50,
+                  height: 50,
+                  objectFit: "cover",
+                  marginRight: 10,
+                }}
+              />
+              <span>{image?.fileName}</span>
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
     </AddDialog>
   );
 };
