@@ -21,6 +21,7 @@ import { AddPhotoAlternate, Delete, Refresh } from "@mui/icons-material";
 import { PreviewImage } from "@/components/Preview_image";
 import { useSnackbar } from "@/components/Snackbar";
 import TableData from "@/components/Table_data";
+import FileDeleteDialog from "./shared/file_delete_dialog";
 
 const FileManagement = () => {
   const { showSnackbar } = useSnackbar();
@@ -131,7 +132,7 @@ const FileManagement = () => {
 
   const handleDeleteFile = async () => {
     try {
-      await deleteImage(imageIdToDelete).unwrap();
+      await deleteFile(imageIdToDelete).unwrap();
       showSnackbar("Xóa hình ảnh thành công!", "success");
       setOpenDeleteDialog(false);
       setImageIdToDelete(null);
@@ -223,33 +224,11 @@ const FileManagement = () => {
         pageSizeOptions={[25, 50, 100]}
       />
 
-      <Dialog open={openDeleteDialog}>
-        <DialogTitle id="delete-dialog-title">
-          Xác nhận xóa hình ảnh ?
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText id="delete-dialog-description">
-            Bạn có chắc chắn muốn xóa hình ảnh này không ?
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions sx={{ p: 3 }}>
-          <Button
-            onClick={handleCloseDeleteDialog}
-            color="error"
-            variant="outlined"
-          >
-            Hủy
-          </Button>
-          <Button
-            onClick={handleDeleteFile}
-            color="error"
-            variant="contained"
-            autoFocus
-          >
-            Xóa
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <FileDeleteDialog
+        open={openDeleteDialog}
+        onClose={handleCloseDeleteDialog}
+        onConfirm={handleDeleteFile}
+      />
 
       <PreviewImage
         previewImage={previewImage}
