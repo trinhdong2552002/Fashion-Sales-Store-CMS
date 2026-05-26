@@ -192,22 +192,6 @@ const UserManagement = () => {
       headerName: "Hành động",
       width: 200,
       renderCell: (params) => {
-        const isAdmin = params.row?.roles?.some(
-          (role) => role.name?.toUpperCase() === "ADMIN",
-        );
-        if (isAdmin) {
-          return (
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <Typography>Không thể xóa Admin</Typography>
-            </Box>
-          );
-        }
         return (
           <>
             {params.row?.status === "INACTIVE" ? (
