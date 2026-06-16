@@ -1,0 +1,16 @@
+export const top_selling_products = [
+  { id: 1, name: "Áo Polo Classic Nam", sold: 48, revenue: 2000000 },
+  { id: 2, name: "Quần Jean Slimfit", sold: 98, revenue: 3000000 },
+  { id: 3, name: "Áo Khoác Bomber Gió", sold: 76, revenue: 5000000 },
+  { id: 4, name: "Áo thun A25334-Black", sold: 62, revenue: 1000000 },
+  { id: 5, name: "Áo thun A25334-White", sold: 48, revenue: 4000000 },
+  { id: 6, name: "Quần Jean", sold: 36, revenue: 33200000 },
+  { id: 7, name: "Áo thun A25334-White", sold: 30, revenue: 23200000 },
+  { id: 8, name: "Áo thun A25334-Black", sold: 28, revenue: 23200000 },
+  { id: 9, name: "Quần Short", sold: 28, revenue: 23200000 },
+  { id: 10, name: "Áo thun A25334-White", sold: 22, revenue: 23200000 },
+  { id: 11, name: "Áo thun A25334-Black", sold: 20, revenue: 23200000 },
+  { id: 12, name: "Quần tây B294-Black", sold: 18, revenue: 13200000 },
+  { id: 13, name: "Quần tây B294-White", sold: 10, revenue: 8200000 },
+  { id: 14, name: "Quần Tây B294-Gray", sold: 6, revenue: 6200000 },
+];

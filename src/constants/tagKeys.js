@@ -19,4 +19,5 @@ export const TAG_KEYS = {
   SIZE: "Size",
   USER: "User",
   WARD: "Ward",
+  STATISTICS: "Statistics",
 };

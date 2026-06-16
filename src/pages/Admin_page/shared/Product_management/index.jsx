@@ -99,7 +99,7 @@ const ProductManagement = () => {
   });
 
   const { data: dataImages, refetch: refetchImages } = useGetAllFilesQuery(
-    { page: 0, pageSize: 100 },
+    { page: 0, size: 100 },
     {
       refetchOnMountOrArgChange: true,
     },

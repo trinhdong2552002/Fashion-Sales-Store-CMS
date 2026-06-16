@@ -83,8 +83,8 @@ const ProductVariantManagement = () => {
     selectedProductId
       ? {
           productId: selectedProductId,
-          pageNo: paginationModel.page + 0,
-          pageSize: paginationModel.pageSize,
+          page: paginationModel.page + 0,
+          size: paginationModel.pageSize,
         }
       : skipToken,
     {

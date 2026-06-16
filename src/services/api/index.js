@@ -92,5 +92,6 @@ export const baseApi = createApi({
     "Size",
     "User",
     "Ward",
+    "Statistics",
   ],
 });
