@@ -31,6 +31,7 @@ export const statisticsApi = baseApi.injectEndpoints({
       query: ({ startDate, endDate }) => ({
         url: "v1/admin/statistics/orders/revenue-by-date/export",
         params: { startDate, endDate },
+        responseType: "blob",
       }),
       providesTags: [TAG_KEYS.STATISTICS],
     }),
@@ -41,5 +42,5 @@ export const {
   useGetMonthlyRevenueQuery,
   useGetTopSellingProductsQuery,
   useGetOrderSummaryQuery,
-  useGetExportOrderRevenueToExcelQuery,
+  useLazyGetExportOrderRevenueToExcelQuery,
 } = statisticsApi;

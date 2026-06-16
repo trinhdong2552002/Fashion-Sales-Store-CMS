@@ -3,7 +3,7 @@ import axios from "axios";
 
 export const axiosBaseQuery =
   () =>
-  async ({ url, method, data, params, headers }) => {
+  async ({ url, method, data, params, headers, responseType }) => {
     const publicEndpoints = [
       "/v1/public/auth/login",
       "/v1/public/auth/refresh-token",
@@ -30,6 +30,7 @@ export const axiosBaseQuery =
         method,
         data,
         params,
+        responseType,
         headers: {
           ...headers,
           ...(token && { Authorization: `Bearer ${token}` }),

@@ -34,11 +34,12 @@ import {
   useGetMonthlyRevenueQuery,
   useGetTopSellingProductsQuery,
   useGetOrderSummaryQuery,
-  useGetExportOrderRevenueToExcelQuery,
+  useLazyGetExportOrderRevenueToExcelQuery,
 } from "@/services/api/statistics";
 
 const AdminPage = () => {
   const { showSnackbar } = useSnackbar();
+  const [triggerExport] = useLazyGetExportOrderRevenueToExcelQuery();
 
   const [isExporting, setIsExporting] = useState(false);
   const [paginationModel, setPaginationModel] = useState({
@@ -86,14 +87,7 @@ const AdminPage = () => {
     skip: !startDate || !endDate,
   });
 
-  const {
-    data: dataExportExcel,
-    isLoading: isLoadingExportExcel,
-    isError: isErrorExportExcel,
-  } = useGetExportOrderRevenueToExcelQuery(queryParams, {
-    refetchOnMountOrArgChange: true,
-    skip: !startDate || !endDate,
-  });
+
 
   // Resolve Monthly Revenue Data
   const monthlyRevenueData = dataMonthly?.result || dataMonthly || [];
@@ -198,26 +192,86 @@ const AdminPage = () => {
   const endIndex = startIndex + paginationModel.pageSize;
   const paginatedTopProducts = mappedTopProducts.slice(startIndex, endIndex);
 
-  const handleExportExcel = async () => {
-    try {
-      setIsExporting(true);
-      const response = await getExportOrderRevenueToExcel(queryParams);
+  const triggerMockupCsvExport = () => {
+    const headers = ["Mục tiêu", "Giá trị", "Chú thích"];
+    const rows = [
+      ["Tổng doanh thu", totalRevenue.toString(), "Doanh thu VND"],
+      ["Tổng đơn hàng", totalOrders.toString(), "Đơn hàng"],
+      ["Đơn hoàn thành", completedOrders.toString(), "Đã giao thành công"],
+      ["Đơn chờ xử lý", pendingOrders.toString(), "Đang chuẩn bị"],
+      ["Đơn đã hủy", cancelledOrders.toString(), "Đã hủy bỏ"],
+      [],
+      ["Bảng kê doanh thu hàng tháng", "", ""],
+      ["Tháng", "Doanh thu (VND)", ""],
+      ...activeMonthlyRevenue.map((item) => [
+        formatMonth(item.month),
+        (item.totalAmount ?? item.revenue ?? 0).toString(),
+        "",
+      ]),
+      [],
+      ["Top sản phẩm bán chạy", "", ""],
+      ["Tên sản phẩm", "Số lượng đã bán", "Doanh thu (VND)"],
+      ...activeTopProducts.map((p) => [
+        p.productName || p.name || "Sản phẩm",
+        (p.soldQuantity ?? p.sold ?? 0).toString(),
+        (p.totalRevenue ?? p.revenue ?? 0).toString(),
+      ]),
+    ];
 
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+    const csvContent =
+      "\uFEFF" +
+      rows
+        .map((row) =>
+          row.map((val) => `"${val.replace(/"/g, '""')}"`).join(","),
+        )
+        .join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `order-revenue-${startDate.format("YYYY-MM-DD")}-${endDate.format("YYYY-MM-DD")}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    setTimeout(() => {
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    }, 200);
+
+    showSnackbar(
+      "Lưu ý: Đã xuất báo cáo Demo (CSV) do không kết nối được API xuất Excel!",
+      "warning",
+    );
+  };
+
+  const handleExportExcel = async () => {
+    setIsExporting(true);
+    try {
+      const result = await triggerExport(queryParams).unwrap();
+
+      if (!result) {
+        throw new Error("Không nhận được dữ liệu báo cáo");
+      }
+
+      const blob = new Blob([result], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute(
-        "download",
-        `export_order_revenue_${queryParams.startDate}_${queryParams.endDate}.xlsx`,
-      );
+      link.download = `order-revenue-${startDate.format("YYYY-MM-DD")}-${endDate.format("YYYY-MM-DD")}.xlsx`;
       document.body.appendChild(link);
       link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
+      
+      setTimeout(() => {
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      }, 200);
 
-      showSnackbar("Xuất file Excel thành công", "success");
+      showSnackbar("Xuất báo cáo Excel thành công!", "success");
     } catch (error) {
-      showSnackbar(error, "error");
+      console.warn("API export failed, performing mockup CSV download", error);
+      triggerMockupCsvExport();
     } finally {
       setIsExporting(false);
     }
@@ -262,7 +316,7 @@ const AdminPage = () => {
             fontWeight: 600,
           }}
         >
-          {isExporting ? "Đang xuất file..." : "Xuất báo cáo Excel"}
+          {isExporting ? "Đang xuất file..." : "Xuất báo cáo doanh thu Excel"}
         </Button>
       </Box>
 
