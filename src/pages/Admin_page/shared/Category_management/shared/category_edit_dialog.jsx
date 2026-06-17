@@ -1,4 +1,4 @@
-import EditDialog from "@/components/Dialog/Edit_dialog";
+import EditDialog from "@/components/Dialog/Edit_Dialog";
 import {
   FormControl,
   InputLabel,

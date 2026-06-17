@@ -5,7 +5,7 @@ import {
   Select,
   MenuItem,
 } from "@mui/material";
-import EditDialog from "@/components/Dialog/Edit_dialog";
+import EditDialog from "@/components/Dialog/Edit_Dialog";
 
 const ProductEditDialog = ({
   open,
