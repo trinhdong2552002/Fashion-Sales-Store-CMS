@@ -11,7 +11,8 @@
 /coverage
 
 # Local environment variables and configuration
-.env*
+.env.development
+.env.production
 
 # Logs and miscellaneous files
 npm-debug.log*
