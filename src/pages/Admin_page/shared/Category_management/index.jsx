@@ -17,10 +17,6 @@ import { useSnackbar } from "@/components/Snackbar";
 import { PreviewImage } from "@/components/Preview_image";
 import TableData from "@/components/Table_data";
 import StatusChip from "@/components/Status_chip";
-import CategoryAddDialog from "./shared/category_add_dialog";
-import CategoryEditDialog from "./shared/category_edit_dialog";
-import CategoryDeleteDialog from "./shared/category_delete_dialog";
-import CategoryRestoreDialog from "./shared/category_restore_dialog";
 
 import {
   useGetAllCategoriesByAdminQuery,
@@ -30,6 +26,10 @@ import {
   useUpdateCategoriesMutation,
 } from "@/services/api/category";
 import { useGetAllFilesQuery } from "@/services/api/file";
+import CategoryAddDialog from "./shared/category_add_dialog";
+import CategoryEditDialog from "./shared/category_edit_dialog";
+import CategoryDeleteDialog from "./shared/category_delete_dialog";
+import CategoryRestoreDialog from "./shared/category_restore_dialog";
 
 const CategoryManagement = () => {
   const { showSnackbar } = useSnackbar();

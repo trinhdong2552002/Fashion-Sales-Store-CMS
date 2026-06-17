@@ -1,4 +1,4 @@
-import EditDialog from "@/components/Dialog/Edit_dialog";
+import EditDialog from "@/components/Dialog/Edit_Dialog";
 import { Box, TextField } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";

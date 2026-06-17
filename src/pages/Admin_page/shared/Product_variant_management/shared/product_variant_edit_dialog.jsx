@@ -1,5 +1,5 @@
 import { TextField } from "@mui/material";
-import EditDialog from "@/components/Dialog/Edit_dialog";
+import EditDialog from "@/components/Dialog/Edit_Dialog";
 
 const ProductVariantEditDialog = ({
   openEditDialog,
