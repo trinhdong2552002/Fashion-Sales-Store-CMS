@@ -1,4 +1,4 @@
-<img width="1657" height="954" alt="Screenshot 2026-06-22 at 10 21 41" src="https://github.com/user-attachments/assets/e45fd70e-e80b-40cb-87c7-5ef827a753b6" /># 🛡️ Fashion Sales Store - Admin CMS Dashboard
+# 🛡️ Fashion Sales Store - Admin CMS Dashboard
 
 > The Management Dashboard for Fashion Sales Store. Allows administrators to manage products, orders, users, and view sales statistics.
 
