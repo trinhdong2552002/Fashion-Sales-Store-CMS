@@ -3,19 +3,13 @@ import axios from "axios";
 
 export const axiosBaseQuery =
   () =>
-  async ({ url, method, data, params, headers, responseType }) => {
-    const publicEndpoints = [
-      "/v1/public/auth/login",
-      "/v1/public/auth/refresh-token",
-      "/v1/public/colors",
-      "/v1/public/sizes",
-    ];
+  async ({ url, method, data, params, headers }) => {
+    const isPublicEndpoint = url.startsWith("/v1/public");
 
     const token = localStorage.getItem("accessToken");
     const refreshToken = localStorage.getItem("refreshToken");
 
-    if (!publicEndpoints.includes(url) && !token && !refreshToken) {
-      console.log("No token found for non-public endpoint:", url);
+    if (!isPublicEndpoint && !token && !refreshToken) {
       return {
         error: {
           status: 401,
@@ -30,14 +24,12 @@ export const axiosBaseQuery =
         method,
         data,
         params,
-        responseType,
         headers: {
           ...headers,
           ...(token && { Authorization: `Bearer ${token}` }),
         },
         baseURL: import.meta.env.VITE_API_URL,
       });
-      // console.log("Axios response received:", result);
 
       if (result.status >= 400) {
         console.log("Server error response:", result.data);
@@ -48,7 +40,7 @@ export const axiosBaseQuery =
           },
         };
       }
-      // console.log("Axios response success:", result.data);
+
       return { data: result.data };
     } catch (axiosError) {
       const error = {
@@ -56,12 +48,27 @@ export const axiosBaseQuery =
         data: axiosError.response?.data || axiosError.message,
       };
 
-      console.error("Axios error:", error);
-
       // HANDLE 401 / EXPIRED TOKEN HERE
-      if (error.status === 401) {
+      if (error.status === 401 && url !== "/v1/private/auth/logout") {
+        const expiredToken = localStorage.getItem("accessToken");
+
+        // Call logout API if token exists
+        if (expiredToken) {
+          try {
+            await axios.post(
+              "/v1/private/auth/logout",
+              { accessToken: expiredToken },
+              { baseURL: import.meta.env.VITE_API_URL },
+            );
+          } catch (logoutError) {
+            console.error("Logout API call failed:", logoutError);
+          }
+        }
+
+        // Clear all auth data
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
+        localStorage.removeItem("persist:root");
 
         return { error };
       }
