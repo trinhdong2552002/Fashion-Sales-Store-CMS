@@ -1,6 +1,6 @@
 // services/api/province.js
 import { baseApi } from "./index";
-import { TAG_KEYS } from "/src/constants/tagKeys.js";
+import { TAG_KEYS } from "/src/constants/tag-keys.js";
 
 export const provinceApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({

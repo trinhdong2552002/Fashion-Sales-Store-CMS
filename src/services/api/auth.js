@@ -1,6 +1,6 @@
 import { setUserInfo } from "@/store/redux/user/reducer";
 import { baseApi } from "./index";
-import { TAG_KEYS } from "@/constants/tagKeys";
+import { TAG_KEYS } from "@/constants/tag-keys";
 
 export const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({

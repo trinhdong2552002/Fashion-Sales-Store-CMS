@@ -1,5 +1,5 @@
 import { baseApi } from "./index";
-import { TAG_KEYS } from "/src/constants/tagKeys.js";
+import { TAG_KEYS } from "/src/constants/tag-keys.js";
 
 export const orderApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -12,7 +12,7 @@ export const orderApi = baseApi.injectEndpoints({
     }),
 
     deleteOrderById: builder.mutation({
-      query: ({id}) => ({
+      query: ({ id }) => ({
         url: `v1/orders/${id}`,
         method: "DELETE",
       }),
