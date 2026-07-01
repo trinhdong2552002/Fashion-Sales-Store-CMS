@@ -1,5 +1,5 @@
 import { baseApi } from "./index";
-import { TAG_KEYS } from "@/constants/tagKeys";
+import { TAG_KEYS } from "@/constants/tag-keys";
 
 export const statisticsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({

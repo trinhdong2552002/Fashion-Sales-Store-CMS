@@ -1,6 +1,6 @@
 // services/api/changePassword.js
 import { baseApi } from "./index";
-import { TAG_KEYS } from "@/constants/tagKeys.js";
+import { TAG_KEYS } from "@/constants/tag-keys.js";
 
 export const changePasswordApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({

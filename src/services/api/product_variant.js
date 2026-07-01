@@ -1,6 +1,6 @@
 // services/api/productVariant.js
 import { baseApi } from "./index";
-import { TAG_KEYS } from "/src/constants/tagKeys.js";
+import { TAG_KEYS } from "/src/constants/tag-keys.js";
 
 export const productVariantApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({

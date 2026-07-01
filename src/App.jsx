@@ -1,24 +1,25 @@
 import { Route, Routes } from "react-router-dom";
-import Login from "@/pages/Login_page";
-import { PrivateRoute, PublicRoute } from "./components/Protected_route";
+import PageNotFound from "./pages/admin-page/page-not-found";
+import { PrivateRoute, PublicRoute } from "./components/protected-route";
 
-import AdminPage from "./pages/Admin_page";
-import AdminLayout from "./layouts/Admin_layout";
-import CategoryManagement from "./pages/Admin_page/shared/Category_management";
-import BranchesManagement from "./pages/Admin_page/shared/Branch_management";
-import PromotionsManagement from "./pages/Admin_page/shared/Promotion_management";
-import PaymentHistoriesManagement from "./pages/Admin_page/shared/Payment_history_management";
-import RolesManagement from "./pages/Admin_page/shared/Role_management";
-import ColorsManagement from "./pages/Admin_page/shared/Color_management";
-import AddressManagement from "./pages/Admin_page/shared/Address_management";
-import PageNotFound from "./pages/Admin_page/Page_not_found";
-import FileManagement from "./pages/Admin_page/shared/File_management";
-import ProductManagement from "./pages/Admin_page/shared/Product_management";
-import ColorManagement from "./pages/Admin_page/shared/Color_management";
-import BranchManagement from "./pages/Admin_page/shared/Branch_management";
-import OrderManagement from "./pages/Admin_page/shared/Order_management";
-import ProductVariantManagement from "./pages/Admin_page/shared/Product_variant_management";
-import UserManagement from "./pages/Admin_page/shared/User_management";
+// Layout imports
+import AdminLayout from "./layouts/admin-layout";
+
+// Page imports
+import Login from "./pages/login-page";
+import AdminPage from "./pages/admin-page";
+import ColorManagement from "./pages/admin-page/shared/color-management";
+import AddressManagement from "./pages/admin-page/shared/address-management";
+import UserManagement from "./pages/admin-page/shared/user-management";
+import OrderManagement from "./pages/admin-page/shared/order-management";
+import FileManagement from "./pages/admin-page/shared/file-management";
+import ProductManagement from "./pages/admin-page/shared/product-management";
+import ProductVariantManagement from "./pages/admin-page/shared/product-variant-management";
+import CategoryManagement from "./pages/admin-page/shared/category-management";
+import BranchManagement from "./pages/admin-page/shared/branch-management";
+import RoleManagement from "./pages/admin-page/shared/role-management";
+import PromotionManagement from "./pages/admin-page/shared/promotion-management";
+import PaymentHistoryManagement from "./pages/admin-page/shared/payment-history-management";
 
 const App = () => {
   return (
@@ -50,12 +51,12 @@ const App = () => {
           <Route path="branch-management" element={<BranchManagement />} />
           <Route
             path="promotion-management"
-            element={<PromotionsManagement />}
+            element={<PromotionManagement />}
           />
-          <Route path="role-management" element={<RolesManagement />} />
+          <Route path="role-management" element={<RoleManagement />} />
           <Route
             path="payment-history-management"
-            element={<PaymentHistoriesManagement />}
+            element={<PaymentHistoryManagement />}
           />
         </Route>
       </Route>

@@ -1,0 +1,23 @@
+// src/constants/tag-keys.js
+export const TAG_KEYS = {
+  ADDRESS: "Address",
+  AUTH: "Auth",
+  BRANCH: "Branch",
+  CART: "Cart",
+  CATEGORY: "Category",
+  COLOR: "Color",
+  CONVERSATION: "Conversation",
+  DISTRICT: "District",
+  ORDER: "Order",
+  PRODUCT: "Product",
+  PRODUCT_VARIANT: "Product_Variant",
+  FILE: "File",
+  PROMOTION: "Promotion",
+  PROVINCE: "Province",
+  REVIEW: "Review",
+  ROLE: "Role",
+  SIZE: "Size",
+  USER: "User",
+  WARD: "Ward",
+  STATISTICS: "Statistics",
+};
