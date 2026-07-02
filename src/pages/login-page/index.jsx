@@ -10,6 +10,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { Fragment, useState } from "react";
+import { useDispatch } from "react-redux";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useLoginMutation } from "@/services/api/auth";
@@ -19,6 +20,7 @@ import { setAuth } from "@/store/redux/auth/reducer";
 import cms from "@/assets/images/cms.png";
 
 const LoginPage = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const { showSnackbar } = useSnackbar();
   const [showPassword, setShowPassword] = useState(false);
@@ -60,11 +62,13 @@ const LoginPage = () => {
         }
 
         if (role === "ADMIN") {
-          setAuth({
-            accessToken: response?.result?.accessToken,
-            email: response?.result?.email,
-            roles: response?.result?.roles,
-          });
+          dispatch(
+            setAuth({
+              accessToken: response?.result?.accessToken,
+              email: response?.result?.email,
+              roles: response?.result?.roles,
+            })
+          );
           localStorage.setItem("accessToken", response?.result?.accessToken);
           localStorage.setItem("refreshToken", response?.result?.refreshToken);
 
