@@ -70,6 +70,9 @@ export const axiosBaseQuery =
         localStorage.removeItem("refreshToken");
         localStorage.removeItem("persist:root");
 
+        // Redirect to login page
+        window.location.replace("/");
+
         return { error };
       }
 

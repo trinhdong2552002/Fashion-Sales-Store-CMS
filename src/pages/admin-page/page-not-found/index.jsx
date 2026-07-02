@@ -34,7 +34,7 @@ const PageNotFound = () => {
         Có vẻ như trang bạn đang tìm kiếm không tồn tại hoặc đã bị xóa. Hãy quay
         lại trang tổng quan và thử lại.
       </Typography>
-      <Link to="/" style={{ textDecoration: "none" }}>
+      <Link to="/admin/dashboard-management" style={{ textDecoration: "none" }}>
         <Button variant="outlined" color="primary" sx={{ mt: 3 }}>
           <ArrowBack sx={{ mr: 1 }} />
           Quay lại trang tổng quan
