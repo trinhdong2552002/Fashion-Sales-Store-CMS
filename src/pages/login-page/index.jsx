@@ -36,12 +36,10 @@ const LoginPage = () => {
     formState: { errors },
   } = useForm({
     defaultValues: {
-      email: localStorage.getItem("rememberedEmail") || "",
-      password: localStorage.getItem("rememberedPassword") || "",
-      rememberMe: !!localStorage.getItem("rememberedEmail"),
+      email: "",
+      password: "",
     },
   });
-  console.log("watch", watch());
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
@@ -81,14 +79,6 @@ const LoginPage = () => {
           );
           localStorage.setItem("accessToken", response?.result?.accessToken);
           localStorage.setItem("refreshToken", response?.result?.refreshToken);
-
-          if (data?.rememberMe) {
-            localStorage.setItem("rememberedEmail", data?.email);
-            localStorage.setItem("rememberedPassword", data?.password);
-          } else {
-            localStorage.removeItem("rememberedEmail");
-            localStorage.removeItem("rememberedPassword");
-          }
 
           await triggerMyInfo();
           showSnackbar("Đăng nhập thành công!", "success");
@@ -253,22 +243,6 @@ const LoginPage = () => {
                         </IconButton>
                       </InputAdornment>
                     ),
-                  }}
-                />
-
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      id="rememberMe"
-                      {...register("rememberMe")}
-                      disabled={isLoginLoading}
-                      checked={watch("rememberMe")}
-                    />
-                  }
-                  label="Ghi nhớ tài khoản"
-                  sx={{
-                    mt: 1,
-                    mr: 0,
                   }}
                 />
               </Box>
