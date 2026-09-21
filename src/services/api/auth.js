@@ -34,6 +34,18 @@ export const authApi = baseApi.injectEndpoints({
       invalidatesTags: [TAG_KEYS.AUTH],
     }),
 
+    refreshToken: builder.mutation({
+      query: (refreshToken) => ({
+        url: "/v1/public/auth/refresh-token",
+        method: "POST",
+        data: {
+          refreshToken: refreshToken,
+        },
+      }),
+
+      invalidatesTags: [TAG_KEYS.AUTH],
+    }),
+
     getMyInfo: builder.query({
       query: () => ({
         url: "/v1/private/auth/myInfo",
@@ -53,8 +65,6 @@ export const authApi = baseApi.injectEndpoints({
               gender: data?.result?.gender || null,
             }),
           );
-
-          // console.log("getMyInfo queryFulfilled", data);
         } catch (error) {
           console.error("getMyInfo failed:", error);
         }
@@ -64,5 +74,9 @@ export const authApi = baseApi.injectEndpoints({
   }),
 });
 
-export const { useLoginMutation, useLogoutMutation, useLazyGetMyInfoQuery } =
-  authApi;
+export const {
+  useLoginMutation,
+  useLogoutMutation,
+  useRefreshTokenMutation,
+  useLazyGetMyInfoQuery,
+} = authApi;
