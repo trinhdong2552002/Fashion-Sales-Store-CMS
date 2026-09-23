@@ -1,0 +1,52 @@
+// services/api/productVariant.js
+import { TAG_KEYS } from "@/constants";
+import { baseApi } from "./index";
+
+export const productVariantApi = baseApi.injectEndpoints({
+  endpoints: (builder) => ({
+    addProductVariant: builder.mutation({
+      query: (productVariant) => ({
+        url: "/v1/admin/product-variants",
+        method: "POST",
+        data: productVariant,
+      }),
+      invalidatesTags: [TAG_KEYS.PRODUCT_VARIANT],
+    }),
+
+    updateProductVariant: builder.mutation({
+      query: ({ productVariantId, price, quantity }) => ({
+        url: `/v1/admin/product-variants/${productVariantId}`,
+        method: "PUT",
+        data: {
+          price,
+          quantity,
+        },
+      }),
+      invalidatesTags: [TAG_KEYS.PRODUCT_VARIANT],
+    }),
+
+    deleteProductVariant: builder.mutation({
+      query: ({ productVariantId }) => ({
+        url: `/v1/admin/product-variants/${productVariantId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: [TAG_KEYS.PRODUCT_VARIANT],
+    }),
+
+    restoreProductVariant: builder.mutation({
+      query: ({ productVariantId }) => ({
+        url: `/v1/admin/product-variants/${productVariantId}/restore`,
+        method: "PATCH",
+      }),
+      invalidatesTags: [TAG_KEYS.PRODUCT_VARIANT],
+    }),
+  }),
+});
+
+export const {
+  // useListAllProductVariantsByProductQuery,
+  useAddProductVariantMutation,
+  useUpdateProductVariantMutation,
+  useDeleteProductVariantMutation,
+  useRestoreProductVariantMutation,
+} = productVariantApi;
