@@ -8,7 +8,21 @@ import {
   Typography,
 } from "@mui/material";
 
-const RestoreDialog = ({ open, onClose, onConfirm, title, description }) => {
+interface RestoreDialogProps {
+  open: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  title: string;
+  description: string;
+}
+
+const RestoreDialog = ({
+  open,
+  onClose,
+  onConfirm,
+  title,
+  description,
+}: RestoreDialogProps) => {
   return (
     <Dialog open={open}>
       <DialogTitle sx={{ py: 3 }}>

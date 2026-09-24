@@ -7,6 +7,16 @@ import {
   Select,
 } from "@mui/material";
 
+interface CategoryEditDialogProps {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: () => void;
+  newCategories: any;
+  setNewCategories: (value: any) => void;
+  dataImages: any;
+  submitted: boolean;
+}
+
 const CategoryEditDialog = ({
   open,
   onClose,
@@ -15,7 +25,7 @@ const CategoryEditDialog = ({
   setNewCategories,
   dataImages,
   submitted,
-}) => {
+}: CategoryEditDialogProps) => {
   return (
     <EditDialog
       open={open}
@@ -44,7 +54,7 @@ const CategoryEditDialog = ({
           value={newCategories.imageUrl || ""}
           onChange={(e) => {
             const selectedImage = dataImages?.result?.items.find(
-              (img) => img.imageUrl === e.target.value,
+              (img: any) => img.imageUrl === e.target.value,
             );
             setNewCategories({
               ...newCategories,
@@ -54,7 +64,7 @@ const CategoryEditDialog = ({
           label="Hình ảnh danh mục"
           renderValue={(selected) => {
             const image = dataImages?.result?.items.find(
-              (img) => img.imageUrl === selected,
+              (img: any) => img.imageUrl === selected,
             );
             return (
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -74,7 +84,7 @@ const CategoryEditDialog = ({
             );
           }}
         >
-          {dataImages?.result?.items.map((image) => (
+          {dataImages?.result?.items.map((image: any) => (
             <MenuItem key={image.id} value={image.imageUrl}>
               <img
                 src={image.imageUrl}

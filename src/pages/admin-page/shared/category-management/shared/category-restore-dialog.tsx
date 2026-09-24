@@ -1,6 +1,16 @@
 import RestoreDialog from "@/components/dialog/restore-dialog";
 
-const CategoryRestoreDialog = ({ open, onClose, onConfirm }) => {
+interface CategoryRestoreDialogProps {
+  open: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+}
+
+const CategoryRestoreDialog = ({
+  open,
+  onClose,
+  onConfirm,
+}: CategoryRestoreDialogProps) => {
   return (
     <RestoreDialog
       open={open}

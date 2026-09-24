@@ -1,7 +1,17 @@
 import { Typography, Box, Chip, Grid } from "@mui/material";
 import SeeDetailDialog from "@/components/dialog/see-detail-dialog";
 
-const ProductSeeDetailDialog = ({ open, onClose, product }) => {
+interface ProductSeeDetailDialogProps {
+  open: boolean;
+  onClose: () => void;
+  product: any;
+}
+
+const ProductSeeDetailDialog = ({
+  open,
+  onClose,
+  product,
+}: ProductSeeDetailDialogProps) => {
   return (
     <SeeDetailDialog open={open} onClose={onClose} title="Chi tiết sản phẩm">
       <Box sx={{ p: 2 }}>
@@ -65,7 +75,7 @@ const ProductSeeDetailDialog = ({ open, onClose, product }) => {
           <strong>Màu sắc:</strong>
           {product?.colors?.length > 0 ? (
             <Box sx={{ mt: 1 }}>
-              {product.colors.map((color) => (
+              {product.colors.map((color: any) => (
                 <Chip
                   key={color.id}
                   label={color.name}
@@ -84,7 +94,7 @@ const ProductSeeDetailDialog = ({ open, onClose, product }) => {
           <strong>Kích thước:</strong>
           {product?.sizes?.length > 0 ? (
             <Box sx={{ mt: 1 }}>
-              {product.sizes.map((size) => (
+              {product.sizes.map((size: any) => (
                 <Chip
                   key={size.id}
                   label={size.name}
@@ -103,7 +113,7 @@ const ProductSeeDetailDialog = ({ open, onClose, product }) => {
           <strong>Hình ảnh:</strong>
           {product?.images?.length > 0 ? (
             <Grid container spacing={2} sx={{ mt: 1 }}>
-              {product.images.map((image) => (
+              {product.images.map((image: any) => (
                 <Grid size={{ xs: 12, sm: 6, md: 4 }} key={image.id}>
                   <img
                     src={image.imageUrl}

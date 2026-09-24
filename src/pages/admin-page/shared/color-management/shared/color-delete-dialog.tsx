@@ -1,6 +1,16 @@
 import DeleteDialog from "@/components/dialog/delete-dialog";
 
-const ColorDeleteDialog = ({ open, onClose, onConfirm }) => {
+interface ColorDeleteDialogProps {
+  open: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+}
+
+const ColorDeleteDialog = ({
+  open,
+  onClose,
+  onConfirm,
+}: ColorDeleteDialogProps) => {
   return (
     <DeleteDialog
       open={open}

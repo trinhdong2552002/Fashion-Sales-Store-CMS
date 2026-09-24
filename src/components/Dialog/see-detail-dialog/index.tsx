@@ -7,13 +7,21 @@ import {
   Typography,
 } from "@mui/material";
 
+interface SeeDetailDialogProps {
+  open: boolean;
+  onClose: () => void;
+  title: string;
+  maxWidth?: "xs" | "sm" | "md" | "lg" | "xl";
+  children: React.ReactNode;
+}
+
 const SeeDetailDialog = ({
   open,
   onClose,
   title,
   maxWidth = "md",
   children,
-}) => {
+}: SeeDetailDialogProps) => {
   return (
     <Dialog open={open} maxWidth={maxWidth} fullWidth>
       <DialogTitle sx={{ py: 3 }}>

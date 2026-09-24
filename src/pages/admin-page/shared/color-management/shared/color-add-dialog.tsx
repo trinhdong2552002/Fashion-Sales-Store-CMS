@@ -1,6 +1,15 @@
 import AddDialog from "@/components/dialog/add-dialog";
 import { TextField } from "@mui/material";
 
+interface ColorAddDialogProps {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: () => void;
+  newColor: any;
+  setNewColor: (newColor: any) => void;
+  submitted: boolean;
+}
+
 const ColorAddDialog = ({
   open,
   onClose,
@@ -8,7 +17,7 @@ const ColorAddDialog = ({
   newColor,
   setNewColor,
   submitted,
-}) => {
+}: ColorAddDialogProps) => {
   return (
     <AddDialog
       open={open}

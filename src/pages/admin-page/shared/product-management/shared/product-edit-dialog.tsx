@@ -5,10 +5,24 @@ import {
   Select,
   MenuItem,
   Box,
+  FormHelperText,
 } from "@mui/material";
 import EditDialog from "@/components/dialog/edit-dialog";
 import "react-quill-new/dist/quill.snow.css";
 import ReactQuill from "react-quill-new";
+
+interface ProductEditDialogProps {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: () => void;
+  product: any;
+  setProduct: (product: any) => void;
+  submitted: boolean;
+  dataCategories: any;
+  dataColors: any;
+  dataSizes: any;
+  dataImages: any;
+}
 
 const ProductEditDialog = ({
   open,
@@ -21,7 +35,7 @@ const ProductEditDialog = ({
   dataColors,
   dataSizes,
   dataImages,
-}) => {
+}: ProductEditDialogProps) => {
   return (
     <EditDialog
       open={open}
@@ -46,14 +60,13 @@ const ProductEditDialog = ({
         <ReactQuill
           value={product.description}
           onChange={(value) => setProduct({ ...product, description: value })}
-          required
-          error={submitted && !product.description}
-          helperText={
-            submitted && !product.description
-              ? "description không được để trống"
-              : ""
-          }
+          className={submitted && !product.description ? "ql-error" : ""}
         />
+        {submitted && !product.description && (
+          <FormHelperText error sx={{ mx: "14px", mt: "3px" }}>
+            description không được để trống
+          </FormHelperText>
+        )}
       </Box>
 
       <FormControl fullWidth sx={{ mt: 2 }} required>
@@ -65,7 +78,7 @@ const ProductEditDialog = ({
           }
           label="Danh mục"
         >
-          {dataCategories?.result?.items?.map((category) => (
+          {dataCategories?.result?.items?.map((category: any) => (
             <MenuItem key={category.id} value={category.id}>
               {category.name}
             </MenuItem>
@@ -80,12 +93,12 @@ const ProductEditDialog = ({
           value={product.imageIds || []}
           onChange={(e) => setProduct({ ...product, imageIds: e.target.value })}
           label="Hình ảnh sản phẩm"
-          renderValue={(selected) => (
+          renderValue={(selected: any) => (
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              {selected.map((id) => {
+              {selected.map((id: any) => {
                 const image =
-                  dataImages?.result?.items.find((img) => img.id === id) ||
-                  product.images?.find((img) => img.id === id);
+                  dataImages?.result?.items.find((img: any) => img.id === id) ||
+                  product.images?.find((img: any) => img.id === id);
                 return (
                   <img
                     key={id}
@@ -104,7 +117,7 @@ const ProductEditDialog = ({
             </div>
           )}
         >
-          {dataImages?.result?.items.map((image) => (
+          {dataImages?.result?.items.map((image: any) => (
             <MenuItem key={image.id} value={image.id}>
               <img
                 src={image.imageUrl}

@@ -1,6 +1,16 @@
 import DeleteDialog from "@/components/dialog/delete-dialog";
 
-const FileDeleteDialog = ({ open, onClose, onConfirm }) => {
+interface FileDeleteDialogProps {
+  open: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+}
+
+const FileDeleteDialog = ({
+  open,
+  onClose,
+  onConfirm,
+}: FileDeleteDialogProps) => {
   return (
     <DeleteDialog
       open={open}

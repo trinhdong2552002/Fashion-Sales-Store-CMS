@@ -1,4 +1,4 @@
-import RestoreDialog from "@/components/Dialog/restore-dialog";
+import RestoreDialog from "@/components/dialog/restore-dialog";
 
 interface PromotionRestoreDialogProps {
   open: boolean;

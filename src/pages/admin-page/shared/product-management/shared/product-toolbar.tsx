@@ -2,13 +2,20 @@ import { TextField, Button, Box } from "@mui/material";
 import { Refresh, Add } from "@mui/icons-material";
 import { Fragment } from "react";
 
+interface ProductToolbarProps {
+  searchValue: string;
+  setSearchValue: (searchValue: string) => void;
+  onCreateProduct: () => void;
+  onRefresh: () => void;
+}
+
 const ProductToolbar = ({
   searchValue,
   setSearchValue,
   onCreateProduct,
   onRefresh,
-}) => {
-  const handleSearchChange = (e) => {
+}: ProductToolbarProps) => {
+  const handleSearchChange = (e: any) => {
     setSearchValue(e.target.value);
   };
 
@@ -16,7 +23,7 @@ const ProductToolbar = ({
     <Fragment>
       <Box
         display="flex"
-        direction="row"
+        flexDirection="row"
         justifyContent="flex-start"
         alignItems="center"
         mt={1}

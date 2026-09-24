@@ -5,10 +5,24 @@ import {
   Select,
   MenuItem,
   Box,
+  FormHelperText,
 } from "@mui/material";
 import AddDialog from "@/components/dialog/add-dialog";
 import "react-quill-new/dist/quill.snow.css";
 import ReactQuill from "react-quill-new";
+
+interface ProductAddDialogProps {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: () => void;
+  product: any;
+  setProduct: (product: any) => void;
+  submitted: boolean;
+  dataCategories: any;
+  dataColors: any;
+  dataSizes: any;
+  dataImages: any;
+}
 
 const ProductAddDialog = ({
   open,
@@ -21,11 +35,11 @@ const ProductAddDialog = ({
   dataColors,
   dataSizes,
   dataImages,
-}) => {
+}: ProductAddDialogProps) => {
   // Lấy danh sách categories trạng thái "ACTIVE"
   const filterActiveCategories =
     dataCategories?.result?.items?.filter(
-      (activeCategories) => activeCategories.status === "ACTIVE",
+      (activeCategories: any) => activeCategories.status === "ACTIVE",
     ) || [];
 
   return (
@@ -70,14 +84,13 @@ const ProductAddDialog = ({
         <ReactQuill
           value={product.description}
           onChange={(value) => setProduct({ ...product, description: value })}
-          required
-          error={submitted && !product.description}
-          helperText={
-            submitted && !product.description
-              ? "description không được để trống"
-              : ""
-          }
+          className={submitted && !product.description ? "ql-error" : ""}
         />
+        {submitted && !product.description && (
+          <FormHelperText error sx={{ mx: "14px", mt: "3px" }}>
+            description không được để trống
+          </FormHelperText>
+        )}
       </Box>
 
       <FormControl fullWidth sx={{ mt: 2 }} required>
@@ -89,7 +102,7 @@ const ProductAddDialog = ({
           }
           label="Danh mục"
         >
-          {filterActiveCategories.map((categories) => (
+          {filterActiveCategories.map((categories: any) => (
             <MenuItem key={categories.id} value={categories.id}>
               {categories.name}
             </MenuItem>
@@ -106,9 +119,9 @@ const ProductAddDialog = ({
           label="Hình ảnh sản phẩm"
           renderValue={(selected) => (
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              {selected.map((id) => {
+              {selected.map((id: any) => {
                 const image = dataImages?.result?.items.find(
-                  (img) => img.id === id,
+                  (img: any) => img.id === id,
                 );
                 return (
                   <img
@@ -128,7 +141,7 @@ const ProductAddDialog = ({
             </div>
           )}
         >
-          {dataImages?.result?.items.map((image) => (
+          {dataImages?.result?.items.map((image: any) => (
             <MenuItem key={image.id} value={image.id}>
               <img
                 src={image.imageUrl}
@@ -156,7 +169,7 @@ const ProductAddDialog = ({
           }}
           label="Màu sắc"
         >
-          {dataColors?.result?.items.map((color) => (
+          {dataColors?.result?.items.map((color: any) => (
             <MenuItem key={color.id} value={color.id}>
               {color.name}
             </MenuItem>
@@ -172,7 +185,7 @@ const ProductAddDialog = ({
           onChange={(e) => setProduct({ ...product, sizeIds: e.target.value })}
           label="Kích thước"
         >
-          {dataSizes?.result?.items.map((size) => (
+          {dataSizes?.result?.items.map((size: any) => (
             <MenuItem key={size.id} value={size.id}>
               {size.name}
             </MenuItem>

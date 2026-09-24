@@ -209,18 +209,18 @@ const AdminPage = () => {
       [],
       ["Top sản phẩm bán chạy", "", ""],
       ["Tên sản phẩm", "Số lượng đã bán", "Doanh thu (VND)"],
-      ...activeTopProducts.map((p) => [
+      ...activeTopProducts.map((p: any) => [
         p.productName || p.name || "Sản phẩm",
         (p.soldQuantity ?? p.sold ?? 0).toString(),
         (p.totalRevenue ?? p.revenue ?? 0).toString(),
-    ]),
+      ]),
     ];
 
     const csvContent =
       "\uFEFF" +
       rows
         .map((row) =>
-          row.map((val) => `"${val.replace(/"/g, '""')}"`).join(","),
+          row.map((val: any) => `"${val.replace(/"/g, '""')}"`).join(","),
         )
         .join("\n");
 
@@ -335,7 +335,7 @@ const AdminPage = () => {
               <DatePicker
                 label="Từ ngày"
                 value={startDate}
-                onChange={(newValue) => setStartDate(newValue)}
+                onChange={(newValue: any) => setStartDate(newValue)}
                 format="DD/MM/YYYY"
                 slotProps={{ textField: { fullWidth: true, size: "small" } }}
               />
@@ -344,7 +344,7 @@ const AdminPage = () => {
               <DatePicker
                 label="Đến ngày"
                 value={endDate}
-                onChange={(newValue) => setEndDate(newValue)}
+                onChange={(newValue: any) => setEndDate(newValue)}
                 format="DD/MM/YYYY"
                 slotProps={{ textField: { fullWidth: true, size: "small" } }}
               />
@@ -462,7 +462,7 @@ const AdminPage = () => {
                 <LineChart
                   xAxis={[
                     {
-                      data: activeMonthlyRevenue.map((d) =>
+                      data: activeMonthlyRevenue.map((d: any) =>
                         formatMonth(d.month),
                       ),
                       scaleType: "point",
@@ -471,7 +471,7 @@ const AdminPage = () => {
                   series={[
                     {
                       data: activeMonthlyRevenue.map(
-                        (d) => d.totalAmount ?? d.revenue ?? 0,
+                        (d: any) => d.totalAmount ?? d.revenue ?? 0,
                       ),
                       label: "Doanh thu (VND)",
                       color: "#3b82f6",
@@ -548,7 +548,7 @@ const AdminPage = () => {
               xAxis={[
                 {
                   scaleType: "band",
-                  data: activeTopProducts.map((p) => {
+                  data: activeTopProducts.map((p: any) => {
                     const name = p.name || p.productName || "Sản phẩm";
                     return name.length > 12
                       ? name.substring(0, 12) + "..."
@@ -558,7 +558,9 @@ const AdminPage = () => {
               ]}
               series={[
                 {
-                  data: activeTopProducts.map((p) => p.sold ?? p.quantity ?? 0),
+                  data: activeTopProducts.map(
+                    (p: any) => p.sold ?? p.quantity ?? 0,
+                  ),
                   label: "Đã bán (Sản phẩm)",
                   color: "#f59e0b",
                 },

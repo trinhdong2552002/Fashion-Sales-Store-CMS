@@ -2,7 +2,7 @@ import { DataGrid } from "@mui/x-data-grid";
 import { Box } from "@mui/material";
 
 interface TableDataProps {
-  getRowId: (row: any) => string | number;
+  getRowId?: (row: any) => string | number;
   rows: any[];
   totalRows: number;
   columnsData: any[];
