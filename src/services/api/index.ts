@@ -212,5 +212,6 @@ export const baseApi = createApi({
     "User",
     "Ward",
     "Statistics",
+    "Payment_History",
   ],
 });

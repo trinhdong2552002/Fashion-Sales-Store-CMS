@@ -12,14 +12,17 @@ import StatusChip from "@/components/status-chip";
 import DashboardLayoutWrapper from "@/layouts/dashboard-layout";
 
 import { skipToken } from "@reduxjs/toolkit/query";
-import { useGetAllProductsByAdminQuery } from "@/services/api/product";
-import { useGetAllProductVariantsByProductForAdminQuery } from "@/services/api/product";
+import {
+  useGetAllProductsByAdminQuery,
+  useGetAllProductVariantsByProductForAdminQuery,
+} from "@/services/api/product";
+
 import {
   useAddProductVariantMutation,
   useUpdateProductVariantMutation,
   useDeleteProductVariantMutation,
   useRestoreProductVariantMutation,
-} from "@/services/api/product_variant";
+} from "@/services/api/product-variant";
 import { useGetAllColorsQuery } from "@/services/api/color";
 import { useGetAllSizesQuery } from "@/services/api/size";
 
