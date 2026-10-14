@@ -1,0 +1,54 @@
+import { configureStore } from "@reduxjs/toolkit";
+import { setupListeners } from "@reduxjs/toolkit/query";
+import { combineReducers } from "redux";
+import { persistStore, persistReducer } from "redux-persist";
+import storage from "redux-persist/lib/storage";
+
+import { baseApi } from "@/services/api";
+import authReducer from "@/store/redux/auth/reducer";
+import userReducer from "@/store/redux/user/reducer";
+
+export const RESET_STATE = "RESET_STATE";
+
+const persistConfig = {
+  key: "root",
+  storage,
+};
+
+const appReducer = combineReducers({
+  [baseApi.reducerPath]: baseApi.reducer,
+  auth: authReducer,
+  user: userReducer,
+});
+
+const rootReducer = (state: any, action: any) => {
+  if (action.type === RESET_STATE) {
+    storage.removeItem("persist:root");
+    return appReducer(undefined, action);
+  }
+  return appReducer(state, action);
+};
+
+const persistedReducer = persistReducer(persistConfig, rootReducer);
+
+export const resetStore = () => ({
+  type: RESET_STATE,
+});
+
+export const store = configureStore({
+  reducer: persistedReducer,
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: {
+        ignoredActions: [
+          "persist/PERSIST",
+          "persist/REHYDRATE",
+          "persist/REGISTER",
+        ],
+      },
+    }).concat(baseApi.middleware),
+});
+
+export const persistor = persistStore(store);
+
+setupListeners(store.dispatch);
