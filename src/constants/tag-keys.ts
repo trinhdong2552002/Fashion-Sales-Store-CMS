@@ -20,4 +20,5 @@ export const TAG_KEYS = {
   USER: "User",
   WARD: "Ward",
   STATISTICS: "Statistics",
+  PAYMENT_HISTORY: "Payment_History",
 } as const;
